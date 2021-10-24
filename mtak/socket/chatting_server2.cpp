@@ -46,7 +46,14 @@ int main(int ag, char **av)
 	if (client_sock == -1)
 		error_handler("accept error");
 	else
+	{
+		char server_addr_str[16];
+		socklen_t server_addr_len = sizeof(client_addr);
+		getsockname(server_sock, (struct sockaddr *)&server_addr, &server_addr_len);
+		strncpy(server_addr_str, inet_ntoa(server_addr.sin_addr), 16);
 		std::cout << "\033[35mConnected!!\033[37m" << std::endl;
+		std::cout << "socket : \"My ip is\n" << server_addr_str << "\"\n" << std::endl;
+	}
 	close(server_sock);
 	
 	while (true)

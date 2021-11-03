@@ -35,14 +35,12 @@ int main(int ag, char **av)
         }
         else
         {
-            {
                 if (FD_ISSET(0, &temp))
                 {
                     str_len = read(0, (void *)buf, BUF_SIZE);
                     buf[str_len] = 0;
                     std::cout << "msg from console :" << buf << std::endl;
                 }
-            }
         }
     }
     return 0;

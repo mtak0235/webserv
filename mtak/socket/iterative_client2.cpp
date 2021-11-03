@@ -50,7 +50,7 @@ int main(int ag, char **av)
         while (recv_len < str_len)
         {
             int recv_cnt;
-            if (read(client_sock, msg, BUF_SIZE - 1) == -1)
+            if ((recv_cnt = read(client_sock, msg, BUF_SIZE - 1)) == -1)
                 error_handler("read error");
             recv_len += recv_cnt;
         }

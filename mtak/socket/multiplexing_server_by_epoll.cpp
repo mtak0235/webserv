@@ -48,11 +48,11 @@ int main(int ag, char **av)
     while (true)
     {
         cpy_reads = reads;
-        timeout.tv_sec = 10;
-        timeout.tv_usec = 0;
+        timeout.tv_sec = 5;
+        timeout.tv_usec = 5000;
         if ((fd_number = select(fd_max + 1, &reads, 0, 0, &timeout)) == -1)
             break;
-        else if (fd_number == 0)
+        if (fd_number == 0)
         {
             std::cout << "time out" << std::endl;
             continue;
@@ -79,7 +79,7 @@ int main(int ag, char **av)
                     {
                         FD_CLR(i, &reads);
                         close(i);
-                        std::cout << "client closed :" << client_sock << std::endl;
+                        std::cout << "client closed :" << i << std::endl;
                     }
                     else
                         write(i, buf, str_len);

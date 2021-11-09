@@ -1,16 +1,11 @@
-// #include <windows.h>
 #include <iostream>
-// #include <conio.h>
-// #include <tchar.h>
 #include <arpa/inet.h>
 #include <unistd.h> //gethostname()
 #include <netdb.h> //gethostbyname()
 #include <string.h> //memcpy(), strcpy()
 #include <sys/socket.h>
 #include <fstream>
-// WSADATA wsaData;
-// SOCKET sock0;
-// SOCKET sockw;
+
 struct sockaddr_in server_addr;
 struct sockaddr_in client_addr;
 #define PORT_NUM 8000

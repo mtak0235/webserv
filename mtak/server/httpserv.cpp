@@ -139,7 +139,7 @@ int main()
 		log_handler(response);
 		std::cout << "\033[37m";
 		// send(client_sock, &response_body, (int)strlen(response_body.c_str()), 0);
-		if (send(client_sock, &response, (int)strlen(response.c_str()), 0) < 1)
+		if (send(client_sock, response.c_str(), (int)strlen(response.c_str()), 0) < 1)
 			error_handler("failed to send");
 		close(client_sock);
 	}

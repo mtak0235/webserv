@@ -1,37 +1,48 @@
 #ifndef Parser_HPP
 # define Parser_HPP
 
+#include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include "Server.hpp"
 
 class Parser
 {
+  enum KEY_SERVER {
+    LISTEN,
+    SERVER_NAME,
+    LOCATION,
+  };
+
+  enum KEY_LOCATION {
+    BODY_SIZE,
+    METHOD,
+    INDEX,
+    ROOT,
+    CGI_EXTENSION,
+    CGI_PATH,
+    UPLOAD_FOLDER,
+  };
 
   public:
-		struct ServerConfig
-    {
-      std::string serverName;
-      int serverPort;
-      struct LocationConfig
-      {
-        std::string root;
-        std::vector<std::string> indexList;
-        std::string allowMethod;
-        std::string cgiPath;
-        int cliBodySize;
-      };
-      std::vector<LocationConfig> locationConfigs;
-    };
-
     Parser();
     ~Parser();
-
-    void parse(void);
+    
+    void parse(const std::string& confFile);
     std::vector<ServerConfig> getServerConfig(void) const;
     
   private:
+      static const std::string _keyInit;
+      static const std::string _keyServer[3];
+      static const std::string _keyLocation[7];
+      
+      std::ifstream _ifs;
+      std::string _info;
+  ServerConfig _parseServerBlock();
+  LocationConfig _parseLocationBlock();
     std::vector<ServerConfig> _serverConfigs;
-    ServerConfig _ParseServerConfig(void);
 };
 
 #endif

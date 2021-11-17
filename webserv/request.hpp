@@ -28,6 +28,18 @@ class request
     int get
     int get
     int get
+    int get
+    int get
+    int get
+    int get
+    int get
+    int get
+    int get
+    int get
+    int get
+    int get
+    int get
+    int get
     ~request();
 };
 

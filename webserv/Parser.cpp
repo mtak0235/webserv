@@ -40,9 +40,10 @@ ServerConfig Parser::_parseServerBlock(void)
             _ifs >> sc.serverPort;
         else if (!_info.compare(_keyServer[SERVER_NAME]))
             _ifs >> sc.serverName;
-        else if (!_info.compare(_keyServer[LOCATION]))
+		else if (!_info.compare(_keyServer[LOCATION]))
             sc.locations.push_back(_parseLocationBlock());
     }
+	_serverRemoveSemicolon(&sc);
     return sc;
 }
 
@@ -59,8 +60,17 @@ LocationConfig Parser::_parseLocationBlock(void)
         if (!_info.compare(_keyLocation[BODY_SIZE]))
             _ifs >> lc.cliBodySize;
         else if (!_info.compare(_keyLocation[METHOD]))
-            _ifs >> lc.allowMethod;
-        else if (!_info.compare(_keyLocation[INDEX]))
+		{
+			std::string method;
+ 			while (1)
+			{
+				_ifs >> method;
+				lc.allowMethods.push_back(method);
+				if (method[method.length() - 1] == ';')
+					break;
+			}
+		}
+		else if (!_info.compare(_keyLocation[INDEX]))
         {
 			std::string index;
 			while (1)
@@ -81,7 +91,30 @@ LocationConfig Parser::_parseLocationBlock(void)
             _ifs >> lc.uploadFolder;
     }
 	_info = "";
+	_locationRemoveSemicolon(&lc);
 	return lc;
+}
+
+void Parser::_locationRemoveSemicolon(LocationConfig *lc)
+{
+	if (!lc->root.empty())
+		lc->root.pop_back();
+	if (lc->indexList.size() != 0)
+		lc->indexList[lc->indexList.size() - 1].pop_back();
+	if (lc->allowMethods.size() != 0)
+		lc->allowMethods[lc->allowMethods.size() - 1].pop_back();
+	if (!lc->cgiName.empty())
+		lc->cgiName.pop_back();
+	if (!lc->cgiPath.empty())
+		lc->cgiPath.pop_back();
+	if (!lc->uploadFolder.empty())
+		lc->uploadFolder.pop_back();
+}
+
+void Parser::_serverRemoveSemicolon(ServerConfig *sc)
+{
+	if (!sc->serverName.empty())
+		sc->serverName.pop_back();
 }
 
 std::vector<ServerConfig> Parser::getServerConfig(void) const

@@ -43,6 +43,8 @@ class Parser
       std::string _info;
   	  ServerConfig _parseServerBlock();
 	  LocationConfig _parseLocationBlock();
+	  void _locationRemoveSemicolon(LocationConfig *lc);
+	  void _serverRemoveSemicolon(ServerConfig *sc);
       std::vector<ServerConfig> _serverConfigs;
 };
 

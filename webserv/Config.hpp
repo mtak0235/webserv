@@ -9,7 +9,7 @@ struct LocationConfig
 	std::string locationName;
 	std::string root;
 	std::vector<std::string> indexList;
-	std::string allowMethod;
+	std::vector<std::string> allowMethods;
 	std::string cgiName;
 	std::string cgiPath;
 	int cliBodySize;

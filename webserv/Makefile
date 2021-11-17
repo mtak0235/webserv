@@ -3,6 +3,8 @@ COMPILER = clang++
 CFLAGS = -Wall -Wextra -Werror
 CPP_VERSION = -std=c++98
 SRCS = main.cpp \
+	Parser.cpp \
+	Server.cpp \
 
 OBJS = $(SRCS:.cpp=.o)
 

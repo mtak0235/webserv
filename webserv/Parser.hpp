@@ -1,17 +1,18 @@
-#ifndef CONFIG_PARSER_HPP
-# define CONFIG_PARSER_HPP
+#ifndef Parser_HPP
+# define Parser_HPP
 
 #include <string>
 #include <vector>
 
-class ConfigParser
+class Parser
 {
+
   public:
-    struct Server
+		struct ServerConfig
     {
       std::string serverName;
       int serverPort;
-      struct Location
+      struct LocationConfig
       {
         std::string root;
         std::vector<std::string> indexList;
@@ -19,20 +20,18 @@ class ConfigParser
         std::string cgiPath;
         int cliBodySize;
       };
-      std::vector<Location> locations;
+      std::vector<LocationConfig> locationConfigs;
     };
 
-  public:
-
-    ConfigParser();
-    ~ConfigParser();
+    Parser();
+    ~Parser();
 
     void parse(void);
-    std::vector<Server> getServerConfig(void) const;
+    std::vector<ServerConfig> getServerConfig(void) const;
     
   private:
-    std::vector<Server> _servers;
-    Server _ParseServerConfig(void);
+    std::vector<ServerConfig> _serverConfigs;
+    ServerConfig _ParseServerConfig(void);
 };
 
 #endif

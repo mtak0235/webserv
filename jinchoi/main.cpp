@@ -1,15 +1,15 @@
 #include <iostream>
 #include <string>
-#include "ConfigParser.hpp"
+#include "Config.hpp"
 
 int main() {
     
-    typedef std::vector<ConfigParser::Server>        ServerConfig;
+    typedef std::vector<Config::ServerConfig>        ServerConfig;
 
-    ConfigParser cp;
-    cp.parse();
+    Config c;
+    c.parse();
 
-    ServerConfig sc = cp.getServerConfig();
+    ServerConfig sc = c.getServerConfig();
 
     for (size_t i = 0; i < sc.size(); i++) {
         std::cout << sc[i].serverName << " [PORT NUM : ";

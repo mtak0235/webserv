@@ -6,8 +6,7 @@ class request
   int _httpVersion;
   std::string _statusMsg;
   int _statusCode;
-  int
-  int
+
 
  public:
     request(/* args */);
@@ -18,28 +17,7 @@ class request
  public:
     request(/* args */);
     int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
-    int get
+    
     ~request();
 };
 

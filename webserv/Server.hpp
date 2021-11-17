@@ -1,26 +1,10 @@
-#include <vector>
+#ifndef SERVER_HPP
+#define SERVER_HPP
+
 #include <string>
-
+#include <vector>
+#include "Config.hpp"
 #include "Parser.hpp"
-
-struct LocationConfig
-{
-	std::string locationName;
-	std::string root;
-	std::vector<std::string> indexList;
-	std::string allowMethod;
-	std::string cgiName;
-	std::string cgiPath;
-	int cliBodySize;
-	std::string uploadFolder;
-};
-
-struct ServerConfig
-{
-	std::string serverName;
-	int serverPort;
-	std::vector<LocationConfig> locations;
-};
 
 class Server
 {
@@ -37,3 +21,5 @@ class Server
 		int _initConnection();
 		std::vector<ServerConfig> _serverConfigs;
 };
+
+#endif

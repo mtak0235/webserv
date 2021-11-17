@@ -1,12 +1,13 @@
-#ifndef Parser_HPP
-# define Parser_HPP
+#ifndef PARSER_HPP
+#define PARSER_HPP
 
 #include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <sstream>
-#include "Server.hpp"
+
+#include "Config.hpp"
 
 class Parser
 {

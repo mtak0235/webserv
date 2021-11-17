@@ -29,7 +29,7 @@ class Parser
   public:
     Parser();
     ~Parser();
-    
+
     void parse(const std::string& confFile);
     std::vector<ServerConfig> getServerConfig(void) const;
     
@@ -40,9 +40,9 @@ class Parser
       
       std::ifstream _ifs;
       std::string _info;
-  ServerConfig _parseServerBlock();
-  LocationConfig _parseLocationBlock();
-    std::vector<ServerConfig> _serverConfigs;
+  	  ServerConfig _parseServerBlock();
+	  LocationConfig _parseLocationBlock();
+      std::vector<ServerConfig> _serverConfigs;
 };
 
 #endif

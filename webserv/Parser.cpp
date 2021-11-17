@@ -55,8 +55,15 @@ LocationConfig Parser::_parseLocationBlock(void)
             _ifs >> lc.allowMethod;
         else if (_info.compare(_keyLocation[INDEX]))
         {
-            
-        }
+			std::string index;
+			while (1)
+			{
+				_ifs >> index;
+				lc.indexList.push_back(index);
+				if (index[index.length() - 1] == ';')
+					break;
+			}
+		}
         else if (_info.compare(_keyLocation[ROOT]))
             _ifs >> lc.root;
         else if (_info.compare(_keyLocation[CGI_EXTENSION]))
@@ -66,5 +73,10 @@ LocationConfig Parser::_parseLocationBlock(void)
         else if (_info.compare(_keyLocation[UPLOAD_FOLDER]))
             _ifs >> lc.uploadFolder;
     }
+	return lc;
+}
 
+std::vector<ServerConfig> Parser::getServerConfig(void) const
+{
+	return _serverConfigs;
 }

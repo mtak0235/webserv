@@ -1,10 +1,9 @@
 class Response
 {
-private:
-    /* data */
-public:
+  public:
     Response(/* args */);
     ~Response();
+  private:
 };
 
 Response::Response(/* args */)

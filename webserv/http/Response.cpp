@@ -12,9 +12,8 @@ Response::~Response()
 
 std::string Response::makeResponse(const std::string& body) {
   std::string ret = "";
-  ret += _makeStatusLine();
-  ret += _makeHeader();
-  ret += "\n";
+  ret += (_makeStatusLine() + "\n");
+  ret += (_makeHeader() + "\n");
   ret += body;
   return ret;
 }

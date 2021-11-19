@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include "Server.hpp"
 
 class cgi
 {

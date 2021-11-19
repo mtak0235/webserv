@@ -5,10 +5,10 @@
 int main()
 {
 	Response r;
-	r.setHttpVersion("1.1");
 	r.setStatusCode(200);
 	r.setStatusMsg("OK");
-	std::string res = r.makeResponse();
+	std::string body = "{\n}";
+	std::string res = r.makeResponse(body);
 	std::cout << res << "\n";
 	return 0;
 }

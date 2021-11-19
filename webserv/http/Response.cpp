@@ -1,5 +1,7 @@
 #include "Response.hpp"
 
+const std::string Response::_httpVersion = "1.1";
+
 Response::Response(void)
 {
 }
@@ -8,16 +10,13 @@ Response::~Response()
 {
 }
 
-std::string Response::makeResponse() {
+std::string Response::makeResponse(const std::string& body) {
   std::string ret = "";
   ret += _makeStatusLine();
   ret += _makeHeader();
-  ret += _makeBody();
+  ret += "\n";
+  ret += body;
   return ret;
-}
-
-void Response::setHttpVersion(const std::string& n) {
-  _httpVersion = n;
 }
 
 void Response::setStatusCode(const int& n) {
@@ -37,9 +36,6 @@ std::string Response::_makeStatusLine() {
 }
 
 std::string Response::_makeHeader() {
-  return "";
-}
 
-std::string Response::_makeBody() {
   return "";
 }

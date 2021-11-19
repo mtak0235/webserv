@@ -31,6 +31,33 @@ void Response::setServerName(const std::string& str) {
   _serverName = str;
 }
 
+std::string Response::_getFormattedNum(const int& num) {
+  std::string ret = "";
+  if (num < 10) ret += "0";
+  std::stringstream ss;
+  ss << num;
+  std::string str;
+  ss >> str;
+  ret += str;
+  return ret;
+}
+
+std::string Response::_getDate(void) {
+  std::string ret = "Date: ";
+  time_t timer = time(NULL);
+  struct tm* t = localtime(&timer);
+  const std::string wday[7] = {"Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"};
+  ret += wday[t->tm_wday] + ", ";
+  ret += _getFormattedNum(t->tm_mday) + " ";
+  const std::string wmon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+  ret += (wmon[t->tm_mon] + " ");
+  ret += _getFormattedNum(t->tm_year + 1900) + " ";
+  ret += _getFormattedNum(t->tm_hour) + ":";
+  ret += _getFormattedNum(t->tm_min) + ":";
+  ret += _getFormattedNum(t->tm_sec) + " GMT";
+  return ret;
+}
+
 std::string Response::_makeStatusLine() {
   std::stringstream ss;
   ss << "HTTP/" << _httpVersion + " " << _statusCode << " " << _statusMsg << "\n";
@@ -40,25 +67,7 @@ std::string Response::_makeStatusLine() {
 }
 
 std::string Response::_makeHeader() {
-  std::string ret = "Date: ";
-  time_t timer = time(NULL);
-  struct tm* t = localtime(&timer);
-  const std::string wday[7] = {"Sun", "Mon", "Tue", "Wed", "Thur", "Fri", "Sat"};
-  ret += (wday[t->tm_wday] + ", ");
-  ret += (_getFormattedNum(t->tm_mday) + " ");
-  const std::string wmon[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-  ret += (wmon[t->tm_mon] + " ");
-
-  return ret;
-}
-
-std::string Response::_getFormattedNum(const int& num) {
-  std::string ret = "";
-  if (num < 10) ret += "0";
-  std::stringstream ss;
-  ss << num;
-  std::string str;
-  ss >> str;
-  ret += str;
+  std::string ret;
+  ret += _getDate();
   return ret;
 }

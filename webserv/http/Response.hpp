@@ -17,6 +17,7 @@ class Response
   private:
     static const std::string _httpVersion;
     static std::string _getFormattedNum(const int& num);
+    static std::string _getDate(void);
 
     std::string _makeStatusLine();
     std::string _makeHeader();

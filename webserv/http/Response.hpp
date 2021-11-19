@@ -1,3 +1,4 @@
+#include <ctime>
 #include <string>
 #include <sstream>
 
@@ -11,15 +12,19 @@ class Response
 
     void setStatusCode(const int& n);
     void setStatusMsg(const std::string& str);
+    void setServerName(const std::string& str);
 
   private:
     static const std::string _httpVersion;
+    static std::string _getFormattedNum(const int& num);
 
     std::string _makeStatusLine();
     std::string _makeHeader();
 
     int _statusCode;
     std::string _statusMsg;
+
+    std::string _serverName;
     int _contentLength;
 };
 

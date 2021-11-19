@@ -14,7 +14,7 @@ Response::~Response()
 std::string Response::makeResponse(const std::string& body) {
   std::string ret = "";
   ret += (_makeStatusLine() + "\n");
-  ret += (_makeHeader() + "\n");
+  ret += _makeHeader();
   ret += body;
   return ret;
 }
@@ -54,7 +54,13 @@ std::string Response::_getDate(void) {
   ret += _getFormattedNum(t->tm_year + 1900) + " ";
   ret += _getFormattedNum(t->tm_hour) + ":";
   ret += _getFormattedNum(t->tm_min) + ":";
-  ret += _getFormattedNum(t->tm_sec) + " GMT";
+  ret += _getFormattedNum(t->tm_sec) + " GMT\n";
+  return ret;
+}
+
+std::string Response::_makeServerInfo(void) {
+  std::string ret = "Server: ";
+  ret += _serverName + "\n";
   return ret;
 }
 
@@ -69,5 +75,6 @@ std::string Response::_makeStatusLine() {
 std::string Response::_makeHeader() {
   std::string ret;
   ret += _getDate();
+  ret += _makeServerInfo();
   return ret;
 }

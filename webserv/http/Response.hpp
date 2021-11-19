@@ -16,11 +16,15 @@ class Response
 
   private:
     static const std::string _httpVersion;
+
     static std::string _getFormattedNum(const int& num);
     static std::string _getDate(void);
 
+
     std::string _makeStatusLine();
     std::string _makeHeader();
+
+    std::string _makeServerInfo(void);
 
     int _statusCode;
     std::string _statusMsg;
@@ -28,13 +32,3 @@ class Response
     std::string _serverName;
     int _contentLength;
 };
-
-// [HEADER]
-// string server_name
-// string date
-// int content_length
-// string content_type
-// string allow_method
-
-// [BODY]
-// string body

@@ -11,11 +11,12 @@ DIR_CGI = ./cgi/
 DIR_OBJS = ./objs/
 
 SRCS = main.cpp \
+	Connection.cpp \
 	Parser.cpp \
 	Server.cpp \
 	cgi.cpp \
 	log.cpp \
-	Connection.cpp \
+	ngx_kqueue.cpp \
 
 
 all: $(NAME)

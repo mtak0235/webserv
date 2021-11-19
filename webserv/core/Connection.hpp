@@ -6,6 +6,7 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <fcntl.h>
 #include "core.hpp"
 #include "log.hpp"
 

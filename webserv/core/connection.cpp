@@ -32,5 +32,6 @@ int Connection::connection_init(std::string port)
 		_log.debug_log("listen error " + port);
 		return NGX_FAIL;
 	}
+	fcntl(_servSockFd, F_SETFL, O_NONBLOCK);
 	return NGX_OK;
 }

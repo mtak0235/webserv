@@ -28,7 +28,7 @@ void Response::setStatusMsg(const std::string& str) {
 
 std::string Response::_makeStatusLine() {
   std::stringstream ss;
-  ss << "HTTP/ " << _httpVersion + " " << _statusCode << " " << _statusMsg << "\n";
+  ss << "HTTP/" << _httpVersion + " " << _statusCode << " " << _statusMsg << "\n";
   std::string ret;
   std::getline(ss, ret);
   return ret;

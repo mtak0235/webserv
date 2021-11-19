@@ -7,7 +7,7 @@
 class log
 {
 public:
-	log(/* args */);
+	log();
 	log(log& _x);
 	~log();
 	log operator=(log& _x);

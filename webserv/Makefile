@@ -14,6 +14,7 @@ SRCS = main.cpp \
 	Parser.cpp \
 	Server.cpp \
 	cgi.cpp \
+	log.cpp \
 
 
 all: $(NAME)
@@ -44,16 +45,6 @@ $(DIR_OBJS)%.o: $(DIR_HTTP)%.cpp
 
 $(DIR_OBJS)%.o: $(DIR_CGI)%.cpp
 	@$(COMPILER) $(CFLAGS) $(CPP_VERSION) -I $(DIR_CORE) -I $(DIR_EVENT) -I $(DIR_HTTP) -I $(DIR_CGI)  -c $< -o $@
-
-# all: $(NAME)
-
-# clean:
-# 	@rm -f $(OBJS)
-
-# fclean: clean
-# 	@rm -f $(NAME)
-
-# re: fclean all
 
 test: re
 	@./$(NAME) a

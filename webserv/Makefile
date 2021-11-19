@@ -1,6 +1,6 @@
 NAME = webserv
 COMPILER = clang++
-CFLAGS = -Wall -Wextra -Werror
+CFLAGS = -g -Wall -Wextra -Werror
 CPP_VERSION = -std=c++98
 
 DIR_CORE = ./core/
@@ -15,6 +15,7 @@ SRCS = main.cpp \
 	Server.cpp \
 	cgi.cpp \
 	log.cpp \
+	Connection.cpp \
 
 
 all: $(NAME)
@@ -32,7 +33,7 @@ OBJS = $(SRCS:%.cpp=$(DIR_OBJS)%.o)
 $(NAME): $(OBJS)
 	@$(COMPILER) $(CFLAGS) $(CPP_VERSION) -I $(DIR_CORE) -I $(DIR_EVENT) -I $(DIR_HTTP) -I $(DIR_CGI) $(OBJS) -o $(NAME) 
 
-$(OBJS): | $(DIR_OBJS)
+$(OBJS): $(DIR_OBJS)
 
 $(DIR_OBJS)%.o: $(DIR_CORE)%.cpp
 	@$(COMPILER) $(CFLAGS) $(CPP_VERSION) -I $(DIR_CORE) -I $(DIR_EVENT) -I $(DIR_HTTP) -I $(DIR_CGI)  -c $< -o $@

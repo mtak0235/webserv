@@ -5,6 +5,8 @@
 #include <vector>
 #include "Config.hpp"
 #include "Parser.hpp"
+#include "Connection.hpp"
+#include "core.hpp"
 
 class Server
 {
@@ -16,8 +18,8 @@ class Server
 		int stop();
 
 	private :
-		ServerConfig _sc;
 		Parser _parser;
+		Connection connection;
 		int _initConnection();
 		std::vector<ServerConfig> _serverConfigs;
 };

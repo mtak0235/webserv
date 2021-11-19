@@ -1,4 +1,5 @@
 #include <string>
+#include <sstream>
 
 class Response
 {
@@ -8,16 +9,16 @@ class Response
 
     std::string makeResponse();
 
-    int setHttpVersion(const int& n);
-    int setStatusCode(const int& n);
-    std::string setStatusMsg(const std::string& str);
+    void setHttpVersion(const std::string& str);
+    void setStatusCode(const int& n);
+    void setStatusMsg(const std::string& str);
 
   private:
     std::string _makeStatusLine();
     std::string _makeHeader();
     std::string _makeBody();
 
-    int _httpVersion;
+    std::string _httpVersion;
     int _statusCode;
     std::string _statusMsg;
 
@@ -30,10 +31,6 @@ class Response
 // string status_msg
 
 // [HEADER]
-// int HTTP_version
-// int status_code
-// string status_msg
-
 // int content_length
 // string server_name
 // string date

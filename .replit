@@ -1,2 +1,0 @@
-language = "bash"
-run = "clang++ -Wall -Wextra -Werror *.cpp"

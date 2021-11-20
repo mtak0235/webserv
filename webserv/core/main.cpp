@@ -4,6 +4,9 @@
 
 int main()
 {
+  //Server s;
+  //s.init("basic.cof");
+  
 	Response r;
 	r.setStatusCode(200);
 	r.setStatusMsg("OK");

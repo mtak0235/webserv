@@ -12,5 +12,5 @@ log::~log()
 
 void log::debug_log(std::string msg)
 {
-    std::cout << msg << '\n';
+  std::cout << msg << '\n';
 }

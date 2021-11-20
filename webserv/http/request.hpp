@@ -1,7 +1,10 @@
 #include <string>
 #include <map>
 #include <cstring>
-enum http_method
+#include <iostream>
+#include <string>
+
+enum HTTP_METHOD
 {
     GET= 0 ,
     POST, 
@@ -13,9 +16,9 @@ class Request
     private:
         std::string _raw;
         std::string _rawFirstLine;
-        http_method _httpMethod;
+        HTTP_METHOD _httpMethod;
         std::string _path;
-        int _httpVersion;
+        std::string _httpVersion;
         std::string _rawHeader;
         std::map<std::string, std::string> _headers;
         std::string _body;
@@ -23,11 +26,14 @@ class Request
     public:
         Request();
         virtual ~Request();
-        http_method getHttpMethod();
+        HTTP_METHOD getHttpMethod();
         std::string getPath();
         std::map<std::string, std::string> getHeaders();
         std::string getBody();
         void parseRequest(std::string);
+        void setHttpMethod(std::string);
+        void setPath(std::string);
+        void setHttpVersion(std::string);
 };
 
 Request::Request(/* args */)
@@ -40,7 +46,7 @@ Request::~Request()
 
 }
 
-http_method Request::getHttpMethod()
+HTTP_METHOD Request::getHttpMethod()
 {
     return this->_httpMethod;
 }
@@ -57,21 +63,51 @@ std::string Request::getBody()
     return this->_body;
 }
 
+void Request::setHttpMethod(std::string method)
+{
+    if (!strncmp(method.c_str(), "GET ", 4))
+		this->_httpMethod = HTTP_METHOD::GET;
+	else if (!strncmp(method.c_str(), "POST ", 5))
+		this->_httpMethod = HTTP_METHOD::POST;
+	else if (!strncmp(method.c_str(), "DELETE ", 6))
+		this->_httpMethod = HTTP_METHOD::DELETE;
+}
+
+void Request::setPath(std::string path)
+{
+    this->_path = path;
+}
+
+void Request::setHttpVersion(std::string version)
+{
+    this->_httpVersion = version;
+}
 void Request::parseRequest(std::string request)
 {
     try
     {
-        this->_rawFirstLine = strtok((char *)request.c_str(), "\n");
-        this->_rawHeader = strtok((char *)request.c_str(), "\n");
         char *headerKey;
         char *headerValue;
-        headerKey = 
-        this->_headers.insert({strtok((char *)this->_rawHeader.c_str(), ": "), });
-        while()
+
+        setHttpMethod(strtok((char *)request.c_str(), " "));
+        setPath(strtok((char *)request.c_str(), " HTTP/"));
+        setHttpVersion(strtok((char *)request.c_str(), "\n"));
+        // std::cout << this->_httpMethod << this->_path<< this->_httpVersion << std::endl;
+        while (headerValue != NULL || headerValue == "")
+        {
+            headerKey = strtok(NULL, ": ");
+            headerValue = strtok(NULL, "\n");
+            if (headerValue != NULL)
+                this->_headers.insert(std::pair<std::string, std::string>(headerKey, headerValue));
+        }
+        strtok(NULL, "\n");
+        // for (std::map<std::string, std::string>::iterator itr =this->_headers.begin(); itr != this->_headers.end(); ++itr)
+		// 				std::cout << itr->first << ": " << itr->second << std::endl;
+        this->_body = request;
+        // std::cout << this->_body << std::endl;
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
-    
 }

@@ -11,6 +11,8 @@
 #include <map>
 #include <vector>
 
+#include "Request.hpp"
+
 #define BUFSIZE 50
 #define PORT_NUM 8000
 
@@ -81,7 +83,7 @@ std::string getResponseBody(std::string path)//여기서 url 파싱 해야됨. e
 	return ret;
 }
 
-int main(int argc, char **argv){
+int main(int argc, char **av){
 	fd_set reads; // 감시할 소켓 목록( 여기서는 소켓의 입력스트림 감시 용도 ) 
 	fd_set temps; // reads 변수의 복사본으로 사용도리 변수
 	struct timeval timeout; // 타임 변수
@@ -104,7 +106,7 @@ int main(int argc, char **argv){
 	memset(&serv_addr, 0, sizeof(serv_addr)); 
 	serv_addr.sin_family = AF_INET; 
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); 
-	serv_addr.sin_port = htons(PORT_NUM);
+	serv_addr.sin_port = htons(atoi(av[1]));
 	//서버 소켓 바인딩
 	if(bind(serv_sock,(struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1 ) exit(1);
 	log_handler("binding successful");
@@ -136,17 +138,14 @@ int main(int argc, char **argv){
 			{ // 클라이언트 소켓이면 
 				read_len = recv(fd,message,sizeof(message) - 1, 0); 
 				if(read_len > 0) { 
-					message[read_len] = '\0';
+					Request req;
 					std::string path;
+					std::string response;
+				
+					message[read_len] = '\0';
+					req.parseRequest(message);					
 					getRequestPath(path, message);
-					std::string response_header = getResponseHeader();
-					std::string response_body = getResponseBody(path);
-					std::string response = response_header + "\n" + response_body;
-					std::cout << fd << std::endl;
-					std::cout << "\033[32m";
-					log_handler(response);
-					std::cout << "\033[37m";
-
+					response = getResponseHeader() + "\n" + getResponseBody(path);
 					send(fd, response.c_str(), (int)strlen(response.c_str()), 0);
 					printf("Disconnect client : %d \n",fd); 
 					FD_CLR(fd,&reads); // 감시목록에서 제외 

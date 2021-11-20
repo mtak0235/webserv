@@ -10,28 +10,38 @@ Connection::~Connection()
 
 }
 
-int Connection::connection_init(std::string port)
+int Connection::getSockFd(int i)
 {
-	_servSockFd = socket(PF_INET, SOCK_STREAM, 0);
-	if (_servSockFd == NGX_FAIL)
+	return _servSockFd[i];
+}
+
+int Connection::connection_init(std::string port, int i)
+{
+	_servSockFd[i] = socket(PF_INET, SOCK_STREAM, 0);
+	if (_servSockFd[i] == NGX_FAIL)
 	{
 		_log.debug_log("socket fd error");
 		return NGX_FAIL;
 	}
-	memset(&_servAddr, 0, sizeof(_servAddr));
-	_servAddr.sin_family = AF_INET;
-	_servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	_servAddr.sin_port = htons(stoi(port));
-	if (bind(_servSockFd, (struct sockaddr*) &_servAddr, sizeof(_servAddr)) == NGX_FAIL)
+	memset(&_servAddr[i], 0, sizeof(_servAddr[i]));
+	_servAddr[i].sin_family = AF_INET;
+	_servAddr[i].sin_addr.s_addr = htonl(INADDR_ANY);
+	_servAddr[i].sin_port = htons(stoi(port));
+	if (bind(_servSockFd[i], (struct sockaddr*) &_servAddr[i], sizeof(_servAddr[i])) == NGX_FAIL)
 	{
 		_log.debug_log("bind error " + port);
 		return NGX_FAIL;
 	}
-	if (listen(_servSockFd, 1000))
+	if (listen(_servSockFd[i], 5))
 	{
 		_log.debug_log("listen error " + port);
 		return NGX_FAIL;
 	}
-	fcntl(_servSockFd, F_SETFL, O_NONBLOCK);
+	fcntl(_servSockFd[i], F_SETFL, O_NONBLOCK);
 	return NGX_OK;
+}
+
+void Connection::closeConnection(int i)
+{
+	close(_servSockFd[i]);
 }

@@ -3,7 +3,7 @@
 const std::string Response::_httpVersion = "1.1";
 
 Response::Response(void)
-    : _statusCode(0), _statusMsg(""), _contentLength(0)
+    : _statusCode(0), _statusMsg("")//, _contentLength(0)
 {
 }
 

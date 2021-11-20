@@ -42,7 +42,7 @@ void log_handler(std::string log)
 	std::cout << log << std::endl;
 }
 
-void getRequestPath(std::string &path, char *request)
+void getRequestPath(std::string &path, char *request)//std::string:::compa
 {
 	if (!strncmp(request, "GET ", 4))
 		path = strtok(request + 4, " ");

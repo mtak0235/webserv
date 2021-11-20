@@ -1,6 +1,6 @@
 NAME = webserv
 COMPILER = clang++
-CFLAGS = -g -Wall -Wextra -Werror
+CFLAGS = -g #-Wall -Wextra -Werror
 CPP_VERSION = -std=c++98
 
 DIR_CORE = ./core/
@@ -11,13 +11,15 @@ DIR_CGI = ./cgi/
 DIR_OBJS = ./objs/
 
 SRCS = main.cpp \
-	Connection.cpp \
+	Cluster.cpp \
+	connection.cpp \
 	Parser.cpp \
 	Server.cpp \
 	cgi.cpp \
 	log.cpp \
 	ngx_kqueue.cpp \
-
+	Request.cpp \
+	Response.cpp \
 
 all: $(NAME)
 

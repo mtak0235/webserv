@@ -13,15 +13,12 @@ class Server
 	public :
 		Server();
 		~Server();
-		int init(std::string confFile);
-		int run();
-		int stop();
+		// int init(std::string confFile);
+		// int run();
+		// int stop();
 
 	private :
-		Parser _parser;
-		Connection connection;
-		int _initConnection();
-		std::vector<ServerConfig> _serverConfigs;
+
 };
 
 #endif

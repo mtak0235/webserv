@@ -49,7 +49,7 @@ std::string Response::_makeStatusLine() {
 
 std::string Response::_makeHeader() {
   std::string ret;
-  ret += Formatter::getDate();
+  ret += ("Date: " + Formatter::getDate());
   ret += _makeServerInfo();
   return ret;
 }

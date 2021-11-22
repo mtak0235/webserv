@@ -9,7 +9,7 @@ Formatter::~Formatter()
 }
 
 const std::string Formatter::getDate(void) {
-  std::string ret = "Date: ";
+  std::string ret = "";
   time_t timer = time(NULL);
   struct tm* t = localtime(&timer);
   const std::string wday[7] = {"Sun", "Mon", "Tue", "Wed", "Thur",

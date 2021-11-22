@@ -1,39 +1,54 @@
+#pragma once
+#include <sstream>
+#include <vector>
 #include <string>
-#include <map>
-#include <cstring>
 #include <iostream>
-#include <string>
-
-enum HTTP_METHOD
-{
-    GET,
-    POST, 
-    DELETE
-};
 
 class Request
 {
-    private:
-        std::string _raw;
-        std::string _rawFirstLine;
-        HTTP_METHOD _httpMethod;
-        std::string _path;
-        std::string _httpVersion;
-        std::string _rawHeader;
-        std::map<std::string, std::string> _headers;
-        std::string _body;
+    enum METHOD {
+        GET,
+        POST,
+        DELETE,
+        AVAIL_M,
+    };
+
+    enum HEADER_INFO {
+        HOST,
+        USER_AGENT,
+        ACCEPT,
+        ACCEPT_LANGUEAGE,
+        ACCEPT_ENCODING,
+        ACCEPT_CHARSET,
+        KEEPALIVE,
+        CONNECTION,
+        CONTENTS_LENGTH,
+        AVAIL_H,
+    };
 
     public:
-        Request();
-        virtual ~Request();
-        HTTP_METHOD getHttpMethod();
-        std::string getPath();
-        std::map<std::string, std::string> getHeaders();
-        std::string getBody();
-        void parseRequest(std::string);
-        void setHttpMethod(std::string);
-        void setPath(std::string);
-        void setHttpVersion(std::string);
+        Request(const std::string& r);
+        ~Request();
+
+        std::string getMethod(void) const;
+        std::string getPath(void) const;
+        std::string getHttpVersion(void) const;
+
+    private:
+
+        static const std::string _availMethods[AVAIL_M];
+        static const std::string _availHeaderInfo[AVAIL_H];
+
+        void _init(const std::string& r);
+        void _parseRequestLine(const std::string& rl);
+        void _parseRequestHeader(const std::string& rh);
+
+
+        /* request line */
+        std::string _method;
+        std::string _path;
+        std::string _httpVersion;
+
+        /* request header */
+        std::string _headerInfo[AVAIL_H];
 };
-
-

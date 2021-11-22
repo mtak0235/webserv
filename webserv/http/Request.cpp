@@ -1,77 +1,74 @@
 #include "Request.hpp"
 
-Request::Request(/* args */)
-{
-    
+const std::string Request::_availMethods[AVAIL_M] = {"GET", "POST", "DELETE"};
+const std::string Request::_availHeaderInfo[AVAIL_H] = {"Host:", "User-Agent:", "Accept:", "Accept-Language:", "Accept-Encoding:", "Accept-Charset:", "Keep-Alive:", "Connection:", "Content-Length:"};
+
+Request::Request(const std::string& r) {
+  _init(r);
 }
 
 Request::~Request()
 {
-
 }
 
-HTTP_METHOD Request::getHttpMethod()
+std::string Request::getMethod(void) const
 {
-    return this->_httpMethod;
-}
-std::string Request::getPath()
-{
-    return this->_path;
-}
-std::map<std::string, std::string> Request::getHeaders()
-{
-    return this->_headers;
-}
-std::string Request::getBody()
-{
-    return this->_body;
+	return _method;
 }
 
-void Request::setHttpMethod(std::string method)
+std::string Request::getPath(void) const
 {
-    if (!strncmp(method.c_str(), "GET ", 4))
-		this->_httpMethod = GET;
-	else if (!strncmp(method.c_str(), "POST ", 5))
-		this->_httpMethod = POST;
-	else if (!strncmp(method.c_str(), "DELETE ", 6))
-		this->_httpMethod = DELETE;
+	return _path;
 }
 
-void Request::setPath(std::string path)
+std::string Request::getHttpVersion(void) const
 {
-    this->_path = path;
+	return _httpVersion;
 }
 
-void Request::setHttpVersion(std::string version)
-{
-    this->_httpVersion = version;
-}
-void Request::parseRequest(std::string request)
-{
-    try
-    {
-        char *headerKey;
-        char *headerValue;
-
-        setHttpMethod(strtok((char *)request.c_str(), " "));
-        setPath(strtok((char *)request.c_str(), " HTTP/"));
-        setHttpVersion(strtok((char *)request.c_str(), "\n"));
-        // std::cout << this->_httpMethod << this->_path<< this->_httpVersion << std::endl;
-        while (headerValue != NULL || headerValue == "")
-        {
-            headerKey = strtok(NULL, ": ");
-            headerValue = strtok(NULL, "\n");
-            if (headerValue != NULL)
-                this->_headers.insert(std::pair<std::string, std::string>(headerKey, headerValue));
-        }
-        strtok(NULL, "\n");
-        // for (std::map<std::string, std::string>::iterator itr =this->_headers.begin(); itr != this->_headers.end(); ++itr)
-		// 				std::cout << itr->first << ": " << itr->second << std::endl;
-        this->_body = request;
-        // std::cout << this->_body << std::endl;
+void Request::_init(const std::string& r) {
+    std::stringstream ss;
+    ss << r;
+    std::vector<std::string> v;
+    while (!ss.eof()) {
+        std::string l;
+        std::getline(ss, l);
+        v.push_back(l);
     }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
+    _parseRequestLine(v[0]);
+    for (size_t l = 1; l < v.size(); l++)
+        _parseRequestHeader(v[l]);
+
+    // /* test */
+    // std::cout << "test method : ["  << _method << "]\n";
+    // std::cout << "test path : ["  << _path << "]\n";
+    // std::cout << "test version : ["  << _httpVersion << "]\n";
+    
+    // /* test */
+    // for (int h = 0; h < AVAIL_H; h++) {
+    //     std::cout << _availHeaderInfo[h] << " : ["  << _headerInfo[h] << "]\n";
+    // }
+}
+
+void Request::_parseRequestLine(const std::string& rl) {
+    size_t idx = 0;
+    for (int m = 0; m < AVAIL_M; m++) {
+        if (rl.find(_availMethods[m], idx) == 0) {
+            _method = _availMethods[m];
+            idx += _availMethods[m].length() + 1;
+        }
+    }
+    _path = rl.substr(idx, rl.find(' ', idx + 1) - idx);
+    idx += _path.length() + 1;
+    _httpVersion = rl.substr(idx, rl.find('\n', idx + 1) - idx);
+}
+
+void Request::_parseRequestHeader(const std::string& rh) {
+    size_t idx = 0;
+    for (int h = 0; h < AVAIL_H; h++) {
+        if (rh.find(_availHeaderInfo[h], idx) == 0) {
+            idx += _availHeaderInfo[h].length() + 1;
+            _headerInfo[h] = rh.substr(idx);
+        }
     }
 }

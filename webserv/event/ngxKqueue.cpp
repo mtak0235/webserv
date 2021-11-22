@@ -122,18 +122,33 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
                         buf[n] = '\0';
                         _clients[_currEvent->ident] += buf;
                         std::cout << "received data from " << _currEvent->ident << ": " << _clients[_currEvent->ident] << std::endl;
-
-	
 						if (_clients[_currEvent->ident] != "")
 						{
-							std::string test = "<!DOCTYPE html> \n<html lang=\"en\"> \n<head> \n<meta charset=\"UTF-8\">\n<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>Document</title>\n</head>\n<body>\nhello dear world\n</body>\n</html>";
-							Response r;
-							r.setServerName("webserv");
-							r.setStatusCode(200);
-							r.setStatusMsg("OK");
-							std::string res = r.makeResponse(test);
-
-							std::cout << "qwer : " << res;
+							std::string test = _clients[_currEvent->ident];
+							Request rq(test);
+							Response rp;
+							std::ifstream ifs;
+							if (_serverConfigs[k].locationsFind[rq.getPath()].indexList.size() > 0)
+							{
+								std::cout << _serverConfigs[k].locationsFind[rq.getPath()].indexList[0] << "\n";
+								ifs.open(_serverConfigs[k].locationsFind[rq.getPath()].indexList[0]);
+							}
+							if (!ifs)
+							{
+								_log.debugLog("file open error");
+								return NGX_FAIL;
+							}
+							char c;
+							std::string body = "";
+							while (ifs.get(c))
+								body += c;
+							ifs.close();
+							rp.setServerName(_serverConfigs[k].serverName);
+							rp.setStatusCode(200);
+							rp.setStatusMsg("OK");
+							body += "\n";
+							std::string res = rp.makeResponse(body);
+							std::cout <<res;
 							int n;
 							if ((n = write(_currEvent->ident, res.c_str(), res.size()) == -1))
 							{
@@ -141,7 +156,11 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
 								disconnectClient(_currEvent->ident, _clients);  
 							}
 							else
+							{
 								_clients[_currEvent->ident].clear();
+								// disconnectClient(_currEvent->ident, _clients);
+							}
+							disconnectClient(_currEvent->ident, _clients);
 						}
                     }
                 }

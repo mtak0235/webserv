@@ -66,11 +66,11 @@ std::string Request::getBody()
 void Request::setHttpMethod(std::string method)
 {
     if (!strncmp(method.c_str(), "GET ", 4))
-		this->_httpMethod = HTTP_METHOD::GET;
+		this->_httpMethod = GET;
 	else if (!strncmp(method.c_str(), "POST ", 5))
-		this->_httpMethod = HTTP_METHOD::POST;
+		this->_httpMethod = POST;
 	else if (!strncmp(method.c_str(), "DELETE ", 6))
-		this->_httpMethod = HTTP_METHOD::DELETE;
+		this->_httpMethod = DELETE;
 }
 
 void Request::setPath(std::string path)

@@ -3,7 +3,7 @@
 const std::string Response::_httpVersion = "1.1";
 
 Response::Response(void)
-    : _statusCode(0), _statusMsg(""), _contentLength(0)
+    : _statusCode(0), _statusMsg("") /*, _contentLength(0)*/
 {
 }
 
@@ -13,8 +13,8 @@ Response::~Response()
 
 std::string Response::makeResponse(const std::string& body) {
   std::string ret = "";
-  ret += (_makeStatusLine() + "\n");
-  ret += _makeHeader();
+  ret += (_makeStatusLine());
+  ret += (_makeHeader() + "\n");
   ret += body;
   return ret;
 }
@@ -69,6 +69,7 @@ std::string Response::_makeStatusLine() {
   ss << "HTTP/" << _httpVersion + " " << _statusCode << " " << _statusMsg << "\n";
   std::string ret;
   std::getline(ss, ret);
+  ret + "\n";
   return ret;
 }
 

@@ -30,5 +30,5 @@ class Response
     std::string _statusMsg;
 
     std::string _serverName;
-    int _contentLength;
+    // int _contentLength;
 };

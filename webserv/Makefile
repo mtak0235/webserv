@@ -11,11 +11,8 @@ DIR_CGI = ./cgi/
 DIR_OBJS = ./objs/
 
 SRCS = main.cpp \
-	Parser.cpp \
-	Server.cpp \
-	cgi.cpp \
-	log.cpp \
-	Connection.cpp \
+	Request.cpp \
+	Response.cpp \
 
 
 all: $(NAME)

@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "core.hpp"
-#include "Log.hpp"
 
 class Connection
 {

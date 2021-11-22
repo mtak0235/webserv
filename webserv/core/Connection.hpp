@@ -9,14 +9,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "core.hpp"
-#include "log.hpp"
+#include "Log.hpp"
 
 class Connection
 {
 private:
 	int _servSockFd[10];
 	struct sockaddr_in _servAddr[10];
-	log _log;
+	Log _log;
 public:
 	Connection();
 	Connection(int& x);

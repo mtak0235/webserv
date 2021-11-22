@@ -3,7 +3,7 @@
 
 #include "core.hpp"
 #include "Connection.hpp"
-#include "ngx_kqueue.hpp"
+#include "ngxKqueue.hpp"
 #include "Server.hpp"
 #include "Parser.hpp"
 
@@ -16,7 +16,7 @@ private:
     Parser _parser;
     Connection _connection;
     std::vector<ServerConfig> _serverConfigs;
-    ngx_kqueue _ngx_kqueue;
+    ngxKqueue _ngxKqueue;
 public:
     Cluster(void);
     ~Cluster();

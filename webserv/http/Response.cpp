@@ -1,4 +1,5 @@
 #include "Response.hpp"
+#include <cstring>
 
 const std::string Response::_httpVersion = "1.1";
 
@@ -15,6 +16,8 @@ std::string Response::makeResponse(const std::string& body) {
   std::string ret = "";
   ret += (_makeStatusLine() + "\n");
   ret += _makeHeader();
+  std::string ttest = "Content-Length: 262\n\n";
+  ret += ttest;
   ret += body;
   return ret;
 }

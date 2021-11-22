@@ -20,7 +20,7 @@ int Connection::connection_init(std::string port, int i)
 	_servSockFd[i] = socket(PF_INET, SOCK_STREAM, 0);
 	if (_servSockFd[i] == NGX_FAIL)
 	{
-		_log.debug_log("socket fd error");
+		_log.debugLog("socket fd error");
 		return NGX_FAIL;
 	}
 	memset(&_servAddr[i], 0, sizeof(_servAddr[i]));
@@ -29,12 +29,12 @@ int Connection::connection_init(std::string port, int i)
 	_servAddr[i].sin_port = htons(stoi(port));
 	if (bind(_servSockFd[i], (struct sockaddr*) &_servAddr[i], sizeof(_servAddr[i])) == NGX_FAIL)
 	{
-		_log.debug_log("bind error " + port);
+		_log.debugLog("bind error " + port);
 		return NGX_FAIL;
 	}
 	if (listen(_servSockFd[i], 5))
 	{
-		_log.debug_log("listen error " + port);
+		_log.debugLog("listen error " + port);
 		return NGX_FAIL;
 	}
 	fcntl(_servSockFd[i], F_SETFL, O_NONBLOCK);

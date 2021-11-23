@@ -12,6 +12,7 @@ int Cluster::init(const std::string& confFile)
 {
 	_parser.parse(confFile);
 	_serverConfigs = _parser.getServerConfig();
+	setStatus();
 	int n = _serverConfigs.size();
 	for (int i = 0; i < n; i++)
 	{

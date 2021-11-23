@@ -3,7 +3,6 @@
 
 #include "core.hpp"
 #include "Connection.hpp"
-#include "Server.hpp"
 #include "Parser.hpp"
 #include "Log.hpp"
 
@@ -17,17 +16,19 @@ private:
     Connection _connection;
 protected:
     std::vector<ServerConfig> _serverConfigs;
-	Log _log;
+		std::map<int, std::string> _status; 
+		Log _log;
 public:
-    Cluster(void);
-    virtual ~Cluster();
-    virtual int init(const std::string& confFile);
-    virtual int run(void);
-    virtual int stop(void);
+	Cluster(void);
+	virtual ~Cluster();
+	int init(const std::string& confFile);
+	int run(void);
+	int stop(void);
 
 	virtual int makeKqueue() = 0;
-  	virtual void ngxKqueueInit(int servSock) = 0;
-  	virtual int ngxKqueueProcessEvents(int x, std::vector<int> servSock) = 0;
+	virtual void ngxKqueueInit(int servSock) = 0;
+	virtual int ngxKqueueProcessEvents(int x, std::vector<int> servSock) = 0;
+	virtual void setStatus() = 0;
   	// virtual void ngxKqueueStop() = 0;
 };
 

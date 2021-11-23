@@ -27,9 +27,11 @@ class Request
     };
 
     public:
+				Request();
         Request(const std::string& r);
         ~Request();
 
+				void setRequest(const std::string& r);
         std::string getMethod(void) const;
         std::string getPath(void) const;
         std::string getHttpVersion(void) const;

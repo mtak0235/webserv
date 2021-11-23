@@ -3,12 +3,23 @@
 const std::string Request::_availMethods[AVAIL_M] = {"GET", "POST", "DELETE"};
 const std::string Request::_availHeaderInfo[AVAIL_H] = {"Host:", "User-Agent:", "Accept:", "Accept-Language:", "Accept-Encoding:", "Accept-Charset:", "Keep-Alive:", "Connection:", "Content-Length:"};
 
-Request::Request(const std::string& r) {
+Request::Request()
+{
+
+}
+
+Request::Request(const std::string& r) 
+{
   _init(r);
 }
 
 Request::~Request()
 {
+}
+
+void Request::setRequest(const std::string& r)
+{
+	_init(r);
 }
 
 std::string Request::getMethod(void) const

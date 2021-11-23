@@ -89,37 +89,9 @@ int Server::_responseDatatoServer(int k)
 
 	if (_clientReq != "")
 	{
-		_request.setRequest(_clientReq);
-		_indexList = _serverConfigs[k].getLocationsFind(_request.getPath()).getIndexList();
-
-		//정적 파일만 들어왔다고 가정
-		if (_indexList.size() > 0)
-		{
-			std::cout << _indexList[0] << "\n";
-			_ifs.open(_indexList[0]);
-		}
-		if (!_ifs)
-		{
-			_log.debugLog("file open error");
-			_statusCode = 404;
-			// return NGX_FAIL;
-		}
-		else
-		{
-			_body = "";
-			while (_ifs.get(_c))
-				_body += _c;
-			_statusCode = 200;
-		}
-		_ifs.close();
-		_response.setServerName(_serverConfigs[k].getServerName());
-		_response.setStatusCode(_statusCode);
-		_response.setStatusMsg(_status[_statusCode]);
-		_body += "\n";
-		_lastRespnse = _response.makeResponse(_body);
-		std::cout <<_lastRespnse;
-		int n;
-		if ((n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size()) == -1))
+		_getRequestInfo(k);
+		_setResponse(k);
+		if ((_n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size()) == -1))
 		{
 			std::cerr << "client write error!" << std::endl;
 			disconnectClient(_currEvent->ident, _clients);  
@@ -132,4 +104,39 @@ int Server::_responseDatatoServer(int k)
 	return NGX_FAIL;
 }
 
+void Server::_getRequestInfo(int k)
+{
+	_request.setRequest(_clientReq);
+	_indexList = _serverConfigs[k].getLocationsFind(_request.getPath()).getIndexList();
 
+	//정적 파일만 들어왔다고 가정
+	if (_indexList.size() > 0)
+	{
+		std::cout << _indexList[0] << "\n";
+		_ifs.open(_indexList[0]);
+	}
+	if (!_ifs)
+	{
+		_log.debugLog("file open error");
+		_statusCode = 404;
+		// return NGX_FAIL;
+	}
+	else
+	{
+		_body = "";
+		while (_ifs.get(_c))
+			_body += _c;
+		_statusCode = 200;
+	}
+	_ifs.close();	
+}
+
+void Server::_setResponse(int k)
+{
+	_response.setServerName(_serverConfigs[k].getServerName());
+	_response.setStatusCode(_statusCode);
+	_response.setStatusMsg(_status[_statusCode]);
+	_body += "\n";
+	_lastRespnse = _response.makeResponse(_body);
+	std::cout <<_lastRespnse;
+}

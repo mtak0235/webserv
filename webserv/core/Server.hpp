@@ -29,13 +29,14 @@ class Server : public ngxKqueue
 		std::string _body;
 		std::string _lastRespnse;
 		int _statusCode;
+		int _n;
 		char _c;
 		std::ifstream _ifs;
 		std::vector<std::string> _indexList;
 
 		int _responseDatatoServer(int k);
-		int _getRequestInfo();
-
+		void _getRequestInfo(int k);
+		void _setResponse(int k);
 };
 
 #endif

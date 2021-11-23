@@ -15,7 +15,7 @@ int Cluster::init(const std::string& confFile)
 	int n = _serverConfigs.size();
 	for (int i = 0; i < n; i++)
 	{
-		if (_connection.connection_init(_serverConfigs[i].serverPort, i) == NGX_FAIL)
+		if (_connection.connection_init(_serverConfigs[i].getServerPort(), i) == NGX_FAIL)
 		{
 			stop();
 			return NGX_FAIL;
@@ -34,7 +34,7 @@ int Cluster::init(const std::string& confFile)
 int Cluster::run(void) 
 {
 	std::vector<int> servSock;
-	for (int i = 0; i < _serverConfigs.size(); i++)
+	for (unsigned long i = 0; i < _serverConfigs.size(); i++)
 		servSock.push_back(_connection.getSockFd(i));
 	while (1)
 	{

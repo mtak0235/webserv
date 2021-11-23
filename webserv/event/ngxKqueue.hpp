@@ -31,6 +31,7 @@ private:
   struct kevent *_currEvent;
   Log _log;
 
+protected:
   std::vector<ServerConfig> _serverConfigs;
 public:
   ngxKqueue();

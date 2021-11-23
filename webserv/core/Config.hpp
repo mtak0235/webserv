@@ -3,26 +3,59 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <map>
 
-struct LocationConfig
+class LocationConfig
 {
-	std::string locationName;
-	std::string root;
-	std::vector<std::string> indexList;
-	std::vector<std::string> allowMethods;
-	std::string cgiName;
-	std::string cgiPath;
-	int cliBodySize;
-	std::string uploadFolder;
+private:
+	std::string _locationName;
+	std::string _root;
+	std::vector<std::string> _indexList;
+	std::vector<std::string> _allowMethods;
+	std::string _cgiName;
+	std::string _cgiPath;
+	int _cliBodySize;
+	std::string _uploadFolder;
+public:
+	void setLocationName(const std::string locationName);
+	void setRoot(const std::string root);
+	void popIndexList();
+	void setIndexList(std::string index);
+	void popAllowMethod();
+	void setAllowMethod(std::string allowMethod);
+	void setCgiName(std::string cgiName);
+	void setCgiPath(std::string cgiPath);
+	void setCliBodySize(int cliBodySize);
+	void setUploadFolder(std::string uploadFolder);
+
+	std::string getLocationName();
+	std::string getRoot();
+	std::vector<std::string> getIndexList();
+	std::vector<std::string> getAllowMethod();
+	std::string getCgiName();
+	std::string getCgiPath();
+	int getCliBodySize();
+	std::string getUploadFolder();
 };
 
-struct ServerConfig
+class ServerConfig
 {
-	std::string serverName;
-	std::string serverPort;
-	std::vector<LocationConfig> locations;
-	std::map<std::string, LocationConfig> locationsFind;
+private:
+	std::string _serverName;
+	std::string _serverPort;
+	std::vector<LocationConfig> _locations;
+	std::map<std::string, LocationConfig> _locationsFind;
+public:
+	void setServerName(const std::string serverName);
+	void setServerPort(const std::string serverPort);
+	void setLocations(LocationConfig location);
+	void setLocationsFind(std::string locationName, LocationConfig config);
+
+	std::string getServerName();
+	std::string getServerPort();
+	std::vector<LocationConfig> getLocations();
+	LocationConfig getLocationsFind(std::string locationName);
 };
 
 #endif

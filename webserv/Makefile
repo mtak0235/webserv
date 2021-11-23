@@ -1,6 +1,6 @@
 NAME = webserv
 COMPILER = clang++
-CFLAGS = -g3 -fsanitize=address #-Wall -Wextra -Werror 
+CFLAGS = -g -Wall -Wextra -Werror 
 CPP_VERSION = -std=c++98
 
 DIR_CORE = ./core/
@@ -12,6 +12,7 @@ DIR_OBJS = ./objs/
 
 SRCS = main.cpp \
 	Cluster.cpp \
+	Config.cpp \
 	Connection.cpp \
 	Parser.cpp \
 	Server.cpp \

@@ -3,9 +3,10 @@
 
 #include "core.hpp"
 #include "Connection.hpp"
-#include "ngxKqueue.hpp"
 #include "Server.hpp"
 #include "Parser.hpp"
+#include "Log.hpp"
+#include "ngxKqueue.hpp"
 
 #include <iostream>
 #include <vector>
@@ -15,8 +16,10 @@ class Cluster
 private:
     Parser _parser;
     Connection _connection;
-    std::vector<ServerConfig> _serverConfigs;
     ngxKqueue _ngxKqueue;
+protected:
+    std::vector<ServerConfig> _serverConfigs;
+	Log _log;
 public:
     Cluster(void);
     ~Cluster();

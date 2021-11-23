@@ -30,20 +30,28 @@ void Parser::parse(const std::string& confFile)
 ServerConfig Parser::_parseServerBlock(void)
 {
     ServerConfig sc;
-    
+    std::string tmp;
+
 	_ifs >> _info;
 	if (_info != "{")
 		return sc;
     while (_info[0] != '}') {
 		_ifs >> _info;
         if (!_info.compare(_keyServer[LISTEN]))
-            _ifs >> sc.serverPort;
-        else if (!_info.compare(_keyServer[SERVER_NAME]))
-            _ifs >> sc.serverName;
+		{
+			_ifs >> tmp;
+            sc.setServerPort(tmp);   //serverPort;
+		}
+		else if (!_info.compare(_keyServer[SERVER_NAME]))
+		{
+			_ifs >> tmp;
+            sc.setServerName(tmp);//serverName;
+		}
 		else if (!_info.compare(_keyServer[LOCATION]))
 		{
-            sc.locations.push_back(_parseLocationBlock());
-			sc.locationsFind[sc.locations[sc.locations.size() - 1].locationName] = sc.locations[sc.locations.size() - 1];
+			sc.setLocations(_parseLocationBlock());
+			std::vector<LocationConfig> tmp = sc.getLocations();
+			sc.setLocationsFind(tmp[tmp.size() - 1].getLocationName(), tmp[tmp.size() - 1]);
 		}
     }
 	_serverRemoveSemicolon(&sc);
@@ -53,22 +61,27 @@ ServerConfig Parser::_parseServerBlock(void)
 LocationConfig Parser::_parseLocationBlock(void)
 {
     LocationConfig lc;
-	lc.cliBodySize = 10;
+	std::string tmp;
+	lc.setCliBodySize(10);
 
-	_ifs >> lc.locationName >> _info;
+	_ifs >> tmp >> _info;
+	lc.setLocationName(tmp);
 	if (_info != "{")
 		return lc;
     while (_info[0] != '}') {
         _ifs >> _info;
         if (!_info.compare(_keyLocation[BODY_SIZE]))
-            _ifs >> lc.cliBodySize;
+		{
+			_ifs >> tmp;
+            lc.setCliBodySize(stoi(tmp));
+		}
         else if (!_info.compare(_keyLocation[METHOD]))
 		{
 			std::string method;
  			while (1)
 			{
 				_ifs >> method;
-				lc.allowMethods.push_back(method);
+				lc.setAllowMethod(method);
 				if (method[method.length() - 1] == ';')
 					break;
 			}
@@ -79,19 +92,31 @@ LocationConfig Parser::_parseLocationBlock(void)
 			while (1)
 			{
 				_ifs >> index;
-				lc.indexList.push_back(index);
+				lc.setIndexList(index);
 				if (index[index.length() - 1] == ';')
 					break;
 			}
 		}
         else if (!_info.compare(_keyLocation[ROOT]))
-            _ifs >> lc.root;
-        else if (!_info.compare(_keyLocation[CGI_EXTENSION]))
-            _ifs >> lc.cgiName;
-        else if (!_info.compare(_keyLocation[CGI_PATH]))
-            _ifs >> lc.cgiPath;
+		{
+			_ifs >> tmp;
+			lc.setRoot(tmp);
+		}
+		else if (!_info.compare(_keyLocation[CGI_EXTENSION]))
+		{
+			_ifs >> tmp;
+			lc.setCgiName(tmp);
+		}
+		else if (!_info.compare(_keyLocation[CGI_PATH]))
+		{
+			_ifs >> tmp;
+			lc.setCgiPath(tmp);
+		}
         else if (!_info.compare(_keyLocation[UPLOAD_FOLDER]))
-            _ifs >> lc.uploadFolder;
+		{
+			_ifs >> tmp;
+			lc.setUploadFolder(tmp);
+		}
     }
 	_info = "";
 	_locationRemoveSemicolon(&lc);
@@ -100,24 +125,57 @@ LocationConfig Parser::_parseLocationBlock(void)
 
 void Parser::_locationRemoveSemicolon(LocationConfig *lc)
 {
-	if (!lc->root.empty())
-		lc->root.pop_back();
-	if (lc->indexList.size() != 0)
-		lc->indexList[lc->indexList.size() - 1].pop_back();
-	if (lc->allowMethods.size() != 0)
-		lc->allowMethods[lc->allowMethods.size() - 1].pop_back();
-	if (!lc->cgiName.empty())
-		lc->cgiName.pop_back();
-	if (!lc->cgiPath.empty())
-		lc->cgiPath.pop_back();
-	if (!lc->uploadFolder.empty())
-		lc->uploadFolder.pop_back();
+	std::string tmpStr;
+	std::vector<std::string> tmpVec;
+	tmpStr = lc->getRoot();
+	if (!tmpStr.empty())
+	{
+		tmpStr.pop_back();
+		lc->setRoot(tmpStr);
+	}
+	tmpVec = lc->getIndexList();
+	if (tmpVec.size() != 0)
+	{
+		tmpVec[tmpVec.size() - 1].pop_back();
+		lc->popIndexList();
+		lc->setIndexList(tmpVec[tmpVec.size() - 1]);
+	}
+	tmpVec = lc->getAllowMethod();
+	if (tmpVec.size() != 0)
+	{
+		tmpVec[tmpVec.size() - 1].pop_back();
+		lc->popAllowMethod();
+		lc->setAllowMethod(tmpVec[tmpVec.size() - 1]);
+	}
+	tmpStr = lc->getCgiName();
+	if (!tmpStr.empty())
+	{
+		tmpStr.pop_back();
+		lc->setCgiName(tmpStr);
+	}
+	tmpStr = lc->getCgiPath();
+	if (!tmpStr.empty())
+	{
+		tmpStr.pop_back();
+		lc->setCgiPath(tmpStr);
+	}
+	tmpStr = lc->getUploadFolder();
+	if (!tmpStr.empty())
+	{
+		tmpStr.pop_back();
+		lc->setUploadFolder(tmpStr);
+	}
 }
 
 void Parser::_serverRemoveSemicolon(ServerConfig *sc)
 {
-	if (!sc->serverName.empty())
-		sc->serverName.pop_back();
+	std::string tmp;
+	tmp = sc->getServerName();
+	if (!tmp.empty())
+	{
+		tmp.pop_back();
+		sc->setServerName(tmp);
+	}
 }
 
 std::vector<ServerConfig> Parser::getServerConfig(void) const

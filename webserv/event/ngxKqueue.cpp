@@ -79,7 +79,7 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
             /* check error event return */
             if (_currEvent->flags & EV_ERROR)
             {
-                if (_currEvent->ident == servSock[k])
+                if (_currEvent->ident == (uintptr_t)servSock[k])
                 {
 					_log.debugLog("socket error");
 					return NGX_FAIL;
@@ -89,7 +89,7 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
             }
             else if (_currEvent->filter == EVFILT_READ)
             {
-                if (_currEvent->ident == servSock[k])
+                if (_currEvent->ident == (uintptr_t)servSock[k])
                 {
                     /* accept new client */
                     int client_socket;
@@ -128,10 +128,11 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
 							Request rq(test);
 							Response rp;
 							std::ifstream ifs;
-							if (_serverConfigs[k].locationsFind[rq.getPath()].indexList.size() > 0)
+							std::vector<std::string> indexList = _serverConfigs[k].getLocationsFind(rq.getPath()).getIndexList();
+							if (indexList.size() > 0)
 							{
-								std::cout << _serverConfigs[k].locationsFind[rq.getPath()].indexList[0] << "\n";
-								ifs.open(_serverConfigs[k].locationsFind[rq.getPath()].indexList[0]);
+								std::cout << indexList[0] << "\n";
+								ifs.open(indexList[0]);
 							}
 							if (!ifs)
 							{
@@ -143,7 +144,7 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
 							while (ifs.get(c))
 								body += c;
 							ifs.close();
-							rp.setServerName(_serverConfigs[k].serverName);
+							rp.setServerName(_serverConfigs[k].getServerName());
 							rp.setStatusCode(200);
 							rp.setStatusMsg("OK");
 							body += "\n";

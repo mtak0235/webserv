@@ -6,19 +6,24 @@
 #include <cstring>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <unistd.h>
+#include <fcntl.h>
 #include "core.hpp"
-#include "log.hpp"
+#include "Log.hpp"
 
 class Connection
 {
 private:
-  int _servSockFd;
-	struct sockaddr_in _servAddr;
-	log _log;
+	int _servSockFd[10];
+	struct sockaddr_in _servAddr[10];
+	Log _log;
 public:
 	Connection();
+	Connection(int& x);
 	~Connection();
-	int connection_init(std::string port);
+	int getSockFd(int i);
+	int connection_init(std::string port, int i);
+	void closeConnection(int i);
 };
 
 

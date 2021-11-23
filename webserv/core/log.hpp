@@ -4,14 +4,14 @@
 #include <iostream>
 #include <string>
 
-class log
+class Log
 {
 public:
-	log();
-	log(log& _x);
-	~log();
-	log operator=(log& _x);
-	void debug_log(std::string msg);
+	Log();
+	Log(Log& _x);
+	~Log();
+	Log operator=(Log& _x);
+	void debugLog(std::string msg);
 };
 
 #endif

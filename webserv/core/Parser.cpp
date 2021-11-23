@@ -41,7 +41,10 @@ ServerConfig Parser::_parseServerBlock(void)
         else if (!_info.compare(_keyServer[SERVER_NAME]))
             _ifs >> sc.serverName;
 		else if (!_info.compare(_keyServer[LOCATION]))
+		{
             sc.locations.push_back(_parseLocationBlock());
+			sc.locationsFind[sc.locations[sc.locations.size() - 1].locationName] = sc.locations[sc.locations.size() - 1];
+		}
     }
 	_serverRemoveSemicolon(&sc);
     return sc;

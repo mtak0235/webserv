@@ -19,8 +19,9 @@
 #include "Request.hpp"
 #include "Response.hpp"
 #include "Config.hpp"
+#include "Cluster.hpp"
 
-class ngxKqueue
+class ngxKqueue : public Cluster
 {
 private:
   int _newEvents[6];
@@ -30,9 +31,6 @@ private:
   struct kevent _eventList[1024];
   struct kevent *_currEvent;
   Log _log;
-
-protected:
-  std::vector<ServerConfig> _serverConfigs;
 public:
   ngxKqueue();
   ~ngxKqueue();
@@ -42,7 +40,7 @@ public:
   void changeEvents(std::vector<struct kevent>& changeList, uintptr_t ident, int16_t filter,
         uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
   void disconnectClient(int clientFd, std::map<int, std::string>& clients);
-  int makeKqueue(std::vector<ServerConfig> &_serverConfigs);
+  int makeKqueue();
   void ngxKqueueInit(int servSock);
   int ngxKqueueProcessEvents(int x, std::vector<int> servSock);
   void ngxKqueueStop();

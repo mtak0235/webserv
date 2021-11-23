@@ -9,13 +9,13 @@
 #include "Parser.hpp"
 #include "Connection.hpp"
 #include "core.hpp"
+#include "ngxKqueue.hpp"
 
-class Server
+class Server : public ngxKqueue
 {
 	public :
 		Server();
 		~Server();
-
 
 	private :
 		Log _log;

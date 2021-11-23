@@ -6,7 +6,6 @@
 #include "Server.hpp"
 #include "Parser.hpp"
 #include "Log.hpp"
-#include "ngxKqueue.hpp"
 
 #include <iostream>
 #include <vector>
@@ -16,16 +15,20 @@ class Cluster
 private:
     Parser _parser;
     Connection _connection;
-    ngxKqueue _ngxKqueue;
 protected:
     std::vector<ServerConfig> _serverConfigs;
 	Log _log;
 public:
     Cluster(void);
-    ~Cluster();
-    int init(const std::string& confFile);
-    int run(void);
-    int stop(void);
+    virtual ~Cluster();
+    virtual int init(const std::string& confFile);
+    virtual int run(void);
+    virtual int stop(void);
+
+	virtual int makeKqueue() = 0;
+  	virtual void ngxKqueueInit(int servSock) = 0;
+  	virtual int ngxKqueueProcessEvents(int x, std::vector<int> servSock) = 0;
+  	// virtual void ngxKqueueStop() = 0;
 };
 
 #endif

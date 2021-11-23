@@ -1,10 +1,11 @@
 
 #include "Cluster.hpp"
+#include "ngxKqueue.hpp"
 #include <iostream>
 
 int main(int ag, char **av)
 {
-	Cluster cluster;
+	ngxKqueue cluster;
 
 	if (ag == 2 && av[1])
 	{

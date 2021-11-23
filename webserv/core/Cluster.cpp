@@ -21,13 +21,13 @@ int Cluster::init(const std::string& confFile)
 			return NGX_FAIL;
 		}
 	}
-	if (_ngxKqueue.makeKqueue(_serverConfigs) == NGX_FAIL)
+	if (makeKqueue() == NGX_FAIL)
 	{
 			stop();
 			return NGX_FAIL;
 	}
 	for (int i = 0; i < n; i++)
-		_ngxKqueue.ngxKqueueInit(_connection.getSockFd(i));
+		ngxKqueueInit(_connection.getSockFd(i));
 	return NGX_OK;
 }
 
@@ -38,7 +38,7 @@ int Cluster::run(void)
 		servSock.push_back(_connection.getSockFd(i));
 	while (1)
 	{
-		if (_ngxKqueue.ngxKqueueProcessEvents(_serverConfigs.size(), servSock) == NGX_FAIL)
+		if (ngxKqueueProcessEvents(_serverConfigs.size(), servSock) == NGX_FAIL)
 		{
 			stop();
 			return NGX_FAIL;

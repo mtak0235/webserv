@@ -1,6 +1,6 @@
 NAME = webserv
 COMPILER = clang++
-CFLAGS = -g -Wall -Wextra -Werror 
+CFLAGS = -g3 -fsanitize=address -Wall -Wextra -Werror 
 CPP_VERSION = -std=c++98
 
 DIR_CORE = ./core/
@@ -11,6 +11,7 @@ DIR_CGI = ./cgi/
 DIR_OBJS = ./objs/
 
 SRCS = main.cpp \
+	ngxKqueue.cpp \
 	Cluster.cpp \
 	Config.cpp \
 	Connection.cpp \
@@ -18,7 +19,6 @@ SRCS = main.cpp \
 	Server.cpp \
 	cgi.cpp \
 	Log.cpp \
-	ngxKqueue.cpp \
 	Request.cpp \
 	Response.cpp \
 

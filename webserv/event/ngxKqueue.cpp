@@ -26,10 +26,9 @@ void ngxKqueue::disconnectClient(int clientFd, std::map<int, std::string>& clien
     clients.erase(clientFd);
 }
 
-int ngxKqueue::makeKqueue(std::vector<ServerConfig> &_serverConfigs)
+int ngxKqueue::makeKqueue()
 {
 
-	this->_serverConfigs = _serverConfigs;
 	_kq = kqueue();
 	if (_kq == -1)
 	{
@@ -75,7 +74,6 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
 		for (int i = 0; i < _newEvents[k]; ++i)
         {
             _currEvent = &_eventList[i];
-
             /* check error event return */
             if (_currEvent->flags & EV_ERROR)
             {

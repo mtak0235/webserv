@@ -110,18 +110,27 @@ void Server::_getRequestInfo(int k)
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
+	_requestMethod =  _request.getMethod();
 	//파일인 경우
 	size_t found = _requestPath.find_last_of(".");
 	std::string isHtml = _requestPath.substr(found + 1);
 	if (!isHtml.compare("html") || !isHtml.compare("htm") || !isHtml.compare("bla"))
 	{
-		_body = _setBody(_requestPath.substr(1));
+		if (!_requestMethod.compare("GET"))
+			_body = _setBody(_requestPath.substr(1));
+		else if (!_requestMethod.compare("POST"))
+		{
+
+		}
+		else if (!_requestMethod.compare("DELETE"))
+		{
+			
+		}
 		return;
 	}
 	//경로인 경우
 	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
 	_allowMethods  = _nowLocation.getAllowMethod();
-	_requestMethod =  _request.getMethod();
 	for (unsigned long i = 0; i < _allowMethods.size(); i++)
 	{
 		if (!_allowMethods[i].compare(_requestMethod))

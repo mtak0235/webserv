@@ -15,11 +15,20 @@ class Server
 	public :
 		Server();
 		~Server();
+<<<<<<< HEAD
 
 
 	private :
 		Log _log;
 		
+=======
+		// int init(std::string confFile);
+		// int run();
+		// int stop();
+
+	private :
+
+>>>>>>> cgi
 };
 
 #endif

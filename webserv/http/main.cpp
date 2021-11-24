@@ -17,6 +17,8 @@
 
 #define BUFSIZE 50
 #define PORT_NUM 8000
+# define DELIMITER              "\r\n\r\n"
+
 
 // extern char **environ;
 
@@ -120,19 +122,36 @@ const std::string	getEnv(const std::string &varName)
 		return std::to_string(0);
 	case 1: return "";
 	case 2: return "CGI/1.1";
-	case 3: return "/test-cgi/";
-	case 4: return "/test-cgi/";
+	case 3: return "/test-cgi";
+	case 4: return "/test-cgi";
 	case 5: return "";
 	case 6: return "200";
-	case 7: return "GET";
-	case 8: return "./test-cgi/";
+	case 7: return "POST";
+	case 8: return "./";
 	case 9: return "HTTP/1.1";
 	case 10: return std::to_string(PORT_NUM);
 	default: return std::string("");
 	}
 }
 
+std::string getOutput(int fd)
+{
+	char buffer[1024] = {0};
+	int len;
+	std::string ret = "";
 
+	while (true)
+	{
+		len = read(fd, buffer, sizeof(buffer) - 1);
+		if (len < 0)
+			break;
+		buffer[len] = 0;
+		ret = ret + buffer + "\n";
+		if (len == 0)
+			break;
+	}
+	return ret;
+}
 int main(int argc, char **av){
 	fd_set reads; // 감시할 소켓 목록( 여기서는 소켓의 입력스트림 감시 용도 ) 
 	fd_set temps; // reads 변수의 복사본으로 사용도리 변수
@@ -189,7 +208,8 @@ int main(int argc, char **av){
 				pid_t pid;
 				read_len = recv(fd,message,sizeof(message) - 1, 0); 
 				if(read_len > 0) { 
-					Request req;
+					message[read_len] = '\0';
+
 					std::string path;
 					std::string response;
 					int status;
@@ -197,13 +217,17 @@ int main(int argc, char **av){
 					int fdIn[2];
 					int fdOut[2];
 					int _cgiFd;
+					
+					// client --- server
+					// fdIn[1]--->fdIn[0]
+					// fdOut[0]<--fdOut[1]
+
 					if (pipe(fdIn) == -1 || pipe(fdOut) == -1)
 						error_handler("failed pipe");
-					write(fdIn[1], "hello", 6);
+					write(fdIn[1], "HelloWorld\26", 11);
 					pid = fork();
 					//cgistatus에 1을 넣네?
-					message[read_len] = '\0';
-					req.parseRequest(message);					
+					Request req(message);
 					getRequestPath(path, message);
 					if (pid == 0)//자식 프로세스라면
 					{
@@ -243,7 +267,6 @@ int main(int argc, char **av){
 						// sleep(2);
 						// read(fds1[0], NULL, size);
 						execve("./cgi_tester", NULL, _cgiEnv);
-						response = getResponseHeader() + "\n" + getResponseBody(path);
 						// write(fds2[1], response.c_str(), sizeof(response.c_str()));
 						// exit(1);
 						//cgi 프로그램이 표준 출력 1로 출력하는 것을 pipe로 부모 프로세스로 가져와서 cgi의 결과를 알 수 있다. 
@@ -254,8 +277,17 @@ int main(int argc, char **av){
 						close(fdIn[0]);
 						close(fdIn[1]);
 						_cgiFd = fdOut[0];
+						fcntl(_cgiFd, F_SETFL, O_NONBLOCK);
 					}
+					//parse Cgi
+
+					response = getResponseHeader() + "\n" + getOutput(_cgiFd);//getResponseBody(path);
+					int stat;
+					// waitpid(-1, &stat, 0);
+					close(_cgiFd);
 					send(fd, response.c_str(), (int)strlen(response.c_str()), 0);
+					// printf("\033[34m %s \033[37m", response.c_str());
+					std::cout << response << std::endl;
 					printf("Disconnect client : %d \n",fd); 
 					FD_CLR(fd,&reads); // 감시목록에서 제외 
 					close(fd); // 통신 종료 

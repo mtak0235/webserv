@@ -41,7 +41,11 @@ class Request
 
         void _init(const std::string& r);
         void _parseRequestLine(const std::string& rl);
+<<<<<<< HEAD
         void _parseRequestHeader(const std::string& rh);4
+=======
+        void _parseRequestHeader(const std::string& rh);
+>>>>>>> cgi
 
         /* request line */
         std::string _method;

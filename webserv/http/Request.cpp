@@ -26,11 +26,7 @@ std::string Request::getHttpVersion(void) const
 	return _httpVersion;
 }
 
-<<<<<<< HEAD
-void Request::_init(const std::string& r) {
-=======
 void Request::_init(const std::string& r) {//post mapping 시 바디 부분 파싱 내용이 없다. get 방식 떄도 개행을 붙여서 리턴을 할까?
->>>>>>> cgi
     std::stringstream ss;
     ss << r;
     std::vector<std::string> v;
@@ -53,14 +49,6 @@ void Request::_init(const std::string& r) {//post mapping 시 바디 부분 파�
     //     std::cout << _availHeaderInfo[h] << " : ["  << _headerInfo[h] << "]\n";
     // }
 }
-<<<<<<< HEAD
-=======
-//    4
-// post /he http/1.1
-// 0123456789(idx)
-// idx = 5;/ exists;
-// idx = 9;
->>>>>>> cgi
 
 void Request::_parseRequestLine(const std::string& rl) {
     size_t idx = 0;
@@ -68,10 +56,9 @@ void Request::_parseRequestLine(const std::string& rl) {
         if (rl.find(_availMethods[m], idx) == 0) {
             _method = _availMethods[m];
             idx += _availMethods[m].length() + 1;
-<<<<<<< HEAD
-=======
+
             break;
->>>>>>> cgi
+
         }
     }
     _path = rl.substr(idx, rl.find(' ', idx + 1) - idx);

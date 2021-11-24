@@ -1,67 +1,60 @@
-#ifndef CGI_HPP
-#define CGI_HPP
+#pragma once
+#include <map>
+#include <iostream>
+#include <arpa/inet.h>
+#include <sys/types.h>
+#include <unistd.h> //gethostname()
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <netdb.h> //gethostbyname()
+#include <cstring> //memcpy(), strcpy()
+#include <fstream>
+#include <fcntl.h>
+#include <map>
+#include <vector>
+#include <sys/wait.h>
+#include <stdlib.h>
 
-# include "Request.hpp"
+#include "../http/Request.hpp"
 
 class Request;
 
-class cgi
-{
-
-
-};
+static const char *basic_env[] = {
+    "AUTH_TYPE",
+    "CONTENT_LENGTH",
+    "CONTENT_TYPE",
+    "GATEWAY_INTERFACE",
+    "PATH_INFO",
+    "PATH_TRANSLATED",
+    "QUERY_STRING",
+    "REMOTE_ADDR",
+    "REMOTE_IDENT",
+    "REMOTE_USER",
+    "REQUEST_METHOD",
+    "REQUEST_URI",
+    "SCRIPT_NAME",
+    "SERVER_NAME",
+    "SERVER_PORT",
+    "SERVER_PROTOCOL",
+    "SERVER_SOFTWARE",
+    "REDIRECT_STATUS",
+    NULL};
 
 class Cgi
 {
-	public:
-		Cgi(Request *);
-		~Cgi();
-	
 	private:
-		Cgi(void);
 		Cgi(const Cgi &);
 		Cgi& 				operator=(const Cgi &);
+		char **_env;
+		void _setEnv(const Request *);
+		std::string _setPathTranslated(char *);
+		char **_setEnviron(std::map<std::string, std::string>);
 	
 	public:
-		const std::string&	getExtension(void) const;
-		const std::string&	getProgram(void) const;
-		char**				getEnv(void) const;
-		const std::string	getEnv(const std::string &);
-		const std::string&	getHeader(void) const;
-		const int&			getStatus(void) const;
-		const int&			getCgiStep(void) const;
-		const std::string&	getOutputContent(void) const;
-	
-		void				execute(void);
-		void				clear(void);
-		
-		bool				parsecgiContent(void);
+		Cgi(const Request *);
+		~Cgi();
+		char **getEnv();
+		std::string				execute(char **, std::string);
 
-	private:
-		bool				getOuput(int);
-		void				handleProcess(int, time_t);
-		void				setEnv(void);
-		void				setCgiStep(const int step);
-		void				setHeader(const std::string &);
-
-	public:
-		class CgiError : public std::exception
-		{
-			public:
-				virtual const char*	what() const throw();
-		};
 	
-	private:
-		char 				**_env;
-		std::string			_program;
-		std::string			_extension;
-		Request*			_request;
-		std::string			_header;
-		int					_status;
-		int					_cgiStep;
-		int					_cgiFd;
-		std::string			_outputContent;
-	
-}; /* class Cgi */
-
-#endif
+};

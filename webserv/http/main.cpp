@@ -281,7 +281,7 @@ int main(int argc, char **av){
 					}
 					//parse Cgi
 
-					response = getResponseHeader() + "\n" + getOutput(_cgiFd);//getResponseBody(path);
+					response = getResponseHeader() + "\n" + getResponseBody(path);//getOutput(_cgiFd);
 					int stat;
 					// waitpid(-1, &stat, 0);
 					close(_cgiFd);

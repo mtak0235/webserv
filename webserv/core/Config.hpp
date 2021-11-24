@@ -18,6 +18,10 @@ private:
 	int _cliBodySize;
 	std::string _uploadFolder;
 public:
+	LocationConfig();
+	// LocationConfig(LocationConfig &x);
+	~LocationConfig();
+	LocationConfig operator=(LocationConfig &x);
 	void setLocationName(const std::string locationName);
 	void setRoot(const std::string root);
 	void popIndexList();
@@ -37,6 +41,8 @@ public:
 	std::string getCgiPath();
 	int getCliBodySize();
 	std::string getUploadFolder();
+
+	bool empty();
 };
 
 class ServerConfig
@@ -47,6 +53,9 @@ private:
 	std::vector<LocationConfig> _locations;
 	std::map<std::string, LocationConfig> _locationsFind;
 public:
+	ServerConfig();
+	~ServerConfig();
+	ServerConfig operator=(ServerConfig &x);
 	void setServerName(const std::string serverName);
 	void setServerPort(const std::string serverPort);
 	void setLocations(LocationConfig location);
@@ -55,7 +64,7 @@ public:
 	std::string getServerName();
 	std::string getServerPort();
 	std::vector<LocationConfig> getLocations();
-	LocationConfig getLocationsFind(std::string locationName);
+	LocationConfig &getLocationsFind(std::string locationName);
 };
 
 #endif

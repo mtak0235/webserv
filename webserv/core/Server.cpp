@@ -5,6 +5,7 @@ Server::Server()
 	_readDataSize = 0;
 	_clientReq = "";
 	_statusCode = 503;
+	_isAllow = false;
 }
 
 Server::~Server() 
@@ -14,38 +15,35 @@ Server::~Server()
 
 void Server::setStatus()
 {
-	_status[100] = "Continue";
-	_status[101] = "Switching Protocols";
-	_status[103] = "Early Hints";
 	_status[200] = "OK";
-	_status[201] = "Created";
-	_status[202] = "Accepted";
-	_status[203] = "Non-Authoritative Information";
-	_status[204] = "No Content";
-	_status[205] = "Reset Content";
-	_status[206] = "Partial Content";
+	// _status[201] = "Created";
+	// _status[202] = "Accepted";
+	// _status[203] = "Non-Authoritative Information";
+	// _status[204] = "No Content";
+	// _status[205] = "Reset Content";
+	// _status[206] = "Partial Content";
 	_status[300] = "Multiple Choice";
-	_status[301] = "Moved Permanently";
-	_status[302] = "Found";
-	_status[303] = "See Other";
-	_status[304] = "Not Modified";
-	_status[307] = "Temporary Redirect";
-	_status[308] = "Permanent Redirect";
+	// _status[301] = "Moved Permanently";
+	// _status[302] = "Found";
+	// _status[303] = "See Other";
+	// _status[304] = "Not Modified";
+	// _status[307] = "Temporary Redirect";
+	// _status[308] = "Permanent Redirect";
 	_status[400] = "Bad Request";
-	_status[401] = "Unauthorized";
-	_status[402] = "Payment Required";
-	_status[403] = "Forbidden";
-	_status[404] = "Not Found";
+	// _status[401] = "Unauthorized";
+	// _status[402] = "Payment Required";
+	// _status[403] = "Forbidden";
+	// _status[404] = "Not Found";
 	_status[405] = "Method Not Allowed";
-	_status[406] = "Not Acceptable";
-	_status[407] = "Proxy Authentication Required";
-	_status[408] = "Request Timeout";
+	// _status[406] = "Not Acceptable";
+	// _status[407] = "Proxy Authentication Required";
+	// _status[408] = "Request Timeout";
 	_status[500] = "Internal Server Error";
-	_status[501] = "Not Implemented";
-	_status[502] = "Bad Gateway";
-	_status[503] = "Service Unavailable";
-	_status[504] = "Gateway Timeout";
-	_status[505] = "HTTP Version Not Supported";
+	// _status[501] = "Not Implemented";
+	// _status[502] = "Bad Gateway";
+	// _status[503] = "Service Unavailable";
+	// _status[504] = "Gateway Timeout";
+	// _status[505] = "HTTP Version Not Supported";
 
 }
 
@@ -86,7 +84,6 @@ int Server::_responseDatatoServer(int k)
 	_clients[_currEvent->ident] += _buf;
 	_clientReq = _clients[_currEvent->ident];
 	std::cout << "received data from " << _currEvent->ident << ": " << _clientReq << std::endl;
-
 	if (_clientReq != "")
 	{
 		_getRequestInfo(k);
@@ -104,31 +101,62 @@ int Server::_responseDatatoServer(int k)
 	return NGX_FAIL;
 }
 
+
+// allow method 안에서 있는지 확인
 void Server::_getRequestInfo(int k)
 {
+	_request.clear();
 	_request.setRequest(_clientReq);
-	_indexList = _serverConfigs[k].getLocationsFind(_request.getPath()).getIndexList();
-
-	//정적 파일만 들어왔다고 가정
-	if (_indexList.size() > 0)
+	if (!_request.getPath().compare("/favicon.ico"))
+		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
+	_requestPath = _request.getPath();
+	//파일인 경우
+	size_t found = _requestPath.find_last_of(".");
+	std::string isHtml = _requestPath.substr(found + 1);
+	if (!isHtml.compare("html") || !isHtml.compare("htm") || !isHtml.compare("bla"))
 	{
-		std::cout << _indexList[0] << "\n";
-		_ifs.open(_indexList[0]);
+		_body = _setBody(_requestPath.substr(1));
+		return;
 	}
-	if (!_ifs)
+	//경로인 경우
+	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
+	_allowMethods  = _nowLocation.getAllowMethod();
+	_requestMethod =  _request.getMethod();
+	for (unsigned long i = 0; i < _allowMethods.size(); i++)
 	{
-		_log.debugLog("file open error");
-		_statusCode = 404;
-		// return NGX_FAIL;
+		if (!_allowMethods[i].compare(_requestMethod))
+			_isAllow = true;
 	}
+	if (!_isAllow)
+		_statusCode = 405;
 	else
 	{
-		_body = "";
-		while (_ifs.get(_c))
-			_body += _c;
-		_statusCode = 200;
+		if (!_requestMethod.compare("GET"))
+		{
+			_indexList = _nowLocation.getIndexList();
+			if (_indexList.size() > 0) //경로인 경우
+			{
+				size_t found = _indexList[0].find_last_of(".");
+				isHtml = _indexList[0].substr(found + 1);
+				if (!isHtml.compare("html") || !isHtml.compare("htm"))
+				{
+					std::cout << _indexList[0] << "\n";
+					_body = _setBody(_indexList[0]);
+				}
+				//else
+				//cgi	
+			}
+		}
+		else if (!_requestMethod.compare("POST"))
+		{
+			
+		}
+		else if (!_requestMethod.compare("DELETE"))
+		{
+
+		}
 	}
-	_ifs.close();	
+	//iferrsetBody();
 }
 
 void Server::_setResponse(int k)
@@ -139,4 +167,23 @@ void Server::_setResponse(int k)
 	_body += "\n";
 	_lastRespnse = _response.makeResponse(_body);
 	std::cout <<_lastRespnse;
+}
+
+std::string Server::_setBody(std::string file)
+{
+	std::string body = "";
+	_ifs.open(file);
+	if (!_ifs)
+	{
+		_log.debugLog("file open error");
+		_statusCode = 404;
+	}
+	else
+	{
+		while (_ifs.get(_c))
+			body += _c;
+		_statusCode = 200;
+	}
+	_ifs.close();
+	return body;
 }

@@ -8,6 +8,7 @@
 #include "ngxKqueue.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
+#include "Config.hpp"
 
 class Server : public ngxKqueue
 {
@@ -33,10 +34,17 @@ class Server : public ngxKqueue
 		char _c;
 		std::ifstream _ifs;
 		std::vector<std::string> _indexList;
+		
+		std::vector<std::string> _allowMethods;
+		std::string _requestMethod;
+		bool _isAllow;
+		LocationConfig _nowLocation;
+		std::string _requestPath;
 
 		int _responseDatatoServer(int k);
 		void _getRequestInfo(int k);
 		void _setResponse(int k);
+		std::string _setBody(std::string file);
 };
 
 #endif

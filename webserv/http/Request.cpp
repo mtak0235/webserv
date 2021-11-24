@@ -22,6 +22,17 @@ void Request::setRequest(const std::string& r)
 	_init(r);
 }
 
+void Request::clear()
+{
+	/* request line */
+	_method = "";
+	_path = "";
+	_httpVersion = "";
+	/* request header */
+	for (int i = 0; i < AVAIL_H; i++)
+		_headerInfo[i] = "";
+}
+
 std::string Request::getMethod(void) const
 {
 	return _method;

@@ -35,7 +35,7 @@ class Request
         std::string getMethod(void) const;
         std::string getPath(void) const;
         std::string getHttpVersion(void) const;
-
+				void clear();
     private:
 
         static const std::string _availMethods[AVAIL_M];

@@ -1,5 +1,33 @@
 #include "Config.hpp"
 
+LocationConfig::LocationConfig()
+{
+	_locationName = "";
+	_root = "";
+	_cgiName = "";
+	_cgiPath = "";
+	_cliBodySize = 0;
+	_uploadFolder = "";
+}
+
+LocationConfig::~LocationConfig()
+{
+
+}
+
+LocationConfig LocationConfig::operator=(LocationConfig &x)
+{
+	_locationName = x._locationName;
+	_root = x._root;
+	_cgiName = x._cgiName;
+	_cgiPath = x._cgiPath;
+	_cliBodySize = x._cliBodySize;
+	_uploadFolder = x._uploadFolder;
+	_indexList = x._indexList;
+	_allowMethods = x._allowMethods;
+	return *this;
+}
+
 void LocationConfig::setLocationName(const std::string locationName)
 {
 	_locationName = locationName;
@@ -90,6 +118,32 @@ std::string LocationConfig::getUploadFolder()
 	return _uploadFolder;
 }
 
+bool LocationConfig::empty()
+{
+	if (_locationName == "")
+		return true;
+	return false;
+}
+
+ServerConfig::ServerConfig()
+{
+	_serverName = "";
+	_serverPort = "";
+}
+
+ServerConfig::~ServerConfig()
+{
+
+}
+
+ServerConfig ServerConfig::operator=(ServerConfig &x)
+{
+	_serverName = x._serverName;
+	_serverPort = x._serverPort;
+	_locations = x._locations;
+	_locationsFind = x._locationsFind;
+	return *this;
+}
 
 void ServerConfig::setServerName(const std::string serverName)
 {
@@ -126,7 +180,7 @@ std::vector<LocationConfig> ServerConfig::getLocations()
 	return _locations;
 }
 
-LocationConfig ServerConfig::getLocationsFind(std::string locationName)
+LocationConfig &ServerConfig::getLocationsFind(std::string locationName)
 {
 	return _locationsFind[locationName];
 }

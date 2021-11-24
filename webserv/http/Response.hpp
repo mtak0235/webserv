@@ -1,3 +1,6 @@
+#ifndef RESPONSE_HPP
+#define RESPONSE_HPP
+
 #include <ctime>
 #include <string>
 #include <sstream>
@@ -30,5 +33,6 @@ class Response
     std::string _statusMsg;
 
     std::string _serverName;
-    int _contentLength;
+    // int _contentLength;
 };
+#endif

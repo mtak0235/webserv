@@ -1,16 +1,16 @@
-#include "log.hpp"
+#include "Log.hpp"
 
-log::log()
+Log::Log()
 {
 
 }
 
-log::~log()
+Log::~Log()
 {
     
 }
 
-void log::debug_log(std::string msg)
+void Log::debugLog(std::string msg)
 {
   std::cout << msg << '\n';
 }

@@ -1,7 +1,9 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include <iostream>
 #include <string>
+#include <map>
 #include <vector>
 #include "Config.hpp"
 #include "Parser.hpp"
@@ -13,15 +15,11 @@ class Server
 	public :
 		Server();
 		~Server();
-		int init(std::string confFile);
-		int run();
-		int stop();
+
 
 	private :
-		Parser _parser;
-		Connection connection;
-		int _initConnection();
-		std::vector<ServerConfig> _serverConfigs;
+		Log _log;
+		
 };
 
 #endif

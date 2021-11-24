@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <map>
 
 struct LocationConfig
 {
@@ -21,6 +22,7 @@ struct ServerConfig
 	std::string serverName;
 	std::string serverPort;
 	std::vector<LocationConfig> locations;
+	std::map<std::string, LocationConfig> locationsFind;
 };
 
 #endif

@@ -1,5 +1,8 @@
-#pragma once
+#ifndef REQUEST_HPP
+# define REQUEST_HPP
+
 #include <sstream>
+#include <map>
 #include <vector>
 #include <string>
 #include <iostream>
@@ -41,11 +44,9 @@ class Request
 
         void _init(const std::string& r);
         void _parseRequestLine(const std::string& rl);
-<<<<<<< HEAD
-        void _parseRequestHeader(const std::string& rh);4
-=======
         void _parseRequestHeader(const std::string& rh);
->>>>>>> cgi
+        void _parseRequestBody(const std::string& rb);
+
 
         /* request line */
         std::string _method;
@@ -54,4 +55,10 @@ class Request
 
         /* request header */
         std::string _headerInfo[AVAIL_H];
+
+        /* request body */
+        std::string _rawBody;
+        std::map<std::string, std::string> _body;
 };
+
+#endif

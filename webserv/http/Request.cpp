@@ -26,11 +26,7 @@ std::string Request::getHttpVersion(void) const
 	return _httpVersion;
 }
 
-<<<<<<< HEAD
 void Request::_init(const std::string& r) {
-=======
-void Request::_init(const std::string& r) {//post mapping 시 바디 부분 파싱 내용이 없다. get 방식 떄도 개행을 붙여서 리턴을 할까?
->>>>>>> cgi
     std::stringstream ss;
     ss << r;
     std::vector<std::string> v;
@@ -40,27 +36,33 @@ void Request::_init(const std::string& r) {//post mapping 시 바디 부분 파�
         v.push_back(l);
     }
     _parseRequestLine(v[0]);
-    for (size_t l = 1; l < v.size(); l++)
+    for (size_t l = 1; l < v.size(); l++) {
         _parseRequestHeader(v[l]);
+        if (v[l][0] == '\r') {
+            _parseRequestBody(v[++l]);
+            break ;
+        }
+    }
 
-    // /* test */
-    // std::cout << "test method : ["  << _method << "]\n";
-    // std::cout << "test path : ["  << _path << "]\n";
-    // std::cout << "test version : ["  << _httpVersion << "]\n";
+    /* test */
+    std::cout << "test method : ["  << _method << "]\n";
+    std::cout << "test path : ["  << _path << "]\n";
+    std::cout << "test version : ["  << _httpVersion << "]\n";
     
-    // /* test */
-    // for (int h = 0; h < AVAIL_H; h++) {
-    //     std::cout << _availHeaderInfo[h] << " : ["  << _headerInfo[h] << "]\n";
-    // }
+    /* test */
+    for (int h = 0; h < AVAIL_H; h++) {
+        std::cout << _availHeaderInfo[h] << " : ["  << _headerInfo[h] << "]\n";
+    }
+
+    /* test */
+    std::cout << "test raw body : [" << _rawBody << "]\n";
+
+    std::map<std::string, std::string>::iterator i = _body.begin();
+    while (i != _body.end()) {
+        std::cout << i->second << "\n";
+        i++;
+    }
 }
-<<<<<<< HEAD
-=======
-//    4
-// post /he http/1.1
-// 0123456789(idx)
-// idx = 5;/ exists;
-// idx = 9;
->>>>>>> cgi
 
 void Request::_parseRequestLine(const std::string& rl) {
     size_t idx = 0;
@@ -68,11 +70,8 @@ void Request::_parseRequestLine(const std::string& rl) {
         if (rl.find(_availMethods[m], idx) == 0) {
             _method = _availMethods[m];
             idx += _availMethods[m].length() + 1;
-<<<<<<< HEAD
-=======
-            break;
->>>>>>> cgi
         }
+        break ;
     }
     _path = rl.substr(idx, rl.find(' ', idx + 1) - idx);
     idx += _path.length() + 1;
@@ -88,3 +87,27 @@ void Request::_parseRequestHeader(const std::string& rh) {
         }
     }
 }
+
+
+void Request::_parseRequestBody (const std::string& rb) {
+    _rawBody = rb;
+    for (size_t i = 0; i < _rawBody.size(); i++) {
+        if (_rawBody[i] == '+') _rawBody[i] = ' ';
+    }
+    size_t idx = 0;
+    while (idx < _rawBody.size()) {
+        size_t idxSep;
+        if ((idxSep = _rawBody.find('=', idx + 1)) == std::string::npos)
+            break ;
+        std::string key = _rawBody.substr(idx, idxSep - idx);
+        idx += key.size() + 1;
+        if ((idxSep = _rawBody.find('&', idx + 1)) == std::string::npos) {
+            _body[key] = _rawBody.substr(idx);
+            break ;
+        } else {
+            _body[key] = _rawBody.substr(idx, idxSep - idx);
+            idx = idxSep + 1;
+        }
+    }
+}
+

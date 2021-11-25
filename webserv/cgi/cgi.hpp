@@ -16,7 +16,8 @@
 #include <stdlib.h>
 
 #include "../http/Request.hpp"
-
+# define SUCCESS 0
+# define FAIL -1
 class Request;
 
 static const char *basic_env[] = {
@@ -46,15 +47,18 @@ class Cgi
 		Cgi(const Cgi &);
 		Cgi& 				operator=(const Cgi &);
 		char **_env;
+        std::string _content;
 		void _setEnv(const Request *);
 		std::string _setPathTranslated(char *);
 		char **_setEnviron(std::map<std::string, std::string>);
+        void _parseContent(std::string);
 	
 	public:
 		Cgi(const Request *);
 		~Cgi();
 		char **getEnv();
-		std::string				execute(char **, std::string);
+		int			execute(char **, std::string);
+        std::string getContent();
 
 	
 };

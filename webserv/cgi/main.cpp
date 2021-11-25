@@ -1,7 +1,7 @@
 #include "Cgi.hpp"
 #include "../http/Request.hpp"
 
-#define PORT_NUM 8000
+#define PORT_NUM 8001
 
 int	getHostAddr()
 {
@@ -55,7 +55,8 @@ std::string getResponseBody(Request req)
 	if (!strcmp(req.getPath().c_str(), "/cgi-tester"))
     {
         Cgi tester(&req);
-        ret = tester.execute(tester.getEnv(),"hELLOwORLD");
+        tester.execute(tester.getEnv(),"hELLOwORLD");
+        ret = tester.getContent();
     }
 	else if(!strcmp(req.getPath().c_str(), "/php-tester"))
     {

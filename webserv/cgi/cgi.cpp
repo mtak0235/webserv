@@ -23,9 +23,9 @@ char ** Cgi::_setEnviron(std::map<std::string, std::string> env) {
   return (return_value);
 }
 
-std::string Cgi::execute(char  **_env, std::string value)
+int Cgi::execute(char  **_env, std::string value)
 {
-	std::string ret;
+	std::string str2Parse;
 	pid_t pid;
 
 	FILE	*fIn = tmpfile();
@@ -33,7 +33,7 @@ std::string Cgi::execute(char  **_env, std::string value)
 	long	fdIn = fileno(fIn);
 	long	fdOut = fileno(fOut);
 
-	write(fdIn, value.c_str(), sizeof(value.c_str()));
+	write(fdIn, value.c_str(), value.size());
 	lseek(fdIn, 0, SEEK_SET);
 
 	pid = fork();
@@ -45,16 +45,25 @@ std::string Cgi::execute(char  **_env, std::string value)
 	}
 	else
 	{
-		char buf[1024] = {0,};
+		char buf[5] = {0,};
+    std::string str;
 		waitpid(-1, NULL, 0);
 		lseek(fdOut, 0, SEEK_SET);
-		int read_len = read(fdOut, buf, 1024);
-		buf[read_len] = 0;
-		ret = buf;
+    int read_len = 0;
+    while ((read_len = read(fdOut, buf, 5)) != 0)
+    {
+      str2Parse += buf;
+      memset(buf, 0, sizeof(buf));
+    }
 	}
-	return ret;
+  _parseContent(str2Parse);
+	return SUCCESS;
 }
 
+std::string Cgi::getContent()
+{
+  return _content;
+}
 char **Cgi::getEnv()
 {
 	return _env;
@@ -97,4 +106,17 @@ void Cgi::_setEnv(const Request *req)
 Cgi::Cgi(const Request *req)
 {
 	_setEnv(req);
+}
+
+void Cgi::_parseContent(std::string target)
+{
+  std::string ret = target;
+  this->_content = ret;
+  std::cout << "\033[33m[" <<  _content << "]\033[37m" << std::endl;
+  /*[Status: 200 OK
+Content-Type: text/html; charset=utf-8
+
+HELLOWORLD]
+clang++  -g main.cpp Cgi.cpp ../http/Request.cpp
+*/
 }

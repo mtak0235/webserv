@@ -48,7 +48,7 @@ void Request::_init(const std::string& r) {
     std::cout << "test method : ["  << _method << "]\n";
     std::cout << "test path : ["  << _path << "]\n";
     std::cout << "test version : ["  << _httpVersion << "]\n";
-    
+
     /* test */
     for (int h = 0; h < AVAIL_H; h++) {
         std::cout << _availHeaderInfo[h] << " : ["  << _headerInfo[h] << "]\n";
@@ -70,8 +70,8 @@ void Request::_parseRequestLine(const std::string& rl) {
         if (rl.find(_availMethods[m], idx) == 0) {
             _method = _availMethods[m];
             idx += _availMethods[m].length() + 1;
+            break ;
         }
-        break ;
     }
     _path = rl.substr(idx, rl.find(' ', idx + 1) - idx);
     idx += _path.length() + 1;
@@ -110,4 +110,3 @@ void Request::_parseRequestBody (const std::string& rb) {
         }
     }
 }
-

@@ -12,10 +12,10 @@ Cgi::Cgi(void)
 
 Cgi::~Cgi(void)
 {
-  for (size_t i = 0; i < _allocSize; i++) {
-    if (_environ[i]) delete[] _environ[i];
-  }
-  if (_environ) delete[] _environ;
+  // for (size_t i = 0; i < _allocSize; i++) {
+    // if (_environ[i]) delete[] _environ[i];
+  // }
+  // if (_environ) delete[] _environ;
 }
 
 std::string Cgi::getCgiResponse(Request req)
@@ -33,37 +33,37 @@ std::string Cgi::getCgiResponse(Request req)
   if (pid == 0) {
     dup2(fdIn, STDIN_FILENO);
     dup2(fdOut, STDOUT_FILENO);
-    execve(req.getPath().c_str(), NULL, _environ);
+    execve("./cgi-tester", NULL, _environ);
   } else {
-    const size_t buffSize = 5;
+    const size_t buffSize = 2048;
     char buff[buffSize] = {0, };
     wait(NULL);
     lseek(fdOut, 0, SEEK_SET);
-
     size_t bytes = 0;
-    while ((bytes = read(fdOut, buff, buffSize)) != 0) {
-      ret += buff;
-      memset(buff, 0, buffSize);
+    while ((bytes = read(fdOut, buff, 1)) != 0) {
+      std::string temp = buff;
+      ret += temp;
     }
   }
+  std::cout << "test cgi [" << ret << "] \n";
   return ret;
 }
 
 void Cgi::_setEnviron(const Request& req) {
   std::map<std::string, std::string> envMap = _makeEnvMap(req);
   _allocSize = envMap.size() + 1;
-  _environ = new char*[_allocSize];
-  if (!_environ) return ;
+  _environ = (char**)malloc(sizeof(char *) * _allocSize);
   std::map<std::string, std::string>::iterator itMap = envMap.begin();
   size_t idxEnv = 0;
   while (itMap != envMap.end()) {
     std::string temp = itMap->first + "=" + itMap->second;
-    _environ[idxEnv] = new char[temp.size() + 1];
+    _environ[idxEnv] = (char*)malloc(temp.size() + 1);
     _environ[idxEnv] = (char*)temp.c_str();
     idxEnv++;
     itMap++;
   }
   _environ[idxEnv] = NULL;
+
 }
 
 const std::string Cgi::_getCwd(void) const {

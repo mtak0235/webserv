@@ -112,25 +112,18 @@ void Server::_getRequestInfo(int k)
 	_requestPath = _request.getPath();
 	_requestMethod =  _request.getMethod();
 	//파일인 경우
-	size_t found = _requestPath.find_last_of(".");
-	std::string isHtml = _requestPath.substr(found + 1);
-	if (!isHtml.compare("html") || !isHtml.compare("htm") || !isHtml.compare("bla"))
+	_found = _requestPath.find_last_of(".");
+	_isFile = _requestPath.substr(_found + 1);
+	_body = "";
+	if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare("bla"))
 	{
-		if (!_requestMethod.compare("GET"))
-			_body = _setBody(_requestPath.substr(1));
-		else if (!_requestMethod.compare("POST"))
-		{
-
-		}
-		else if (!_requestMethod.compare("DELETE"))
-		{
-			
-		}
+		_body = _getBody(_requestPath.substr(1), k);
 		return;
 	}
 	//경로인 경우
 	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
 	_allowMethods  = _nowLocation.getAllowMethod();
+	_isAllow = false;
 	for (unsigned long i = 0; i < _allowMethods.size(); i++)
 	{
 		if (!_allowMethods[i].compare(_requestMethod))
@@ -140,32 +133,17 @@ void Server::_getRequestInfo(int k)
 		_statusCode = 405;
 	else
 	{
-		if (!_requestMethod.compare("GET"))
+		_indexList = _nowLocation.getIndexList();
+		_isFile = "";
+		_found = 0;
+		if (_indexList.size() > 0) //경로인 경우
 		{
-			_indexList = _nowLocation.getIndexList();
-			if (_indexList.size() > 0) //경로인 경우
-			{
-				size_t found = _indexList[0].find_last_of(".");
-				isHtml = _indexList[0].substr(found + 1);
-				if (!isHtml.compare("html") || !isHtml.compare("htm"))
-				{
-					std::cout << _indexList[0] << "\n";
-					_body = _setBody(_indexList[0]);
-				}
-				//else
-				//cgi	
-			}
-		}
-		else if (!_requestMethod.compare("POST"))
-		{
-			
-		}
-		else if (!_requestMethod.compare("DELETE"))
-		{
-
+			_found = _indexList[0].find_last_of(".");
+			_isFile = _indexList[0].substr(_found + 1);
+			_body = _getBody(_indexList[0], k);
 		}
 	}
-	//iferrsetBody();
+	// iferrsetBody();
 }
 
 void Server::_setResponse(int k)
@@ -196,3 +174,54 @@ std::string Server::_setBody(std::string file)
 	_ifs.close();
 	return body;
 }
+
+std::string Server::_getBody(std::string file, int k)
+{
+	std::string body;
+
+	if (!_requestMethod.compare("GET"))
+	{
+		if (!_isFile.compare("html") || !_isFile.compare("htm"))
+		{
+			std::cout << file << "\n";
+			body = _setBody(file);
+		}
+		//else
+			//cgi
+	}
+	else if (!_requestMethod.compare("POST"))
+	{
+
+	}
+	else if (!_requestMethod.compare("DELETE"))
+	{
+		std::cout << "[" << _requestPath << "]" << "\n";
+		_serverConfigs[k].eraseLocation(_requestPath);
+		body = "{\"success\":\"true\"}";
+		_statusCode = 200;
+	}
+	return body;
+}
+
+//location block 탐색해서 그에 대한 정보를 지움 프로그램 안에서
+
+// post 성공적으로 post 됬다는 메시지를 보냄
+
+// get
+
+// [ abcdef] [서브밋]/포스트
+// post /save http/1.1
+// cotent-type: text/json
+
+// {acdef}
+// fd = open(OCREATE)
+// //
+// acdef
+// ab[delete] /delete
+// //
+// delete /remove HTTP/1.1
+// content-Type : text/json
+
+// {ab}
+// //fd = ab(x)
+// cdef

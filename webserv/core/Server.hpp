@@ -41,10 +41,14 @@ class Server : public ngxKqueue
 		LocationConfig _nowLocation;
 		std::string _requestPath;
 
+		size_t _found;
+		std::string _isFile;
+
 		int _responseDatatoServer(int k);
 		void _getRequestInfo(int k);
 		void _setResponse(int k);
 		std::string _setBody(std::string file);
+		std::string _getBody(std::string file, int k);
 };
 
 #endif

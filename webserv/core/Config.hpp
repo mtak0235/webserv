@@ -60,6 +60,7 @@ public:
 	void setServerPort(const std::string serverPort);
 	void setLocations(LocationConfig location);
 	void setLocationsFind(std::string locationName, LocationConfig config);
+	void eraseLocation(std::string locationName);
 
 	std::string getServerName();
 	std::string getServerPort();

@@ -185,3 +185,8 @@ LocationConfig &ServerConfig::getLocationsFind(std::string locationName)
 	return _locationsFind[locationName];
 }
 
+void ServerConfig::eraseLocation(std::string locationName)
+{
+	_locationsFind.erase(locationName);
+}
+

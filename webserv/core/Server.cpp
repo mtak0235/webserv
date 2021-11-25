@@ -112,10 +112,10 @@ void Server::_getRequestInfo(int k)
 	/* 테스트용 if 추가함 */
 	if (!_request.getPath().compare("/cgi-tester")) {
 		Cgi cgi;
-		_request = "GET";
+		_requestMethod = "GET";
 		_requestPath = _request.getPath();
 		// _statusCode = cgi.
-		_body = cgi.getCgiResponse();
+		_body = cgi.getCgiResponse(_request);
 
 	} else {
 		if (!_request.getPath().compare("/favicon.ico"))

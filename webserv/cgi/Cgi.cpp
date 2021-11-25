@@ -66,7 +66,7 @@ void Cgi::_setEnviron(const Request& req) {
   _environ[idxEnv] = NULL;
 }
 
-const std::string Cgi::_getCwd(const std::string& path) const {
+const std::string Cgi::_getCwd(void) const {
   const int buffSize = 512;
   char buff[buffSize];
   getcwd(buff, buffSize);
@@ -87,6 +87,6 @@ std::map<std::string, std::string> Cgi::_makeEnvMap(const Request& req) const {
   ret[_environList[REMOTE_ADDR]] = "127.0.0.1";
   ret[_environList[SERVER_PORT]] = "80";
   ret[_environList[SERVER_SOFTWARE]] = "versbew";
-  ret[_environList[PATH_TRANSLATED]] = _getCwd(req.getPath());
+  ret[_environList[PATH_TRANSLATED]] = _getCwd();
   return ret;
 }

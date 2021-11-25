@@ -49,12 +49,12 @@ class Cgi
 
     void _setEnviron(const Request& req);
     std::map<std::string, std::string> _makeEnvMap(const Request& req) const;
-    const std::string _getCwd(const std::string& path) const;
-    int _statusCode;
-    std::string _statusMsg;
-    std::string _body;
+    const std::string _getCwd(void) const;
+    // int _statusCode;
+    // std::string _statusMsg;
+    // std::string _body;
     char** _environ;
     size_t _allocSize;
-}
+};
 
 #endif

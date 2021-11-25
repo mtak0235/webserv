@@ -1,14 +1,16 @@
 #ifndef CGI_HPP
 #define CGI_HPP
 
+#include <cstring>
 #include <string>
 #include <fstream>
 #include <map>
+
 #include <unistd.h>
+#include <stdlib.h>
+#include <sys/wait.h>
 
 #include "../http/Request.hpp"
-
-
 
 class Request;
 

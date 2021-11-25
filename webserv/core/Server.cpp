@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-Server::Server() 
+Server::Server()
 {
 	_readDataSize = 0;
 	_clientReq = "";
@@ -8,7 +8,7 @@ Server::Server()
 	_isAllow = false;
 }
 
-Server::~Server() 
+Server::~Server()
 {
 
 }
@@ -91,7 +91,7 @@ int Server::_responseDatatoServer(int k)
 		if ((_n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size()) == -1))
 		{
 			std::cerr << "client write error!" << std::endl;
-			disconnectClient(_currEvent->ident, _clients);  
+			disconnectClient(_currEvent->ident, _clients);
 		}
 		else
 			_clients[_currEvent->ident].clear();
@@ -107,7 +107,18 @@ void Server::_getRequestInfo(int k)
 {
 	_request.clear();
 	_request.setRequest(_clientReq);
-	if (!_request.getPath().compare("/favicon.ico"))
+
+
+	/* 테스트용 if 추가함 */
+	if (!_request.getPath().compare("/cgi-tester")) {
+		Cgi cgi;
+		_request = "GET";
+		_requestPath = _request.getPath();
+		// _statusCode = cgi.
+		_body = cgi.getCgiResponse();
+
+	} else {
+		if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
 	_requestMethod =  _request.getMethod();
@@ -142,6 +153,8 @@ void Server::_getRequestInfo(int k)
 			_isFile = _indexList[0].substr(_found + 1);
 			_body = _getBody(_indexList[0], k);
 		}
+
+	}
 	}
 	// iferrsetBody();
 }
@@ -191,7 +204,7 @@ std::string Server::_getBody(std::string file, int k)
 	}
 	else if (!_requestMethod.compare("POST"))
 	{
-		
+
 	}
 	else if (!_requestMethod.compare("DELETE"))
 	{

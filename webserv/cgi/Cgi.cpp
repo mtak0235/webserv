@@ -20,8 +20,33 @@ Cgi::~Cgi(void)
 
 std::string Cgi::getCgiResponse(Request req)
 {
+  std::string ret = "";
   _setEnviron(req);
+  FILE *fIn = tmpfile();
+  FILE *fOut = tmpfile();
+  long fdIn = fileno(fIn);
+  long fdOut = fileno(fOut);
+  std::string testInput = "hElloWorld";
+  write(fdIn, testInput.c_str(), testInput.size());
+  lseek(fdIn, 0, SEEK_SET);
+  pid_t pid = fork();
+  if (pid == 0) {
+    dup2(fdIn, STDIN_FILENO);
+    dup2(fdOut, STDOUT_FILENO);
+    execve(req.getPath().c_str(), NULL, _environ);
+  } else {
+    const size_t buffSize = 5;
+    char buff[buffSize] = {0, };
+    wait(NULL);
+    lseek(fdOut, 0, SEEK_SET);
 
+    size_t bytes = 0;
+    while ((bytes = read(fdOut, buff, buffSize)) != 0) {
+      ret += buff;
+      memset(buff, 0, buffSize);
+    }
+  }
+  return ret;
 }
 
 void Cgi::_setEnviron(const Request& req) {

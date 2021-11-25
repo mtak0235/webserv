@@ -1,67 +1,56 @@
 #ifndef CGI_HPP
 #define CGI_HPP
 
-# include "Request.hpp"
+#include <string>
+#include <fstream>
+#include <unistd.h>
+
+#include "Request";
 
 class Request;
 
-class cgi
-{
-
-
-};
-
 class Cgi
 {
-	public:
-		Cgi(Request *);
-		~Cgi();
-	
-	private:
-		Cgi(void);
-		Cgi(const Cgi &);
-		Cgi& 				operator=(const Cgi &);
-	
-	public:
-		const std::string&	getExtension(void) const;
-		const std::string&	getProgram(void) const;
-		char**				getEnv(void) const;
-		const std::string	getEnv(const std::string &);
-		const std::string&	getHeader(void) const;
-		const int&			getStatus(void) const;
-		const int&			getCgiStep(void) const;
-		const std::string&	getOutputContent(void) const;
-	
-		void				execute(void);
-		void				clear(void);
-		
-		bool				parsecgiContent(void);
+  enum ENVIRON_LIST {
+    AUTH_TYPE,
+    CONTENT_LENGTH,
+    CONTENT_TYPE,
+    GATEWAY_INTERFACE,
+    PATH_INFO,
+    PATH_TRANSLATED,
+    QUERY_STRING,
+    REMOTE_ADDR,
+    REMOTE_IDENT,
+    REMOTE_USER,
+    REQUEST_METHOD,
+    REQUEST_URI,
+    SCRIPT_FILENAME,
+    SERVER_NAME,
+    SERVER_PORT,
+    SERVER_PROTOCOL,
+    SERVER_SOFTWARE,
+    REDIRECT_STATUS,
+    NON_OF_ALL,
+  };
 
-	private:
-		bool				getOuput(int);
-		void				handleProcess(int, time_t);
-		void				setEnv(void);
-		void				setCgiStep(const int step);
-		void				setHeader(const std::string &);
+  public:
+    Cgi(void);
+    ~Cgi();
+    
+    std::string getCgiResponse(Request req);
+  
+  private:
+    static const std::string _environList[NON_OF_ALL];
 
-	public:
-		class CgiError : public std::exception
-		{
-			public:
-				virtual const char*	what() const throw();
-		};
-	
-	private:
-		char 				**_env;
-		std::string			_program;
-		std::string			_extension;
-		Request*			_request;
-		std::string			_header;
-		int					_status;
-		int					_cgiStep;
-		int					_cgiFd;
-		std::string			_outputContent;
-	
-}; /* class Cgi */
+    void _setEnviron(const Request& req);
+    size_t _getEnvironListSize(const Request& req) const;
+    const std::string _getCwd(const std::string& path) const;
+    int _statusCode;
+    std::string _statusMsg;
+    std::string _body;
+    char** _environ;
+
+}
 
 #endif
+

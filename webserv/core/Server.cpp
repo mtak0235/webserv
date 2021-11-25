@@ -191,7 +191,7 @@ std::string Server::_getBody(std::string file, int k)
 	}
 	else if (!_requestMethod.compare("POST"))
 	{
-
+		
 	}
 	else if (!_requestMethod.compare("DELETE"))
 	{

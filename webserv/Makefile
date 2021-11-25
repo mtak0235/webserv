@@ -1,6 +1,6 @@
 NAME = webserv
 COMPILER = clang++
-CFLAGS = -g3 -fsanitize=address #-Wall -Wextra -Werror 
+CFLAGS = -g3 -fsanitize=address #-Wall -Wextra -Werror
 CPP_VERSION = -std=c++98
 
 DIR_CORE = ./core/
@@ -11,15 +11,9 @@ DIR_CGI = ./cgi/
 DIR_OBJS = ./objs/
 
 SRCS = main.cpp \
-	Cluster.cpp \
-	Connection.cpp \
-	Parser.cpp \
-	Server.cpp \
-	cgi.cpp \
-	Log.cpp \
-	ngxKqueue.cpp \
 	Request.cpp \
 	Response.cpp \
+	Formatter.cpp \
 
 
 all: $(NAME)
@@ -35,7 +29,7 @@ re: fclean all
 OBJS = $(SRCS:%.cpp=$(DIR_OBJS)%.o)
 
 $(NAME): $(OBJS)
-	@$(COMPILER) $(CFLAGS) $(CPP_VERSION) -I $(DIR_CORE) -I $(DIR_EVENT) -I $(DIR_HTTP) -I $(DIR_CGI) $(OBJS) -o $(NAME) 
+	@$(COMPILER) $(CFLAGS) $(CPP_VERSION) -I $(DIR_CORE) -I $(DIR_EVENT) -I $(DIR_HTTP) -I $(DIR_CGI) $(OBJS) -o $(NAME)
 
 $(OBJS): $(DIR_OBJS)
 

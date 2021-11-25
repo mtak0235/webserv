@@ -9,56 +9,55 @@
 
 class Request
 {
-    enum METHOD {
-        GET,
-        POST,
-        DELETE,
-        AVAIL_M,
-    };
-
+  public:
     enum HEADER_INFO {
-        HOST,
-        USER_AGENT,
-        ACCEPT,
-        ACCEPT_LANGUEAGE,
-        ACCEPT_ENCODING,
-        ACCEPT_CHARSET,
-        KEEPALIVE,
-        CONNECTION,
-        CONTENTS_LENGTH,
-        AVAIL_H,
+      HOST,
+      USER_AGENT,
+      ACCEPT,
+      ACCEPT_LANGUEAGE,
+      ACCEPT_ENCODING,
+      ACCEPT_CHARSET,
+      KEEPALIVE,
+      CONNECTION,
+      CONTENTS_LENGTH,
+      AVAIL_H,
     };
 
-    public:
-        Request(const std::string& r);
-        ~Request();
+    Request(const std::string& r);
+    ~Request();
 
-        std::string getMethod(void) const;
-        std::string getPath(void) const;
-        std::string getHttpVersion(void) const;
+    std::string getMethod(void) const;
+    std::string getPath(void) const;
+    std::string getHttpVersion(void) const;
+    std::string getHeaderInfo(const HEADER_INFO& i) const;
 
-    private:
+  private:
+    enum METHOD {
+    GET,
+    POST,
+    DELETE,
+    AVAIL_M,
+    };
 
-        static const std::string _availMethods[AVAIL_M];
-        static const std::string _availHeaderInfo[AVAIL_H];
+    static const std::string _availMethods[AVAIL_M];
+    static const std::string _availHeaderInfos[AVAIL_H];
 
-        void _init(const std::string& r);
-        void _parseRequestLine(const std::string& rl);
-        void _parseRequestHeader(const std::string& rh);
-        void _parseRequestBody(const std::string& rb);
+    void _init(const std::string& r);
+    void _parseRequestLine(const std::string& rl);
+    void _parseRequestHeader(const std::string& rh);
+    void _parseRequestBody(const std::string& rb);
 
+    /* request line */
+    std::string _method;
+    std::string _path;
+    std::string _httpVersion;
 
-        /* request line */
-        std::string _method;
-        std::string _path;
-        std::string _httpVersion;
+    /* request header */
+    std::string _headerInfo[AVAIL_H];
 
-        /* request header */
-        std::string _headerInfo[AVAIL_H];
-
-        /* request body */
-        std::string _rawBody;
-        std::map<std::string, std::string> _body;
+    /* request body */
+    std::string _rawBody;
+    std::map<std::string, std::string> _body;
 };
 
 #endif

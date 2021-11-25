@@ -1,7 +1,11 @@
 #include "Request.hpp"
 
-const std::string Request::_availMethods[AVAIL_M] = {"GET", "POST", "DELETE"};
-const std::string Request::_availHeaderInfo[AVAIL_H] = {"Host:", "User-Agent:", "Accept:", "Accept-Language:", "Accept-Encoding:", "Accept-Charset:", "Keep-Alive:", "Connection:", "Content-Length:"};
+const std::string Request::_availMethods[AVAIL_M]
+    = {"GET", "POST", "DELETE"};
+const std::string Request::_availHeaderInfos[AVAIL_H]
+    = {"Host:", "User-Agent:", "Accept:", "Accept-Language:",
+       "Accept-Encoding:", "Accept-Charset:", "Keep-Alive:",
+       "Connection:", "Content-Length:"};
 
 Request::Request(const std::string& r) {
   _init(r);
@@ -24,6 +28,10 @@ std::string Request::getPath(void) const
 std::string Request::getHttpVersion(void) const
 {
 	return _httpVersion;
+}
+
+std::string Request::getHeaderInfo(const HEADER_INFO& i) const {
+    return _headerInfo[i];
 }
 
 void Request::_init(const std::string& r) {
@@ -51,7 +59,7 @@ void Request::_init(const std::string& r) {
 
     /* test */
     for (int h = 0; h < AVAIL_H; h++) {
-        std::cout << _availHeaderInfo[h] << " : ["  << _headerInfo[h] << "]\n";
+        std::cout << _availHeaderInfos[h] << " : ["  << _headerInfo[h] << "]\n";
     }
 
     /* test */
@@ -59,7 +67,8 @@ void Request::_init(const std::string& r) {
 
     std::map<std::string, std::string>::iterator i = _body.begin();
     while (i != _body.end()) {
-        std::cout << i->second << "\n";
+        std::cout << "key [" << i->first << "] value [";
+        std::cout << i->second << "]\n";
         i++;
     }
 }
@@ -81,8 +90,8 @@ void Request::_parseRequestLine(const std::string& rl) {
 void Request::_parseRequestHeader(const std::string& rh) {
     size_t idx = 0;
     for (int h = 0; h < AVAIL_H; h++) {
-        if (rh.find(_availHeaderInfo[h], idx) == 0) {
-            idx += _availHeaderInfo[h].length() + 1;
+        if (rh.find(_availHeaderInfos[h], idx) == 0) {
+            idx += _availHeaderInfos[h].length() + 1;
             _headerInfo[h] = rh.substr(idx);
         }
     }

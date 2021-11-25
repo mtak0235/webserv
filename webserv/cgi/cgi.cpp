@@ -23,7 +23,7 @@ char ** Cgi::_setEnviron(std::map<std::string, std::string> env) {
   return (return_value);
 }
 
-int Cgi::execute(char  **_env, std::string value)
+int Cgi::execute(char  **_env, std::string value, std::string filePath)
 {
 	std::string str2Parse;
 	pid_t pid;
@@ -41,7 +41,7 @@ int Cgi::execute(char  **_env, std::string value)
 	{
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
-		execve("./cgi_tester", NULL, _env);
+		execve(filePath.c_str(), NULL, _env);
 	}
 	else
 	{

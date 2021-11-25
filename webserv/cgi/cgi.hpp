@@ -57,7 +57,7 @@ class Cgi
 		Cgi(const Request *);
 		~Cgi();
 		char **getEnv();
-		int			execute(char **, std::string);
+		int			execute(char **, std::string, std::string);
         std::string getContent();
 
 	

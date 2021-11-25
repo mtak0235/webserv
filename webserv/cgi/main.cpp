@@ -55,12 +55,13 @@ std::string getResponseBody(Request req)
 	if (!strcmp(req.getPath().c_str(), "/cgi-tester"))
     {
         Cgi tester(&req);
-        tester.execute(tester.getEnv(),"hELLOwORLD");
+        tester.execute(tester.getEnv(),"hELLOwORLD", "./cgi_tester");
         ret = tester.getContent();
     }
 	else if(!strcmp(req.getPath().c_str(), "/php-tester"))
     {
         Cgi php(&req);
+        
     }
 	return ret;
 }

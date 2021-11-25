@@ -46,13 +46,12 @@ class Cgi
     static const std::string _environList[NON_OF_ALL];
 
     void _setEnviron(const Request& req);
-    size_t _getEnvironListSize(const Request& req) const;
+    std::map<std::string, std::string> _makeEnvMap(const Request& req) const;
     const std::string _getCwd(const std::string& path) const;
     int _statusCode;
     std::string _statusMsg;
     std::string _body;
     char** _environ;
-
 }
 
 #endif

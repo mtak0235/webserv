@@ -12,7 +12,7 @@ Cgi::Cgi(void)
 
 Cgi::~Cgi(void)
 {
-
+  if (_environ) delete[] _environ;
 }
 
 std::string Cgi::getCgiResponse(Request req)
@@ -22,6 +22,12 @@ std::string Cgi::getCgiResponse(Request req)
 }
 
 void Cgi::_setEnviron(const Request& req) {
+  std::map<std::string, std::string> envMap = _makeEnvMap(req);
+  size_t allocSize = envMap.size() + 1;
+  _environ = new char*[allocSize];
+  if (!_environ) return ;
+  size_t i = 0;
+
 
 }
 
@@ -33,19 +39,19 @@ const std::string Cgi::_getCwd(const std::string& path) const {
   return ret;
 }
 
-size_t Cgi::_getEnvironListSize(const Request& req) const {
-  std::map<std::string, std::string> envMap;
-  envMap[_environList[REQUEST_METHOD]] = req.getMethod();
-  envMap[_environList[SCRIPT_FILENAME]] = req.getPath();
-  envMap[_environList[PATH_INFO]] = req.getPath();
-  envMap[_environList[REQUEST_URI]] = req.getPath();
-  envMap[_environList[REDIRECT_STATUS]] = "CGI";
-  envMap[_environList[SERVER_PROTOCOL]] = "HTTP/1.1";
-  envMap[_environList[CONTENT_TYPE]] = "application/x-www-form-urlencoded";
-  envMap[_environList[GATEWAY_INTERFACE]] = "CGI/1.1";
-  envMap[_environList[REMOTE_ADDR]] = "127.0.0.1";
-  envMap[_environList[SERVER_PORT]] = "80";
-  envMap[_environList[SERVER_SOFTWARE]] = "versbew";
-  envMap[_environList[PATH_TRANSLATED]] = _getCwd(req.getPath());
-  return envMap.size();
+std::map<std::string, std::string> Cgi::_makeEnvMap(const Request& req) const {
+  std::map<std::string, std::string> ret;
+  ret[_environList[REQUEST_METHOD]] = req.getMethod();
+  ret[_environList[SCRIPT_FILENAME]] = req.getPath();
+  ret[_environList[PATH_INFO]] = req.getPath();
+  ret[_environList[REQUEST_URI]] = req.getPath();
+  ret[_environList[REDIRECT_STATUS]] = "CGI";
+  ret[_environList[SERVER_PROTOCOL]] = "HTTP/1.1";
+  ret[_environList[CONTENT_TYPE]] = "application/x-www-form-urlencoded";
+  ret[_environList[GATEWAY_INTERFACE]] = "CGI/1.1";
+  ret[_environList[REMOTE_ADDR]] = "127.0.0.1";
+  ret[_environList[SERVER_PORT]] = "80";
+  ret[_environList[SERVER_SOFTWARE]] = "versbew";
+  ret[_environList[PATH_TRANSLATED]] = _getCwd(req.getPath());
+  return ret;
 }

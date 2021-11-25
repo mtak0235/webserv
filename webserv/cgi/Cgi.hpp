@@ -3,9 +3,12 @@
 
 #include <string>
 #include <fstream>
+#include <map>
 #include <unistd.h>
 
-#include "Request";
+#include "../http/Request.hpp"
+
+
 
 class Request;
 
@@ -36,9 +39,9 @@ class Cgi
   public:
     Cgi(void);
     ~Cgi();
-    
+
     std::string getCgiResponse(Request req);
-  
+
   private:
     static const std::string _environList[NON_OF_ALL];
 
@@ -53,4 +56,3 @@ class Cgi
 }
 
 #endif
-

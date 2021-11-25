@@ -1,6 +1,6 @@
 #include "Cgi.hpp"
 
-const std::string Cgi::_environList[NON_OF_ALL] = {"AUTH_TYPE", "CONTENT_LENGTH", "CONTENT_TYPE", "GATEWAY_INTERPACE", "PATH_INFO", 
+const std::string Cgi::_environList[NON_OF_ALL] = {"AUTH_TYPE", "CONTENT_LENGTH", "CONTENT_TYPE", "GATEWAY_INTERPACE", "PATH_INFO",
                                                    "PATH_TRANSLATED", "QUERY_STRING", "REMOTE_ADDR", "REMOTE_IDENT", "REMOTE_USER",
                                                    "REQUEST_METHOD", "REQUEST_URI", "SCRIPT_FILENAME", "SERVER_NAME", "SERVER_PORT",
                                                    "SERVER_PROTOCOL", "SERVER_SOFTWARE", "REDIRECT_STATUS"};
@@ -12,7 +12,7 @@ Cgi::Cgi(void)
 
 Cgi::~Cgi(void)
 {
-  
+
 }
 
 std::string Cgi::getCgiResponse(Request req)
@@ -21,17 +21,11 @@ std::string Cgi::getCgiResponse(Request req)
 
 }
 
-void Cgi::_setEnviron (const Request& req) {
-  
-
-
-
-
-	  _env = _setEnviron(env_set);
+void Cgi::_setEnviron(const Request& req) {
 
 }
 
-const std::string Cgi::_getCwd (const std::string& path) const {
+const std::string Cgi::_getCwd(const std::string& path) const {
   const int buffSize = 512;
   char buff[buffSize];
   getcwd(buff, buffSize);
@@ -39,7 +33,7 @@ const std::string Cgi::_getCwd (const std::string& path) const {
   return ret;
 }
 
-size_t Cgi::_getEnvironListSize (const Request& req) {
+size_t Cgi::_getEnvironListSize(const Request& req) const {
   std::map<std::string, std::string> envMap;
   envMap[_environList[REQUEST_METHOD]] = req.getMethod();
   envMap[_environList[SCRIPT_FILENAME]] = req.getPath();

@@ -1,7 +1,8 @@
 #include "Cgi.hpp"
 #include "../http/Request.hpp"
+#include "../http/Response.hpp"
 
-#define PORT_NUM 8000
+#define PORT_NUM 8002
 
 int	getHostAddr()
 {
@@ -67,7 +68,7 @@ std::string getResponseBody(Request req)
 int main()
 {
     int serv_sock;
-   	struct sockaddr_in serv_addr; 
+   	struct sockaddr_in serv_addr;
     fd_set reads;
     int fd_max;
     fd_set temps;
@@ -76,9 +77,9 @@ int main()
 
     getHostAddr();
     serv_sock = socket(PF_INET, SOCK_STREAM, 0);
-    memset(&serv_addr, 0, sizeof(serv_addr)); 
-	serv_addr.sin_family = AF_INET; 
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); 
+    memset(&serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(PORT_NUM);
     bind(serv_sock,(struct sockaddr*)&serv_addr, sizeof(serv_addr));
     listen(serv_sock, 5);
@@ -94,7 +95,7 @@ int main()
         timeout.tv_sec = 5;
 		timeout.tv_usec = 0;
         result = select(fd_max+1, &temps, 0,0,&timeout);
-        if(result == -1) break; 
+        if(result == -1) break;
         if(result == 0) continue;
         for(int fd = 0 ; fd < fd_max+1 ; fd++)
         {
@@ -102,13 +103,30 @@ int main()
             if(fd != serv_sock)//client 소켓이면
             {
                 char msg[1024];
-                int read_len = recv(fd,msg,sizeof(msg) - 1, 0); 
+                int read_len = recv(fd,msg,sizeof(msg) - 1, 0);
                 msg[read_len] = 0;
                 Request req(msg);
                 std::string path;
-
                 getRequestPath(path, msg);
-                std::string response = getResponseHeader() + "\n" + getResponseBody(req);
+                std::string retCgi = getResponseBody(req);
+                std::stringstream ss;
+                std::string temp;
+                int cgiStatusCode;
+                std::string cgiStatusMsg;
+                ss >> temp >> cgiStatusCode >> cgiStatusMsg;
+                std::vector<std::string> v;
+                while (!ss.eof()) {
+                    std::string str;
+                    ss >> str;
+                    v.push_back(str);
+                }
+                std::string cgiBody = v.back();
+                Response res;
+                res.setServerName("webserv");
+                res.setStatusCode(cgiStatusCode);
+                res.setStatusMsg(cgiStatusMsg);
+                std::string response = res.makeResponse(cgiBody);
+                // std::string response = getResponseHeader() + "\n" + getResponseBody(req);
                 std::cout << "\033[34m" <<  response << "\033[37m" << std::endl;
                 send(fd, response.c_str(), (int)strlen(response.c_str()), 0);
                 printf("Disconnect client : %d \n", fd);
@@ -118,15 +136,15 @@ int main()
             }
             else//server socket이면
             {
-                struct sockaddr_in clnt_addr; 
+                struct sockaddr_in clnt_addr;
                 socklen_t clnt_addr_size = sizeof(clnt_addr);
-				clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size); 
+				clnt_sock = accept(serv_sock, (struct sockaddr*)&clnt_addr, &clnt_addr_size);
 				if(clnt_sock == -1)
 					continue;
 				FD_SET(clnt_sock, &reads);
 				if(fd_max<clnt_sock)
-					fd_max = clnt_sock; 
-				printf("Connect New Client : %d \n",clnt_sock); 
+					fd_max = clnt_sock;
+				printf("Connect New Client : %d \n",clnt_sock);
             }
         }
     }

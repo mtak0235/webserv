@@ -10,11 +10,17 @@
 #include <fcntl.h>
 #include <map>
 #include <vector>
+#include <sys/wait.h>
+
 
 #include "Request.hpp"
 
 #define BUFSIZE 50
 #define PORT_NUM 8000
+# define DELIMITER              "\r\n\r\n"
+
+
+// extern char **environ;
 
 int	getHostAddr()
 {
@@ -83,6 +89,69 @@ std::string getResponseBody(std::string path)//여기서 url 파싱 해야됨. e
 	return ret;
 }
 
+const std::string	getEnv(const std::string &varName)
+{
+	std::string	envVar[] = {
+		"CONTENT_LENGTH",
+		"CONTENT_TYPE",
+		"GATEWAY_INTERFACE",
+		"PATH_INFO",
+		"PATH_TRANSLATED",
+		"QUERY_STRING",
+		"REDIRECT_STATUS",
+		"REQUEST_METHOD",
+		"SCRIPT_FILENAME",
+		"SERVER_PROTOCOL",
+		"SERVER_PORT",
+		""
+	};
+	std::string	str;
+	int			i = 0;
+	for ( ; !envVar[i].empty(); ++i)
+	{
+		if (varName == envVar[i])
+			break ;
+	}
+	switch (i)
+	{
+	case 0:
+		// if (_request->getHeader().request_method == "GET")
+		// 	return std::to_string(_request->getHeader().queryString.size());
+		// else
+		// 	return std::to_string(_request->getContent().size());
+		return std::to_string(0);
+	case 1: return "";
+	case 2: return "CGI/1.1";
+	case 3: return "/test-cgi";
+	case 4: return "/test-cgi";
+	case 5: return "";
+	case 6: return "200";
+	case 7: return "POST";
+	case 8: return "./";
+	case 9: return "HTTP/1.1";
+	case 10: return std::to_string(PORT_NUM);
+	default: return std::string("");
+	}
+}
+
+std::string getOutput(int fd)
+{
+	char buffer[1024] = {0};
+	int len;
+	std::string ret = "";
+
+	while (true)
+	{
+		len = read(fd, buffer, sizeof(buffer) - 1);
+		if (len < 0)
+			break;
+		buffer[len] = 0;
+		ret = ret + buffer + "\n";
+		if (len == 0)
+			break;
+	}
+	return ret;
+}
 int main(int argc, char **av){
 	fd_set reads; // 감시할 소켓 목록( 여기서는 소켓의 입력스트림 감시 용도 ) 
 	fd_set temps; // reads 변수의 복사본으로 사용도리 변수
@@ -106,7 +175,7 @@ int main(int argc, char **av){
 	memset(&serv_addr, 0, sizeof(serv_addr)); 
 	serv_addr.sin_family = AF_INET; 
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY); 
-	serv_addr.sin_port = htons(atoi(av[1]));
+	serv_addr.sin_port = htons(PORT_NUM);
 	//서버 소켓 바인딩
 	if(bind(serv_sock,(struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1 ) exit(1);
 	log_handler("binding successful");
@@ -136,17 +205,89 @@ int main(int argc, char **av){
 				continue; // FD_ISSET() 은 리스트에 1로 되어 있는 소켓을 찾는다. // 즉, 클라이언트로부터 데이터가 날라와서 입력스트림에 뭔가 있는가? 
 			if(fd != serv_sock)
 			{ // 클라이언트 소켓이면 
+				pid_t pid;
 				read_len = recv(fd,message,sizeof(message) - 1, 0); 
 				if(read_len > 0) { 
-					Request req;
+					message[read_len] = '\0';
+
 					std::string path;
 					std::string response;
-				
-					message[read_len] = '\0';
-					req.parseRequest(message);					
+					int status;
+					pid_t pid;
+					int fdIn[2];
+					int fdOut[2];
+					int _cgiFd;
+					
+					// client --- server
+					// fdIn[1]--->fdIn[0]
+					// fdOut[0]<--fdOut[1]
+
+					if (pipe(fdIn) == -1 || pipe(fdOut) == -1)
+						error_handler("failed pipe");
+					write(fdIn[1], "HelloWorld\26", 11);
+					pid = fork();
+					//cgistatus에 1을 넣네?
+					Request req(message);
 					getRequestPath(path, message);
-					response = getResponseHeader() + "\n" + getResponseBody(path);
+					if (pid == 0)//자식 프로세스라면
+					{
+						close(fdIn[1]);
+						dup2(fdIn[0], 0);
+						close(fdIn[0]);
+						close(fdOut[0]);
+						dup2(fdOut[1], 1);
+						close(fdOut[1]);
+						char **_cgiEnv;
+						std::string envVar[] = {
+							"CONTENT_LENGTH",
+							"CONTENT_TYPE",
+							"GATEWAY_INTERFACE",
+							"PATH_INFO",
+							"PATH_TRANSLATED",
+							"QUERY_STRING",
+							"REDIRECT_STATUS",
+							"REQUEST_METHOD",
+							"SCRIPT_FILENAME",
+							"SERVER_PROTOCOL",
+							"SERVER_PORT",
+							""};
+						size_t size = 0;
+						size_t i = 0;
+
+						while (!envVar[size].empty())
+							++size;
+						_cgiEnv = (char **)malloc(sizeof(char *) * (size + 1));
+						for (; i < size; ++i)
+						{
+							std::string str = envVar[i] + "=" + getEnv(envVar[i]);
+							_cgiEnv[i] = strdup(str.c_str());
+						}
+						_cgiEnv[i] = NULL;
+
+						// sleep(2);
+						// read(fds1[0], NULL, size);
+						execve("./cgi_tester", NULL, _cgiEnv);
+						// write(fds2[1], response.c_str(), sizeof(response.c_str()));
+						// exit(1);
+						//cgi 프로그램이 표준 출력 1로 출력하는 것을 pipe로 부모 프로세스로 가져와서 cgi의 결과를 알 수 있다. 
+					}
+					else
+					{
+						close(fdOut[1]);
+						close(fdIn[0]);
+						close(fdIn[1]);
+						_cgiFd = fdOut[0];
+						fcntl(_cgiFd, F_SETFL, O_NONBLOCK);
+					}
+					//parse Cgi
+
+					response = getResponseHeader() + "\n" + getOutput(_cgiFd);//getResponseBody(path);
+					int stat;
+					// waitpid(-1, &stat, 0);
+					close(_cgiFd);
 					send(fd, response.c_str(), (int)strlen(response.c_str()), 0);
+					// printf("\033[34m %s \033[37m", response.c_str());
+					std::cout << response << std::endl;
 					printf("Disconnect client : %d \n",fd); 
 					FD_CLR(fd,&reads); // 감시목록에서 제외 
 					close(fd); // 통신 종료 
@@ -171,3 +312,7 @@ int main(int argc, char **av){
 	return 0;
 }
 
+// 1. fork해서 Child process를 생성한다.
+// 2. Child process에서 CGI를 실행한다. (with execve) + CGI를 위한 환경 변수// 환경변수를 어떻게 받아오지?
+// 3. parent process에서 파이프로 request 데이터를 넣어준다.
+// 4. 파이프로 받은 입력을 해석한 CGI가 내보내는 결과를 잘 담아주면 끝!

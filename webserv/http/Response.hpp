@@ -5,6 +5,8 @@
 #include <string>
 #include <sstream>
 
+#include "../core/Formatter.hpp"
+
 class Response
 {
   public:
@@ -16,6 +18,7 @@ class Response
     void setStatusCode(const int& n);
     void setStatusMsg(const std::string& str);
     void setServerName(const std::string& str);
+    // void setContentLength(const int& n);
 
   private:
     static const std::string _httpVersion;

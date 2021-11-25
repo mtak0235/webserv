@@ -49,6 +49,7 @@ class Server : public ngxKqueue
 		void _setResponse(int k);
 		std::string _setBody(std::string file);
 		std::string _getBody(std::string file, int k);
+
 };
 
 #endif

@@ -52,6 +52,7 @@ class Cgi
     std::string _statusMsg;
     std::string _body;
     char** _environ;
+    size_t _allocSize;
 }
 
 #endif

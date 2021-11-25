@@ -12,6 +12,9 @@ Cgi::Cgi(void)
 
 Cgi::~Cgi(void)
 {
+  for (size_t i = 0; i < _allocSize; i++) {
+    if (_environ[i]) delete[] _environ[i];
+  }
   if (_environ) delete[] _environ;
 }
 
@@ -23,12 +26,19 @@ std::string Cgi::getCgiResponse(Request req)
 
 void Cgi::_setEnviron(const Request& req) {
   std::map<std::string, std::string> envMap = _makeEnvMap(req);
-  size_t allocSize = envMap.size() + 1;
-  _environ = new char*[allocSize];
+  _allocSize = envMap.size() + 1;
+  _environ = new char*[_allocSize];
   if (!_environ) return ;
-  size_t i = 0;
-
-
+  std::map<std::string, std::string>::iterator itMap = envMap.begin();
+  size_t idxEnv = 0;
+  while (itMap != envMap.end()) {
+    std::string temp = itMap->first + "=" + itMap->second;
+    _environ[idxEnv] = new char[temp.size() + 1];
+    _environ[idxEnv] = (char*)temp.c_str();
+    idxEnv++;
+    itMap++;
+  }
+  _environ[idxEnv] = NULL;
 }
 
 const std::string Cgi::_getCwd(const std::string& path) const {

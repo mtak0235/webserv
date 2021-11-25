@@ -2,7 +2,7 @@
 #include "../http/Request.hpp"
 #include "../http/Response.hpp"
 
-#define PORT_NUM 8002
+#define PORT_NUM 8000
 
 int	getHostAddr()
 {
@@ -108,6 +108,8 @@ int main()
                 Request req(msg);
                 std::string path;
                 getRequestPath(path, msg);
+
+                /* 여기부터임 */
                 std::string retCgi = getResponseBody(req);
                 std::stringstream ss;
                 std::string temp;
@@ -126,6 +128,9 @@ int main()
                 res.setStatusCode(cgiStatusCode);
                 res.setStatusMsg(cgiStatusMsg);
                 std::string response = res.makeResponse(cgiBody);
+                /* 여기까지임 */
+
+
                 // std::string response = getResponseHeader() + "\n" + getResponseBody(req);
                 std::cout << "\033[34m" <<  response << "\033[37m" << std::endl;
                 send(fd, response.c_str(), (int)strlen(response.c_str()), 0);

@@ -7,7 +7,7 @@ const std::string Request::_availHeaderInfos[AVAIL_H]
        "Accept-Encoding:", "Accept-Charset:", "Keep-Alive:",
        "Connection:", "Content-Length:"};
 
-Request::Request()
+Request::Request() : _rawBody("")
 {
 
 }
@@ -140,4 +140,8 @@ void Request::_parseRequestBody (const std::string& rb) {
             idx = idxSep + 1;
         }
     }
+}
+
+std::string Request::getBody() const {
+    return _rawBody;
 }

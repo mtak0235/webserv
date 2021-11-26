@@ -25,6 +25,7 @@ class Server : public ngxKqueue
 		Log _log;
 		Request _request;
 		Response _response;
+		Cgi _cgi;
 
 		char _buf[1024];
 		int _readDataSize;
@@ -49,8 +50,10 @@ class Server : public ngxKqueue
 		int _responseDatatoServer(int k);
 		void _getRequestInfo(int k);
 		void _setResponse(int k);
+		std::string _getCgiFilePath(std::string fileName);
 		std::string _setBody(std::string file);
 		std::string _getBody(std::string file, int k);
+		std::string _methodPost(std::string file);
 
 };
 

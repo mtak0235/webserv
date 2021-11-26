@@ -190,6 +190,14 @@ std::string Server::_setBody(std::string file)
 	return body;
 }
 
+std::string Server::_getCgiFilePath(std::string fileName)
+{
+	if (fileName.find("cgi_tester", 0) != std::string::npos)
+		return "./www/bin/cgi_tester";
+	else
+		return "./www/bin/php-cgi";
+}
+
 std::string Server::_getBody(std::string file, int k)
 {
 	std::string body;
@@ -201,13 +209,11 @@ std::string Server::_getBody(std::string file, int k)
 			std::cout << file << "\n";
 			body = _setBody(file);
 		}
-		//else
-			//cgi
+		else
+			body = _cgi.getCgiResponse(this->_request, _getCgiFilePath(file));// 이거랑 
 	}
 	else if (!_requestMethod.compare("POST"))
-	{
-
-	}
+		body = _cgi.getCgiResponse(this->_request, _getCgiFilePath(file));//같음
 	else if (!_requestMethod.compare("DELETE"))
 	{
 		std::cout << "[" << _requestPath << "]" << "\n";

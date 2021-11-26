@@ -33,6 +33,7 @@ class Request
 		std::string getPath(void) const;
 		std::string getHttpVersion(void) const;
 		std::string getHeaderInfo(const HEADER_INFO& i) const;
+    std::string getBody() const;
 		void clear();
 
   private:

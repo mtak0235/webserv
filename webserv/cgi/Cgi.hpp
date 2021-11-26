@@ -6,13 +6,8 @@
 #include <fstream>
 #include <map>
 
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/wait.h>
+#include "Request.hpp"
 
-#include "../http/Request.hpp"
-
-class Request;
 
 class Cgi
 {

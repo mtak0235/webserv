@@ -1,4 +1,8 @@
 #include "Cgi.hpp"
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
 
 const std::string Cgi::_environList[NON_OF_ALL] = {"AUTH_TYPE", "CONTENT_LENGTH", "CONTENT_TYPE", "GATEWAY_INTERPACE", "PATH_INFO",
                                                    "PATH_TRANSLATED", "QUERY_STRING", "REMOTE_ADDR", "REMOTE_IDENT", "REMOTE_USER",
@@ -22,28 +26,45 @@ std::string Cgi::getCgiResponse(Request req)
 {
   std::string ret = "";
   _setEnviron(req);
+
+  char c[15] = "./cgi_tester";
+  char *argv[] = {c, NULL};
+  char *envp[] = {"REQUEST_METHOD=GET", "SERVER_PROTOCOL=HTTP/1.1", "PATH_INFO=/i", NULL};
+
+  pid_t pid;
+
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
   long fdIn = fileno(fIn);
   long fdOut = fileno(fOut);
+
   std::string testInput = "hElloWorld";
   write(fdIn, testInput.c_str(), testInput.size());
+  // write(fdIn, "hElloWorld", 10);
   lseek(fdIn, 0, SEEK_SET);
-  pid_t pid = fork();
-  if (pid == 0) {
+  
+  pid = fork();
+  if (pid == 0) 
+  {
     dup2(fdIn, STDIN_FILENO);
     dup2(fdOut, STDOUT_FILENO);
-    execve("./cgi-tester", NULL, _environ);
-  } else {
+    execve("./cgi_tester", argv, envp);
+  } 
+  else 
+  {
     const size_t buffSize = 2048;
     char buff[buffSize] = {0, };
-    wait(NULL);
+    waitpid(-1, NULL, 0);
     lseek(fdOut, 0, SEEK_SET);
     size_t bytes = 0;
-    while ((bytes = read(fdOut, buff, 1)) != 0) {
+    while ((bytes = read(fdOut, buff, 1024)) != 0) {
       std::string temp = buff;
+      std::cout << "###" << buff << "\n";
       ret += temp;
     }
+    //   int ret = read(fdOut, buff, 1024);
+		// buff[ret] = 0;
+		// printf("%s\n", buff);
   }
   std::cout << "test cgi [" << ret << "] \n";
   return ret;

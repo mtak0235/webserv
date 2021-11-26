@@ -2,11 +2,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <iostream>
 
 int main()
 {
-	char *argv[] = {"./cgi_tester", "./PATH_INFO", NULL};
+	char *argv[] = {"./cgi_tester",  NULL};
 	char *envp[] = {"REQUEST_METHOD=GET", "SERVER_PROTOCOL=HTTP/1.1", "PATH_INFO=/i", NULL};
+
+	char *a = (char*)malloc(16);
 
 	pid_t pid;
 

@@ -110,16 +110,16 @@ void Server::_getRequestInfo(int k)
 
 
 	/* 테스트용 if 추가함 */
-	if (!_request.getPath().compare("/cgi-tester")) {
-		Cgi cgi;
-		_requestMethod = "GET";
-		_requestPath = _request.getPath();
-		// _statusCode = cgi.
-		_body = cgi.getCgiResponse(_request);
-		std::cout << "[" << _body << "]" "\n";
+	// if (!_request.getPath().compare("/cgi-tester")) {
+	// 	Cgi cgi;
+	// 	_requestMethod = "GET";
+	// 	_requestPath = _request.getPath();
+	// 	// _statusCode = cgi.
+	// 	_body = cgi.getCgiResponse(_request);
+	// 	std::cout << "[" << _body << "]" "\n";
 
-	} else {
-		if (!_request.getPath().compare("/favicon.ico"))
+	// } else {
+	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
 	_requestMethod =  _request.getMethod();
@@ -156,7 +156,7 @@ void Server::_getRequestInfo(int k)
 		}
 
 	}
-	}
+	// }
 	// iferrsetBody();
 }
 
@@ -196,13 +196,19 @@ std::string Server::_getBody(std::string file, int k)
 
 	if (!_requestMethod.compare("GET"))
 	{
+		std::string cgiName = _nowLocation.getCgiName();
 		if (!_isFile.compare("html") || !_isFile.compare("htm"))
 		{
 			std::cout << file << "\n";
 			body = _setBody(file);
 		}
-		//else
-			//cgi
+		else if (!_isFile.compare(cgiName))
+		{
+			Cgi c;
+			body = c.getCgiResponse(_request);
+			_statusCode = 200;
+			std::cout << "[" << body << "]\n";
+		}
 	}
 	else if (!_requestMethod.compare("POST"))
 	{

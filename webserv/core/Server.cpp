@@ -116,6 +116,7 @@ void Server::_getRequestInfo(int k)
 		_requestPath = _request.getPath();
 		// _statusCode = cgi.
 		_body = cgi.getCgiResponse(_request);
+		std::cout << "[" << _body << "]" "\n";
 
 	} else {
 		if (!_request.getPath().compare("/favicon.ico"))
@@ -165,6 +166,7 @@ void Server::_setResponse(int k)
 	_response.setStatusCode(_statusCode);
 	_response.setStatusMsg(_status[_statusCode]);
 	_body += "\n";
+	//+ content type
 	_lastRespnse = _response.makeResponse(_body);
 	std::cout <<_lastRespnse;
 }

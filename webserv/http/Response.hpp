@@ -19,7 +19,7 @@ class Response
     void setStatusMsg(const std::string& str);
     void setServerName(const std::string& str);
     // void setContentLength(const int& n);
-
+    // void setContentType(std::string type);
   private:
     static const std::string _httpVersion;
 

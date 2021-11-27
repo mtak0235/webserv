@@ -29,7 +29,7 @@ std::string Cgi::getCgiResponse(Request req)
 
   char c[15] = "./cgi_tester";
   char *argv[] = {c, NULL};
-  char *envp[] = {"REQUEST_METHOD=GET", "SERVER_PROTOCOL=HTTP/1.1", "PATH_INFO=/i", NULL};
+  // char *envp[] = {"REQUEST_METHOD=GET", "SERVER_PROTOCOL=HTTP/1.1", "PATH_INFO=/i", NULL};
 
   pid_t pid;
 
@@ -40,7 +40,6 @@ std::string Cgi::getCgiResponse(Request req)
 
   std::string testInput = "hElloWorld";
   write(fdIn, testInput.c_str(), testInput.size());
-  // write(fdIn, "hElloWorld", 10);
   lseek(fdIn, 0, SEEK_SET);
   
   pid = fork();
@@ -48,7 +47,7 @@ std::string Cgi::getCgiResponse(Request req)
   {
     dup2(fdIn, STDIN_FILENO);
     dup2(fdOut, STDOUT_FILENO);
-    execve("./cgi_tester", argv, envp);
+    execve("./cgi_tester", argv, _environ);
   } 
   else 
   {
@@ -57,14 +56,13 @@ std::string Cgi::getCgiResponse(Request req)
     waitpid(-1, NULL, 0);
     lseek(fdOut, 0, SEEK_SET);
     size_t bytes = 0;
-    while ((bytes = read(fdOut, buff, 1024)) != 0) {
+    while ((bytes = read(fdOut, buff, 1)) != 0)
+		{
+			buff[bytes] = 0;
       std::string temp = buff;
-      std::cout << "###" << buff << "\n";
       ret += temp;
+			memset(buff, 0, sizeof(buff));
     }
-    //   int ret = read(fdOut, buff, 1024);
-		// buff[ret] = 0;
-		// printf("%s\n", buff);
   }
   std::cout << "test cgi [" << ret << "] \n";
   return ret;
@@ -73,13 +71,15 @@ std::string Cgi::getCgiResponse(Request req)
 void Cgi::_setEnviron(const Request& req) {
   std::map<std::string, std::string> envMap = _makeEnvMap(req);
   _allocSize = envMap.size() + 1;
-  _environ = (char**)malloc(sizeof(char *) * _allocSize);
+	_environ = new char*[_allocSize];
   std::map<std::string, std::string>::iterator itMap = envMap.begin();
   size_t idxEnv = 0;
   while (itMap != envMap.end()) {
     std::string temp = itMap->first + "=" + itMap->second;
-    _environ[idxEnv] = (char*)malloc(temp.size() + 1);
-    _environ[idxEnv] = (char*)temp.c_str();
+		_environ[idxEnv] = new char[temp.size() + 1];
+		for (unsigned long i = 0; i < temp.size(); i++)
+    	_environ[idxEnv][i] = temp[i];
+		_environ[idxEnv][temp.size()] = 0;
     idxEnv++;
     itMap++;
   }

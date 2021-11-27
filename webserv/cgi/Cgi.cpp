@@ -23,6 +23,21 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
   std::string ret = "";
   std::string cgiInput = req.getBody();
   _setEnviron(req);
+
+  std::cout << "[" << filePath << "]\n";
+
+  size_t found = filePath.find_last_of("/");
+  std::string c = filePath.substr(found);
+  std::string a = ".";
+  a += filePath;
+  filePath = a;
+  a = ".";
+  a += c;
+  char *tmp = new char[a.size() + 1];
+  for (unsigned long i = 0; i < a.size(); i++)
+    tmp[i] = a[i];
+  tmp[a.size()] = 0;
+  char *argv[] = {tmp ,NULL};
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
   long fdIn = fileno(fIn);
@@ -33,7 +48,7 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
   if (pid == 0) {
     dup2(fdIn, STDIN_FILENO);
     dup2(fdOut, STDOUT_FILENO);
-    execve(filePath.c_str(), NULL, _environ);
+    execve(filePath.c_str(), argv, _environ);
   } else {
     const size_t buffSize = 2048;
     char buff[buffSize] = {0, };
@@ -52,13 +67,18 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
 void Cgi::_setEnviron(const Request& req) {
   std::map<std::string, std::string> envMap = _makeEnvMap(req);
   _allocSize = envMap.size() + 1;
-  _environ = (char**)malloc(sizeof(char *) * _allocSize);
+  // _environ = (char**)malloc(sizeof(char *) * _allocSize);
+  _environ = new char*[_allocSize];
   std::map<std::string, std::string>::iterator itMap = envMap.begin();
   size_t idxEnv = 0;
   while (itMap != envMap.end()) {
     std::string temp = itMap->first + "=" + itMap->second;
-    _environ[idxEnv] = (char*)malloc(temp.size() + 1);
-    _environ[idxEnv] = (char*)temp.c_str();
+    // _environ[idxEnv] = (char*)malloc(temp.size() + 1);
+    // _environ[idxEnv] = (char*)temp.c_str();
+    _environ[idxEnv] = new char[temp.size() + 1];
+    for (unsigned long i = 0; i < temp.size(); i++)
+      _environ[idxEnv][i] = temp[i];
+    _environ[idxEnv][temp.size()] = 0;
     idxEnv++;
     itMap++;
   }

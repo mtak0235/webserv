@@ -1,6 +1,10 @@
 #ifndef CGI_HPP
 #define CGI_HPP
 
+#include <unistd.h>
+#include <cstdlib>
+#include <sys/wait.h>
+
 #include <cstring>
 #include <string>
 #include <fstream>

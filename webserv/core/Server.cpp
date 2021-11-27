@@ -10,7 +10,6 @@ Server::Server()
 
 Server::~Server()
 {
-
 }
 
 void Server::setStatus()
@@ -44,7 +43,6 @@ void Server::setStatus()
 	// _status[503] = "Service Unavailable";
 	// _status[504] = "Gateway Timeout";
 	// _status[505] = "HTTP Version Not Supported";
-
 }
 
 void Server::acceptNewClient(int servSock)
@@ -66,9 +64,9 @@ int Server::recvDataFromClient(int k)
 	_readDataSize = read(_currEvent->ident, _buf, sizeof(_buf));
 	if (_readDataSize <= 0)
 	{
-			if (_readDataSize < 0)
-					std::cerr << "client read error!" << std::endl;
-			disconnectClient(_currEvent->ident, _clients);
+		if (_readDataSize < 0)
+			std::cerr << "client read error!" << std::endl;
+		disconnectClient(_currEvent->ident, _clients);
 	}
 	else
 	{
@@ -83,7 +81,8 @@ int Server::_responseDatatoServer(int k)
 	_buf[_readDataSize] = '\0';
 	_clients[_currEvent->ident] += _buf;
 	_clientReq = _clients[_currEvent->ident];
-	std::cout << "\033[36mreceived data from " << _currEvent->ident << "\033[37m\n" << _clientReq << std::endl;
+	std::cout << "\033[36mreceived data from " << _currEvent->ident << "\033[37m\n"
+			  << _clientReq << std::endl;
 	if (_clientReq != "")
 	{
 		_getRequestInfo(k);
@@ -101,7 +100,6 @@ int Server::_responseDatatoServer(int k)
 	return NGX_FAIL;
 }
 
-
 // allow method 안에서 있는지 확인
 void Server::_getRequestInfo(int k)
 {
@@ -109,16 +107,6 @@ void Server::_getRequestInfo(int k)
 	_request.setRequest(_clientReq);
 
 	/* 테스트용 if 추가함 */
-<<<<<<< HEAD
-	if (!_request.getPath().compare("/cgi-tester"))
-	{
-		Cgi cgi;
-		_requestMethod = "GET";
-		_requestPath = _request.getPath();
-		// _statusCode = cgi.
-		_body = cgi.getCgiResponse(_request, _getCgiFilePath(_requestPath));
-		std::cout << "\033[35mResponse Body\n" << _body << "\033[37m\n";
-=======
 	// if (!_request.getPath().compare("/cgi-tester")) {
 	// 	Cgi cgi;
 	// 	_requestMethod = "GET";
@@ -127,11 +115,10 @@ void Server::_getRequestInfo(int k)
 	// 	_body = cgi.getCgiResponse(_request);
 	// 	std::cout << "[" << _body << "]" "\n";
 
-	// } else {
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
-	_requestMethod =  _request.getMethod();
+	_requestMethod = _request.getMethod();
 	//파일인 경우
 	_found = _requestPath.find_last_of(".");
 	_isFile = _requestPath.substr(_found + 1);
@@ -143,59 +130,28 @@ void Server::_getRequestInfo(int k)
 	}
 	//경로인 경우
 	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
-	_allowMethods  = _nowLocation.getAllowMethod();
+	_allowMethods = _nowLocation.getAllowMethod();
 	_isAllow = false;
 	for (unsigned long i = 0; i < _allowMethods.size(); i++)
 	{
 		if (!_allowMethods[i].compare(_requestMethod))
 			_isAllow = true;
->>>>>>> cgi
 	}
+	if (!_isAllow)
+		_statusCode = 405;
 	else
 	{
-		if (!_request.getPath().compare("/favicon.ico"))
-			_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-		_requestPath = _request.getPath();
-		_requestMethod = _request.getMethod();
-		//파일인 경우
-		_found = _requestPath.find_last_of(".");
-		_isFile = _requestPath.substr(_found + 1);
-		_body = "";
-		if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare("bla"))
+		_indexList = _nowLocation.getIndexList();
+		_isFile = "";
+		_found = 0;
+		if (_indexList.size() > 0) //경로인 경우
 		{
-			_body = _getBody(_requestPath.substr(1), k);
-			return;
+			_found = _indexList[0].find_last_of(".");
+			_isFile = _indexList[0].substr(_found + 1);
+			_body = _getBody(_indexList[0], k);
 		}
-		//경로인 경우
-		_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
-		_allowMethods = _nowLocation.getAllowMethod();
-		_isAllow = false;
-		for (unsigned long i = 0; i < _allowMethods.size(); i++)
-		{
-			if (!_allowMethods[i].compare(_requestMethod))
-				_isAllow = true;
-		}
-		if (!_isAllow)
-			_statusCode = 405;
-		else
-		{
-			_indexList = _nowLocation.getIndexList();
-			_isFile = "";
-			_found = 0;
-			if (_indexList.size() > 0) //경로인 경우
-			{
-				_found = _indexList[0].find_last_of(".");
-				_isFile = _indexList[0].substr(_found + 1);
-				_body = _getBody(_indexList[0], k);
-			}
-		}
-<<<<<<< HEAD
-	}
-=======
-
 	}
 	// }
->>>>>>> cgi
 	// iferrsetBody();
 }
 
@@ -241,7 +197,7 @@ std::string Server::_getBody(std::string file, int k)
 {
 	std::string body;
 
-	std::cout << "\033[33m_getBody->file = " << file <<  "\033[37m\n";
+	std::cout << "\033[33m_getBody->file = " << file << "\033[37m\n";
 	if (!_requestMethod.compare("GET"))
 	{
 		std::string cgiName = _nowLocation.getCgiName();
@@ -249,23 +205,15 @@ std::string Server::_getBody(std::string file, int k)
 		{
 			body = _setBody(file);
 		}
-<<<<<<< HEAD
 		else
 		{
-			body = _cgi.getCgiResponse(this->_request, _getCgiFilePath(file));// 이거랑 
+			
+			body = _cgi.getCgiResponse(this->_request, _nowLocation.getCgiPath()); // 이거랑
 			_statusCode = 200;
-=======
-		else if (!_isFile.compare(cgiName))
-		{
-			Cgi c;
-			body = c.getCgiResponse(_request);
-			_statusCode = 200;
-			std::cout << "[" << body << "]\n";
->>>>>>> cgi
 		}
 	}
 	else if (!_requestMethod.compare("POST"))
-		body = _cgi.getCgiResponse(this->_request, _getCgiFilePath(file));//같음
+		body = _cgi.getCgiResponse(this->_request, _getCgiFilePath(file)); //같음
 	else if (!_requestMethod.compare("DELETE"))
 	{
 		_serverConfigs[k].eraseLocation(_requestPath);

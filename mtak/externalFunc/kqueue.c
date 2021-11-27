@@ -127,7 +127,7 @@ int main()
                     {
                         buf[n] = '\0';
                         clients[curr_event->ident] += buf;
-                        cout << "received data from " << curr_event->ident << ": " << clients[curr_event->ident] << endl;
+                        cout << "\033[34m received data from " << curr_event->ident << "\033[37m\n" << clients[curr_event->ident] << endl;
                     }
                 }
             }

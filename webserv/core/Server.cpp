@@ -116,7 +116,7 @@ void Server::_getRequestInfo(int k)
 		_requestPath = _request.getPath();
 		// _statusCode = cgi.
 		_body = cgi.getCgiResponse(_request, _getCgiFilePath(_requestPath));
-		std::cout << "[" << _body << "]\n";
+		std::cout << "\033[35mResponse Body\n" << _body << "\033[37m\n";
 	}
 	else
 	{
@@ -168,7 +168,7 @@ void Server::_setResponse(int k)
 	_body += "\n";
 	//+ content type
 	_lastRespnse = _response.makeResponse(_body);
-	std::cout <<_lastRespnse;
+	std::cout << "\033[35msetResponse->_lastResopnse" << _lastRespnse << "\033[37m" << std::endl;
 }
 
 std::string Server::_setBody(std::string file)
@@ -202,7 +202,7 @@ std::string Server::_getBody(std::string file, int k)
 {
 	std::string body;
 
-	std::cout << "\033[35m_getBody->file = " << file <<  "\033[37m\n";
+	std::cout << "\033[33m_getBody->file = " << file <<  "\033[37m\n";
 	if (!_requestMethod.compare("GET"))
 	{
 		if (!_isFile.compare("html") || !_isFile.compare("htm"))
@@ -210,13 +210,15 @@ std::string Server::_getBody(std::string file, int k)
 			body = _setBody(file);
 		}
 		else
+		{
 			body = _cgi.getCgiResponse(this->_request, _getCgiFilePath(file));// 이거랑 
+			_statusCode = 200;
+		}
 	}
 	else if (!_requestMethod.compare("POST"))
 		body = _cgi.getCgiResponse(this->_request, _getCgiFilePath(file));//같음
 	else if (!_requestMethod.compare("DELETE"))
 	{
-		std::cout << "[" << _requestPath << "]" << "\n";
 		_serverConfigs[k].eraseLocation(_requestPath);
 		body = "{\"success\":\"true\"}";
 		_statusCode = 200;

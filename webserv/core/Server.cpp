@@ -109,6 +109,7 @@ void Server::_getRequestInfo(int k)
 	_request.setRequest(_clientReq);
 
 	/* 테스트용 if 추가함 */
+<<<<<<< HEAD
 	if (!_request.getPath().compare("/cgi-tester"))
 	{
 		Cgi cgi;
@@ -117,6 +118,38 @@ void Server::_getRequestInfo(int k)
 		// _statusCode = cgi.
 		_body = cgi.getCgiResponse(_request, _getCgiFilePath(_requestPath));
 		std::cout << "\033[35mResponse Body\n" << _body << "\033[37m\n";
+=======
+	// if (!_request.getPath().compare("/cgi-tester")) {
+	// 	Cgi cgi;
+	// 	_requestMethod = "GET";
+	// 	_requestPath = _request.getPath();
+	// 	// _statusCode = cgi.
+	// 	_body = cgi.getCgiResponse(_request);
+	// 	std::cout << "[" << _body << "]" "\n";
+
+	// } else {
+	if (!_request.getPath().compare("/favicon.ico"))
+		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
+	_requestPath = _request.getPath();
+	_requestMethod =  _request.getMethod();
+	//파일인 경우
+	_found = _requestPath.find_last_of(".");
+	_isFile = _requestPath.substr(_found + 1);
+	_body = "";
+	if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare("bla"))
+	{
+		_body = _getBody(_requestPath.substr(1), k);
+		return;
+	}
+	//경로인 경우
+	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
+	_allowMethods  = _nowLocation.getAllowMethod();
+	_isAllow = false;
+	for (unsigned long i = 0; i < _allowMethods.size(); i++)
+	{
+		if (!_allowMethods[i].compare(_requestMethod))
+			_isAllow = true;
+>>>>>>> cgi
 	}
 	else
 	{
@@ -156,7 +189,13 @@ void Server::_getRequestInfo(int k)
 				_body = _getBody(_indexList[0], k);
 			}
 		}
+<<<<<<< HEAD
 	}
+=======
+
+	}
+	// }
+>>>>>>> cgi
 	// iferrsetBody();
 }
 
@@ -205,14 +244,24 @@ std::string Server::_getBody(std::string file, int k)
 	std::cout << "\033[33m_getBody->file = " << file <<  "\033[37m\n";
 	if (!_requestMethod.compare("GET"))
 	{
+		std::string cgiName = _nowLocation.getCgiName();
 		if (!_isFile.compare("html") || !_isFile.compare("htm"))
 		{
 			body = _setBody(file);
 		}
+<<<<<<< HEAD
 		else
 		{
 			body = _cgi.getCgiResponse(this->_request, _getCgiFilePath(file));// 이거랑 
 			_statusCode = 200;
+=======
+		else if (!_isFile.compare(cgiName))
+		{
+			Cgi c;
+			body = c.getCgiResponse(_request);
+			_statusCode = 200;
+			std::cout << "[" << body << "]\n";
+>>>>>>> cgi
 		}
 	}
 	else if (!_requestMethod.compare("POST"))

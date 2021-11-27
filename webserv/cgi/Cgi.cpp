@@ -21,7 +21,7 @@ Cgi::~Cgi(void)
 std::string Cgi::getCgiResponse(Request req, std::string filePath)
 {
   std::string ret = "";
-  std::string cgiInput = req.getBody();//key=value1&key2=value2
+  std::string cgiInput = req.getBody();
   _setEnviron(req);
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
@@ -30,14 +30,11 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
   write(fdIn, cgiInput.c_str(), cgiInput.size());
   lseek(fdIn, 0, SEEK_SET);
   pid_t pid = fork();
-  if (pid == 0) 
-  {
+  if (pid == 0) {
     dup2(fdIn, STDIN_FILENO);
     dup2(fdOut, STDOUT_FILENO);
     execve(filePath.c_str(), NULL, _environ);
-  } 
-  else 
-  {
+  } else {
     const size_t buffSize = 2048;
     char buff[buffSize] = {0, };
     wait(NULL);
@@ -48,7 +45,7 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
       ret += temp;
     }
   }
-  std::cout << "\033[34mcgi ret\n" << ret << "\033[37m\n";
+  std::cout << "\033[34mcgi ret\n" << ret << "\n";
   return ret;
 }
 

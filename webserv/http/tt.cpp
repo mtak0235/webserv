@@ -6,7 +6,7 @@
 
 int main()
 {
-	char *argv[] = {"./cgi_tester",  NULL};
+	char *argv[] = {"/Users/mtak/Desktop/check/webserv/www/bin",  NULL};
 	char *envp[] = {"REQUEST_METHOD=GET", "SERVER_PROTOCOL=HTTP/1.1", "PATH_INFO=/i", NULL};
 
 	char *a = (char*)malloc(16);

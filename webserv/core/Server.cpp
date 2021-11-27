@@ -123,7 +123,7 @@ void Server::_getRequestInfo(int k)
 	_found = _requestPath.find_last_of(".");
 	_isFile = _requestPath.substr(_found + 1);
 	_body = "";
-	if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare("bla"))
+	if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare(_nowLocation.getCgiName()))
 	{
 		_body = _getBody(_requestPath.substr(1), k);
 		return;

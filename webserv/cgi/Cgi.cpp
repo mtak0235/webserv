@@ -1,4 +1,5 @@
 #include "Cgi.hpp"
+#include <fcntl.h>
 
 const std::string Cgi::_environList[NON_OF_ALL] = {"AUTH_TYPE", "CONTENT_LENGTH", "CONTENT_TYPE", "GATEWAY_INTERPACE", "PATH_INFO",
                                                    "PATH_TRANSLATED", "QUERY_STRING", "REMOTE_ADDR", "REMOTE_IDENT", "REMOTE_USER",
@@ -20,24 +21,28 @@ Cgi::~Cgi(void)
 
 std::string Cgi::getCgiResponse(Request req, std::string filePath)
 {
+  // filePath = "." + filePath;
   std::string ret = "";
   std::string cgiInput = req.getBody();
   _setEnviron(req);
 
   std::cout << "[" << filePath << "]\n";
+  std::cout << "[" << cgiInput << "]\n";
 
-  size_t found = filePath.find_last_of("/");
-  std::string c = filePath.substr(found);
+  // size_t found = filePath.find_last_of("/");
+  std::string c = req.getPath();
   std::string a = ".";
-  a += filePath;
-  filePath = a;
-  a = ".";
+  // a += filePath;
+  // filePath = a;
+  a = "./www";
   a += c;
   char *tmp = new char[a.size() + 1];
   for (unsigned long i = 0; i < a.size(); i++)
     tmp[i] = a[i];
   tmp[a.size()] = 0;
   char *argv[] = {tmp ,NULL};
+  std::cout << "[" << argv[0] << "]"<< std::endl;
+
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
   long fdIn = fileno(fIn);
@@ -49,8 +54,9 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
     dup2(fdIn, STDIN_FILENO);
     dup2(fdOut, STDOUT_FILENO);
     execve(filePath.c_str(), argv, _environ);
-  } else {
-    const size_t buffSize = 2048;
+  } else 
+  {
+    const size_t buffSize = 1048;
     char buff[buffSize] = {0, };
     wait(NULL);
     lseek(fdOut, 0, SEEK_SET);
@@ -60,7 +66,6 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
       ret += temp;
     }
   }
-  std::cout << "\033[34mcgi ret\n" << ret << "\n";
   return ret;
 }
 
@@ -79,11 +84,11 @@ void Cgi::_setEnviron(const Request& req) {
     for (unsigned long i = 0; i < temp.size(); i++)
       _environ[idxEnv][i] = temp[i];
     _environ[idxEnv][temp.size()] = 0;
+    printf("%s\n", _environ[idxEnv]);
     idxEnv++;
     itMap++;
   }
   _environ[idxEnv] = NULL;
-
 }
 
 const std::string Cgi::_getCwd(void) const {
@@ -107,6 +112,7 @@ std::map<std::string, std::string> Cgi::_makeEnvMap(const Request& req) const {
   ret[_environList[REMOTE_ADDR]] = "127.0.0.1";
   ret[_environList[SERVER_PORT]] = "80";
   ret[_environList[SERVER_SOFTWARE]] = "versbew";
-  ret[_environList[PATH_TRANSLATED]] = _getCwd();
+  ret[_environList[PATH_TRANSLATED]] = req.getPath();
+  ret[_environList[CONTENT_LENGTH]] = std::to_string(req.getBody().size());
   return ret;
 }

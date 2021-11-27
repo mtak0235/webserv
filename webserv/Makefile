@@ -37,7 +37,7 @@ re: fclean all
 OBJS = $(SRCS:%.cpp=$(DIR_OBJS)%.o)
 
 $(DIR_OBJS):
-	mkdir objs
+	@mkdir objs
 
 $(NAME): $(OBJS)
 	@$(COMPILER) $(CFLAGS) $(CPP_VERSION) -I $(DIR_CORE) -I $(DIR_EVENT) -I $(DIR_HTTP) -I $(DIR_CGI) $(OBJS) -o $(NAME)

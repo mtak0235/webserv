@@ -57,6 +57,7 @@ std::string Request::getHeaderInfo(const HEADER_INFO& i) const {
 }
 
 void Request::_init(const std::string& r) {
+    printf("%s\n", r.c_str());
     std::stringstream ss;
     ss << r;
     std::vector<std::string> v;
@@ -140,6 +141,7 @@ void Request::_parseRequestBody (const std::string& rb) {
             idx = idxSep + 1;
         }
     }
+    printf("raw body : %s \n", _rawBody.c_str());
 }
 
 std::string Request::getBody() const {

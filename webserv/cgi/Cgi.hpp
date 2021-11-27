@@ -42,6 +42,8 @@ class Cgi
     ~Cgi();
 
     std::string getCgiResponse(Request req, std::string filePath);
+    std::string getCgiResopneBody();
+    std::string getCgiResopneHeader();
 
   private:
     static const std::string _environList[NON_OF_ALL];

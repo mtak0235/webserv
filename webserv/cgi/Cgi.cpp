@@ -7,7 +7,7 @@ const std::string Cgi::_environList[NON_OF_ALL] = {"AUTH_TYPE", "CONTENT_LENGTH"
 
 Cgi::Cgi(void)
 {
-
+	_statusCode = 400;
 }
 
 Cgi::~Cgi(void)
@@ -18,38 +18,70 @@ Cgi::~Cgi(void)
   // if (_environ) delete[] _environ;
 }
 
-std::string Cgi::getCgiResponse(Request req, std::string filePath)
+int Cgi::getStatusCode()
 {
+	return _statusCode;
+}
+
+std::string Cgi::_setBody(std::string file)
+{
+	std::string body = "";
+	char c;
+	std::ifstream ifs;
+	ifs.open(file);
+	if (!ifs)
+	{
+		std::cout << "file open error\n";
+		_statusCode = 404;
+	}
+	else
+	{
+		while (ifs.get(c))
+			body += c;
+		_statusCode = 200;
+	}
+	ifs.close();
+	return body;
+}
+
+std::string Cgi::getCgiResponse(Request req, std::string cgiPath, std::string file)
+{
+	// cgiPath = "." + cgiPath;
   std::string ret = "";
-  std::string cgiInput = req.getBody();
+  std::string cgiInput = req.getBody(); //_setBody(file) : cgitester
   _setEnviron(req);
 
-  std::cout << "[" << filePath << "]\n";
+  std::cout << "file path [" << cgiPath << "]\n";
+	std::cout << "cgi input[" << cgiInput << "]\n";
 
-  size_t found = filePath.find_last_of("/");
-  std::string c = filePath.substr(found);
-  std::string a = ".";
-  a += filePath;
-  filePath = a;
-  a = ".";
-  a += c;
-  char *tmp = new char[a.size() + 1];
-  for (unsigned long i = 0; i < a.size(); i++)
-    tmp[i] = a[i];
-  tmp[a.size()] = 0;
-  char *argv[] = {tmp ,NULL};
+	std::cout << "file [" << file << "]\n";
+
+  char *tmp = new char[cgiPath.size() + 1];
+  for (unsigned long i = 0; i < cgiPath.size(); i++)
+    tmp[i] = cgiPath[i];
+  tmp[cgiPath.size()] = 0;
+	std::cout << "tmp ["<< tmp << "]\n";
+
+  char *argv[] = {tmp, NULL};
+
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
   long fdIn = fileno(fIn);
   long fdOut = fileno(fOut);
+
+
   write(fdIn, cgiInput.c_str(), cgiInput.size());
   lseek(fdIn, 0, SEEK_SET);
+
   pid_t pid = fork();
-  if (pid == 0) {
+  if (pid == 0) 
+	{
     dup2(fdIn, STDIN_FILENO);
     dup2(fdOut, STDOUT_FILENO);
-    execve(filePath.c_str(), argv, _environ);
-  } else {
+    execve(cgiPath.c_str(), argv, _environ);
+  } 
+	else 
+	{
     const size_t buffSize = 2048;
     char buff[buffSize] = {0, };
     wait(NULL);
@@ -60,7 +92,18 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
       ret += temp;
     }
   }
-  std::cout << "\033[34mcgi ret\n" << ret << "\n";
+	int k = -1;
+	for (unsigned long i = 0; i < ret.size(); i++)
+	{
+		if (ret[i] == '<')
+		{
+			k = i;
+			break;
+		}
+	}
+	if (k != -1)
+		ret = ret.substr(k);
+  std::cout << "\033[34mcgi ret\n" << "[" << ret << "]" << "\n";
   return ret;
 }
 
@@ -97,7 +140,7 @@ const std::string Cgi::_getCwd(void) const {
 std::map<std::string, std::string> Cgi::_makeEnvMap(const Request& req) const {
   std::map<std::string, std::string> ret;
   ret[_environList[REQUEST_METHOD]] = req.getMethod();
-  ret[_environList[SCRIPT_FILENAME]] = "./www"+ req.getPath();////서버 상 .php파일의 절대 위치
+  ret[_environList[SCRIPT_FILENAME]] = "/Users/seoko/Desktop/webserv/webserv/YoupiBanane/action.php";//"./www"+ req.getPath();////서버 상 .php파일의 절대 위치
   ret[_environList[PATH_INFO]] = req.getPath();
   ret[_environList[REQUEST_URI]] = req.getPath();
   ret[_environList[REDIRECT_STATUS]] = "CGI";
@@ -107,6 +150,7 @@ std::map<std::string, std::string> Cgi::_makeEnvMap(const Request& req) const {
   ret[_environList[REMOTE_ADDR]] = "127.0.0.1";
   ret[_environList[SERVER_PORT]] = "80";
   ret[_environList[SERVER_SOFTWARE]] = "versbew";
-  ret[_environList[PATH_TRANSLATED]] = _getCwd();
+  ret[_environList[PATH_TRANSLATED]] = req.getPath();
+	ret[_environList[CONTENT_LENGTH]] = std::to_string(req.getBody().size());
   return ret;
 }

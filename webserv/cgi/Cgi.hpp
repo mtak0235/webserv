@@ -41,12 +41,14 @@ class Cgi
     Cgi(void);
     ~Cgi();
 
-    std::string getCgiResponse(Request req, std::string filePath);
+    std::string getCgiResponse(Request req, std::string filePath, std::string file);
+		int getStatusCode();
 
   private:
     static const std::string _environList[NON_OF_ALL];
 
     void _setEnviron(const Request& req);
+		std::string _setBody(std::string file);
     std::map<std::string, std::string> _makeEnvMap(const Request& req) const;
     const std::string _getCwd(void) const;
     // int _statusCode;
@@ -54,6 +56,7 @@ class Cgi
     // std::string _body;
     char** _environ;
     size_t _allocSize;
+		int _statusCode;
 };
 
 #endif

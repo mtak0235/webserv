@@ -3,10 +3,25 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <iostream>
+#include <fstream>
+
+char **environ;
+
+std::string _setBody(std::string file)
+{
+	std::string body = "";
+	char c;
+	std::ifstream ifs;
+	ifs.open(file);
+	while (ifs.get(c))
+		body += c;
+	ifs.close();
+	return body;
+}
 
 int main()
 {
-	char *argv[] = {"./cgi_tester",  NULL};
+	char *argv[] = {"/Users/seoko/Desktop/webserv/webserv/www/bin/php-cgi",  NULL};
 	char *envp[] = {"REQUEST_METHOD=GET", "SERVER_PROTOCOL=HTTP/1.1", "PATH_INFO=/i", NULL};
 
 	char *a = (char*)malloc(16);
@@ -18,7 +33,9 @@ int main()
 	long	fdIn = fileno(fIn);
 	long	fdOut = fileno(fOut);
 
-	write(fdIn, "qwer", 4);
+	std::string b = _setBody("/Users/seoko/Desktop/webserv/webserv/YoupiBanane/index.php");
+
+	write(fdIn, b.c_str(),b.size());
 	lseek(fdIn, 0, SEEK_SET);
 
 	pid = fork();
@@ -26,7 +43,7 @@ int main()
 	{
 		dup2(fdIn, STDIN_FILENO);
 		dup2(fdOut, STDOUT_FILENO);
-		execve("./cgi_tester", argv, envp);
+		execve("/Users/seoko/Desktop/webserv/webserv/www/bin/php-cgi",argv, environ);
 	}
 	else
 	{

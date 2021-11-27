@@ -30,7 +30,7 @@ class Server : public ngxKqueue
 		char _buf[1024];
 		int _readDataSize;
 		std::string _clientReq;
-		std::string _body;
+		std::string _body;//서버에 있는 바디는 정체가 뭐죠?
 		std::string _lastRespnse;
 		int _statusCode;
 		int _n;

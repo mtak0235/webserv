@@ -24,10 +24,10 @@ SRCS = main.cpp \
 	Formatter.cpp \
 
 
-all: $(NAME)
+all: $(DIR_OBJS) $(NAME)
 
 clean:
-	@rm -f $(OBJS)
+	@rm -rf $(DIR_OBJS)
 
 fclean: clean
 	@rm -f $(NAME)
@@ -35,6 +35,9 @@ fclean: clean
 re: fclean all
 
 OBJS = $(SRCS:%.cpp=$(DIR_OBJS)%.o)
+
+$(DIR_OBJS):
+	mkdir objs
 
 $(NAME): $(OBJS)
 	@$(COMPILER) $(CFLAGS) $(CPP_VERSION) -I $(DIR_CORE) -I $(DIR_EVENT) -I $(DIR_HTTP) -I $(DIR_CGI) $(OBJS) -o $(NAME)

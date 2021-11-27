@@ -74,25 +74,25 @@ void Request::_init(const std::string& r) {
         }
     }
 
-    /* test */
-    std::cout << "test method : ["  << _method << "]\n";
-    std::cout << "test path : ["  << _path << "]\n";
-    std::cout << "test version : ["  << _httpVersion << "]\n";
+    // /* test */
+    // std::cout << "test method : ["  << _method << "]\n";
+    // std::cout << "test path : ["  << _path << "]\n";
+    // std::cout << "test version : ["  << _httpVersion << "]\n";
 
-    /* test */
-    for (int h = 0; h < AVAIL_H; h++) {
-        std::cout << _availHeaderInfos[h] << " : ["  << _headerInfo[h] << "]\n";
-    }
+    // /* test */
+    // for (int h = 0; h < AVAIL_H; h++) {
+    //     std::cout << _availHeaderInfos[h] << " : ["  << _headerInfo[h] << "]\n";
+    // }
 
-    /* test */
-    std::cout << "test raw body : [" << _rawBody << "]\n";
+    // /* test */
+    // std::cout << "test raw body : [" << _rawBody << "]\n";
 
-    std::map<std::string, std::string>::iterator i = _body.begin();
-    while (i != _body.end()) {
-        std::cout << "key [" << i->first << "] value [";
-        std::cout << i->second << "]\n";
-        i++;
-    }
+    // std::map<std::string, std::string>::iterator i = _body.begin();
+    // while (i != _body.end()) {
+    //     std::cout << "key [" << i->first << "] value [";
+    //     std::cout << i->second << "]\n";
+    //     i++;
+   // }
 }
 
 void Request::_parseRequestLine(const std::string& rl) {

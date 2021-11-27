@@ -8,7 +8,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include "core.hpp"
+#include "Core.hpp"
 #include "Log.hpp"
 
 class Connection

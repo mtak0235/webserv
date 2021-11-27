@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <fstream>
 #include "Log.hpp"
-#include "core.hpp"
+#include "Core.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 #include "Config.hpp"

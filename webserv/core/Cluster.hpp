@@ -1,7 +1,7 @@
 #ifndef CLUSTER_HPP
 #define CLUSTER_HPP
 
-#include "core.hpp"
+#include "Core.hpp"
 #include "Connection.hpp"
 #include "Parser.hpp"
 #include "Log.hpp"

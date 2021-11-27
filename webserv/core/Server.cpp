@@ -52,7 +52,7 @@ void Server::acceptNewClient(int servSock)
 	int client_socket;
 	if ((client_socket = accept(servSock, NULL, NULL)) == -1)
 		_log.debugLog("accept Error");
-	std::cout << "accept new client: " << client_socket << std::endl;
+	// std::cout << "accept new client: " << client_socket << std::endl;
 	fcntl(client_socket, F_SETFL, O_NONBLOCK);
 
 	/* add event for client socket - add read && write event */
@@ -83,7 +83,7 @@ int Server::_responseDatatoServer(int k)
 	_buf[_readDataSize] = '\0';
 	_clients[_currEvent->ident] += _buf;
 	_clientReq = _clients[_currEvent->ident];
-	std::cout << "received data from " << _currEvent->ident << ": " << _clientReq << std::endl;
+	std::cout << "\033[36mreceived data from " << _currEvent->ident << "\033[37m\n" << _clientReq << std::endl;
 	if (_clientReq != "")
 	{
 		_getRequestInfo(k);
@@ -108,54 +108,54 @@ void Server::_getRequestInfo(int k)
 	_request.clear();
 	_request.setRequest(_clientReq);
 
-
 	/* 테스트용 if 추가함 */
-	if (!_request.getPath().compare("/cgi-tester")) {
+	if (!_request.getPath().compare("/cgi-tester"))
+	{
 		Cgi cgi;
 		_requestMethod = "GET";
 		_requestPath = _request.getPath();
 		// _statusCode = cgi.
-		_body = cgi.getCgiResponse(_request);
-		std::cout << "[" << _body << "]" "\n";
-
-	} else {
-		if (!_request.getPath().compare("/favicon.ico"))
-		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-	_requestPath = _request.getPath();
-	_requestMethod =  _request.getMethod();
-	//파일인 경우
-	_found = _requestPath.find_last_of(".");
-	_isFile = _requestPath.substr(_found + 1);
-	_body = "";
-	if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare("bla"))
-	{
-		_body = _getBody(_requestPath.substr(1), k);
-		return;
+		_body = cgi.getCgiResponse(_request, _getCgiFilePath(_requestPath));
+		std::cout << "[" << _body << "]\n";
 	}
-	//경로인 경우
-	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
-	_allowMethods  = _nowLocation.getAllowMethod();
-	_isAllow = false;
-	for (unsigned long i = 0; i < _allowMethods.size(); i++)
-	{
-		if (!_allowMethods[i].compare(_requestMethod))
-			_isAllow = true;
-	}
-	if (!_isAllow)
-		_statusCode = 405;
 	else
 	{
-		_indexList = _nowLocation.getIndexList();
-		_isFile = "";
-		_found = 0;
-		if (_indexList.size() > 0) //경로인 경우
+		if (!_request.getPath().compare("/favicon.ico"))
+			_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
+		_requestPath = _request.getPath();
+		_requestMethod = _request.getMethod();
+		//파일인 경우
+		_found = _requestPath.find_last_of(".");
+		_isFile = _requestPath.substr(_found + 1);
+		_body = "";
+		if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare("bla"))
 		{
-			_found = _indexList[0].find_last_of(".");
-			_isFile = _indexList[0].substr(_found + 1);
-			_body = _getBody(_indexList[0], k);
+			_body = _getBody(_requestPath.substr(1), k);
+			return;
 		}
-
-	}
+		//경로인 경우
+		_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
+		_allowMethods = _nowLocation.getAllowMethod();
+		_isAllow = false;
+		for (unsigned long i = 0; i < _allowMethods.size(); i++)
+		{
+			if (!_allowMethods[i].compare(_requestMethod))
+				_isAllow = true;
+		}
+		if (!_isAllow)
+			_statusCode = 405;
+		else
+		{
+			_indexList = _nowLocation.getIndexList();
+			_isFile = "";
+			_found = 0;
+			if (_indexList.size() > 0) //경로인 경우
+			{
+				_found = _indexList[0].find_last_of(".");
+				_isFile = _indexList[0].substr(_found + 1);
+				_body = _getBody(_indexList[0], k);
+			}
+		}
 	}
 	// iferrsetBody();
 }
@@ -202,11 +202,11 @@ std::string Server::_getBody(std::string file, int k)
 {
 	std::string body;
 
+	std::cout << "\033[35m_getBody->file = " << file <<  "\033[37m\n";
 	if (!_requestMethod.compare("GET"))
 	{
 		if (!_isFile.compare("html") || !_isFile.compare("htm"))
 		{
-			std::cout << file << "\n";
 			body = _setBody(file);
 		}
 		else

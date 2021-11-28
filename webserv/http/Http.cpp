@@ -9,7 +9,6 @@ private:
 
 public:
     void 
-    ㄱ겨경ㄹ로를_받아서_경_에 맞게 실행(const std::string&str)경로를_받아서_경로_ 맞게 실행    {
     Http::경로를_받아서_경로_ 맞게 실행())std::striing path
     (  
         fstream fs;

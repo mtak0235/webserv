@@ -207,13 +207,17 @@ std::string Server::_getBody(std::string file, int k)
 		}
 		else
 		{
-			
-			body = _cgi.getCgiResponse(this->_request, _nowLocation.getCgiPath()); // 이거랑
+			_cgi.execute(this->_request, _nowLocation.getCgiPath());
+			body = _cgi.getCgiResopneBody(); // 이거랑
 			_statusCode = 200;
 		}
 	}
 	else if (!_requestMethod.compare("POST"))
-		body = _cgi.getCgiResponse(this->_request, _getCgiFilePath(file)); //같음
+	{
+
+		_cgi.execute(this->_request, _nowLocation.getCgiPath());
+		body = _cgi.getCgiResopneBody(); //같음
+	}
 	else if (!_requestMethod.compare("DELETE"))
 	{
 		_serverConfigs[k].eraseLocation(_requestPath);

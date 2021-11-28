@@ -19,29 +19,42 @@ Cgi::~Cgi(void)
   // if (_environ) delete[] _environ;
 }
 
-std::string Cgi::getCgiResponse(Request req, std::string filePath)
+void Cgi::_parseCgiResponse(std::string str)
 {
-  // filePath = "." + filePath;
+  std::stringstream ss;
+	ss << str;
+	std::vector<std::string> v;
+	while (!ss.eof())
+	{
+		std::string l;
+		std::getline(ss, l);
+		v.push_back(l);
+	}
+  int i;
+  for (i = 0; v[i] != ""; i++)
+    _cgiResponseHeader = _cgiResponseHeader + "\n" + v[i];
+  for (++i; i != v.size(); i++)
+    _cgiResponseBody = _cgiResponseBody + "\n" + v[i];
+}
+
+std::string Cgi::execute(Request req, std::string cgiFilePath)
+{
   std::string ret = "";
   std::string cgiInput = req.getBody();
+  std::string a = "./www" + req.getPath();
   _setEnviron(req);
 
-  std::cout << "[" << filePath << "]\n";
-  std::cout << "[" << cgiInput << "]\n";
+  // std::cout << "[" << cgiFilePath << "]\n";
+  // std::cout << "[" << cgiInput << "]\n";
 
-  // size_t found = filePath.find_last_of("/");
-  std::string c = req.getPath();
-  std::string a = ".";
-  // a += filePath;
-  // filePath = a;
-  a = "./www";
-  a += c;
+ 
   char *tmp = new char[a.size() + 1];
   for (unsigned long i = 0; i < a.size(); i++)
     tmp[i] = a[i];
   tmp[a.size()] = 0;
   char *argv[] = {tmp ,NULL};
   std::cout << "[" << argv[0] << "]"<< std::endl;
+
 
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
@@ -53,7 +66,7 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
   if (pid == 0) {
     dup2(fdIn, STDIN_FILENO);
     dup2(fdOut, STDOUT_FILENO);
-    execve(filePath.c_str(), argv, _environ);
+    execve(cgiFilePath.c_str(), argv, _environ);
   } else 
   {
     const size_t buffSize = 1048;
@@ -66,6 +79,7 @@ std::string Cgi::getCgiResponse(Request req, std::string filePath)
       ret += temp;
     }
   }
+  _parseCgiResponse(ret);
   return ret;
 }
 
@@ -115,4 +129,14 @@ std::map<std::string, std::string> Cgi::_makeEnvMap(const Request& req) const {
   ret[_environList[PATH_TRANSLATED]] = req.getPath();
   ret[_environList[CONTENT_LENGTH]] = std::to_string(req.getBody().size());
   return ret;
+}
+
+std::string Cgi::getCgiResopneBody()
+{
+  return _cgiResponseBody;
+}
+
+std::string Cgi::getCgiResopneHeader()
+{
+  return _cgiResponseHeader;
 }

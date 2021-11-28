@@ -41,7 +41,7 @@ class Cgi
     Cgi(void);
     ~Cgi();
 
-    std::string getCgiResponse(Request req, std::string filePath);
+    std::string execute(Request req, std::string filePath);
     std::string getCgiResopneBody();
     std::string getCgiResopneHeader();
 
@@ -56,6 +56,9 @@ class Cgi
     // std::string _body;
     char** _environ;
     size_t _allocSize;
+    std::string _cgiResponseHeader;
+    std::string _cgiResponseBody;
+    void _parseCgiResponse(std::string str);
 };
 
 #endif

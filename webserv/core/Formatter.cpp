@@ -37,3 +37,24 @@ const std::string Formatter::makeFormat(const int& num) {
   ret += str;
   return ret;
 }
+
+const std::string Formatter::ft_to_string(int n) {
+  bool isNeg = false;
+  if (n < 0) {
+    n *= -1;
+    isNeg = true;
+  }
+  int digit = 1, decimal = 1, temp = n;
+  while (temp /= 10) {
+    digit++;
+    decimal *= 10;
+  }
+  std::string ret;
+  if (isNeg) ret += '-';
+  for (int d = 0; d < digit; d++) {
+    ret += n / decimal + '0';
+    n %= decimal;
+    decimal /= 10;
+  }
+  return ret;
+}

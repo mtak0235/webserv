@@ -13,6 +13,7 @@ class Formatter
 
     static const std::string getDate(void);
     static const std::string makeFormat(const int& num);
+    static const std::string ft_to_string(int n);
 };
 
 #endif

@@ -124,6 +124,7 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
   }
 	_setCgiResponseHeader(v);
 	_setCgiResponseBody(v);
+	delete[] tmp;
 }
 
 void Cgi::_setEnviron(const Request &req, std::string file)

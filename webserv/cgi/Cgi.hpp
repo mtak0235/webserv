@@ -49,9 +49,9 @@ class Cgi
   private:
     static const std::string _environList[NON_OF_ALL];
 
-    void _setEnviron(const Request& req);
+    void _setEnviron(const Request& req, std::string file);
 		std::string _getInput(std::string file);
-    std::map<std::string, std::string> _makeEnvMap(const Request& req) const;
+    std::map<std::string, std::string> _makeEnvMap(const Request& req, std::string file) const;
     const std::string _getCwd(void) const;
 		void _setCgiResponseHeader(const std::vector<std::string>& str);
 		void _setCgiResponseBody(const std::vector<std::string>& str);

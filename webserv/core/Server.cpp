@@ -109,7 +109,7 @@ void Server::_getRequestInfo(int k)
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
 	_requestMethod = _request.getMethod();
-	
+
 	//파일인 경우
 	_found = _requestPath.find_last_of(".");
 	_isFile = _requestPath.substr(_found + 1);
@@ -129,6 +129,8 @@ void Server::_getRequestInfo(int k)
 		if (cnt == slashCnt)
 			break;
 	}
+	if (getPath.size() != 1 && getPath[getPath.size() - 1] == '/')
+		getPath.pop_back();
 	_nowLocation = _serverConfigs[k].getLocationsFind(getPath);
 	_body = "";
 	if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare(_nowLocation.getCgiName()))

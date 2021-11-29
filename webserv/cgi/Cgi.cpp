@@ -43,7 +43,8 @@ int Cgi::getStatusCode()
 
 void Cgi::_setCgiResponseHeader(const std::vector<std::string>& v)
 {
-	_cgiResponseHeader = v[0] + '\n' + v[1];
+	if (v.size() >= 2)
+		_cgiResponseHeader = v[0] + '\n' + v[1];
 }
 
 void Cgi::_setCgiResponseBody(const std::vector<std::string>& v)
@@ -60,14 +61,20 @@ void Cgi::_setCgiResponseBody(const std::vector<std::string>& v)
 
 void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 {
-  cgiFilePath = "." + cgiFilePath;
+  // cgiFilePath = "." + cgiFilePath;
   std::string result = "";
-  std::string cgiInput = req.getBody();
-  std::string a = "./www" + req.getPath();
-  _setEnviron(req);
+	std::string cgiInput; // php req.getBody();
+	if (cgiFilePath.find("cgi_tester") == std::string::npos)
+		cgiInput = req.getBody();
+	else
+		cgiInput = _getInput(file);
 
-  std::cout << "[" << cgiFilePath << "]\n";
-  std::cout << "[" << cgiInput << "]\n";
+  std::string a = cgiFilePath;
+  _setEnviron(req, file);
+
+	// std::cout << "file [" << file << "]\n";
+  // std::cout << "cgi File path [" << cgiFilePath << "]\n";
+  // std::cout << "cgi input [" << cgiInput << "]\n";
 
   char *tmp = new char[a.size() + 1];
   for (unsigned long i = 0; i < a.size(); i++)
@@ -119,9 +126,9 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 	_setCgiResponseBody(v);
 }
 
-void Cgi::_setEnviron(const Request &req)
+void Cgi::_setEnviron(const Request &req, std::string file)
 {
-  std::map<std::string, std::string> envMap = _makeEnvMap(req);
+  std::map<std::string, std::string> envMap = _makeEnvMap(req, file);
   _allocSize = envMap.size() + 1;
   // _environ = (char**)malloc(sizeof(char *) * _allocSize);
   _environ = new char *[_allocSize];
@@ -152,11 +159,11 @@ const std::string Cgi::_getCwd(void) const
   return ret;
 }
 
-std::map<std::string, std::string> Cgi::_makeEnvMap(const Request &req) const
+std::map<std::string, std::string> Cgi::_makeEnvMap(const Request &req, std::string file) const
 {
   std::map<std::string, std::string> ret;
   ret[_environList[REQUEST_METHOD]] = req.getMethod();
-  ret[_environList[SCRIPT_FILENAME]] = "./www" + req.getPath(); ////서버 상 .php파일의 절대 위치
+  ret[_environList[SCRIPT_FILENAME]] = file; ////서버 상 .php파일의 절대 위치
   ret[_environList[PATH_INFO]] = req.getPath();
   ret[_environList[REQUEST_URI]] = req.getPath();
   ret[_environList[REDIRECT_STATUS]] = "CGI";

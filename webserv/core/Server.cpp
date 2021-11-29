@@ -31,8 +31,8 @@ void Server::setStatus()
 	_status[400] = "Bad Request";
 	// _status[401] = "Unauthorized";
 	// _status[402] = "Payment Required";
-	// _status[403] = "Forbidden";
-	// _status[404] = "Not Found";
+	_status[403] = "Forbidden";
+	_status[404] = "Not Found";
 	_status[405] = "Method Not Allowed";
 	// _status[406] = "Not Acceptable";
 	// _status[407] = "Proxy Authentication Required";
@@ -105,16 +105,6 @@ void Server::_getRequestInfo(int k)
 {
 	_request.clear();
 	_request.setRequest(_clientReq);
-
-	/* 테스트용 if 추가함 */
-	// if (!_request.getPath().compare("/cgi-tester")) {
-	// 	Cgi cgi;
-	// 	_requestMethod = "GET";
-	// 	_requestPath = _request.getPath();
-	// 	// _statusCode = cgi.
-	// 	_body = cgi.getCgiResponse(_request);
-	// 	std::cout << "[" << _body << "]" "\n";
-
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
@@ -122,6 +112,23 @@ void Server::_getRequestInfo(int k)
 	//파일인 경우
 	_found = _requestPath.find_last_of(".");
 	_isFile = _requestPath.substr(_found + 1);
+	int slashCnt = 0;
+	for (unsigned long i = 0; i < _requestPath.size(); i++)
+	{
+		if (_requestPath[i] == '/')
+			slashCnt += 1;
+	}
+	int cnt = 0;
+	std::string getPath = "";
+	for (unsigned long i = 0; i < _requestPath.size(); i++)
+	{
+		getPath += _requestPath[i];
+		if (_requestPath[i] == '/')
+			cnt += 1;
+		if (cnt == slashCnt)
+			break;
+	}
+	_nowLocation = _serverConfigs[k].getLocationsFind(getPath);
 	_body = "";
 	if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare(_nowLocation.getCgiName()))
 	{
@@ -151,8 +158,6 @@ void Server::_getRequestInfo(int k)
 			_body = _getBody(_indexList[0], k);
 		}
 	}
-	// }
-	// iferrsetBody();
 }
 
 void Server::_setResponse(int k)
@@ -185,38 +190,38 @@ std::string Server::_setBody(std::string file)
 	return body;
 }
 
-std::string Server::_getCgiFilePath(std::string fileName)
-{
-	if (fileName.find("cgi_tester", 0) != std::string::npos)
-		return "./www/bin/cgi_tester";
-	else
-		return "./www/bin/php-cgi";
-}
-
 std::string Server::_getBody(std::string file, int k)
 {
 	std::string body;
-
-	std::cout << "\033[33m_getBody->file = " << file << "\033[37m\n";
+	std::string rootPulsFile = _nowLocation.getRoot() +  "/" + file;
+	std::cout << "\033[33m_getBody->file = " << rootPulsFile << "\033[37m\n";
 	if (!_requestMethod.compare("GET"))
 	{
 		std::string cgiName = _nowLocation.getCgiName();
 		if (!_isFile.compare("html") || !_isFile.compare("htm"))
 		{
-			body = _setBody(file);
+			body = _setBody(rootPulsFile);
+		}
+		else if (!_isFile.compare(_nowLocation.getCgiName()))
+		{
+			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
+			body = _cgi.getCgiResponseBody(); // 이거랑
+			_statusCode = _cgi.getStatusCode();
 		}
 		else
-		{
-			_cgi.execute(this->_request, _nowLocation.getCgiPath());
-			body = _cgi.getCgiResopneBody(); // 이거랑
-			_statusCode = 200;
-		}
+			_statusCode = 403;
+		
 	}
 	else if (!_requestMethod.compare("POST"))
 	{
-
-		_cgi.execute(this->_request, _nowLocation.getCgiPath());
-		body = _cgi.getCgiResopneBody(); //같음
+		if (!_isFile.compare(_nowLocation.getCgiName()))
+		{
+			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
+			body = _cgi.getCgiResponseBody();
+			_statusCode = _cgi.getStatusCode();
+		}
+		else
+			_statusCode = 403;
 	}
 	else if (!_requestMethod.compare("DELETE"))
 	{

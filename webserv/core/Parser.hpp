@@ -33,19 +33,18 @@ class Parser
 
     void parse(const std::string& confFile);
     std::vector<ServerConfig> getServerConfig(void) const;
-    
   private:
-      static const std::string _keyInit;
-      static const std::string _keyServer[3];
-      static const std::string _keyLocation[7];
-      
-      std::ifstream _ifs;
-      std::string _info;
-  	  ServerConfig _parseServerBlock();
-	  LocationConfig _parseLocationBlock();
+		static const std::string _keyInit;
+		static const std::string _keyServer[3];
+		static const std::string _keyLocation[7];
+		
+		std::ifstream _ifs;
+		std::string _info;
+		ServerConfig _parseServerBlock();
+		LocationConfig _parseLocationBlock();
 	  void _locationRemoveSemicolon(LocationConfig *lc);
 	  void _serverRemoveSemicolon(ServerConfig *sc);
-      std::vector<ServerConfig> _serverConfigs;
+		std::vector<ServerConfig> _serverConfigs;
 };
 
 #endif

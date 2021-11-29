@@ -65,13 +65,14 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
   std::string result = "";
 	std::string cgiInput; // php req.getBody();
 	if (cgiFilePath.find("cgi_tester") == std::string::npos)
+	{
+		_statusCode = 200;
 		cgiInput = req.getBody();
+	}
 	else
 		cgiInput = _getInput(file);
-
   std::string a = cgiFilePath;
   _setEnviron(req, file);
-
 	// std::cout << "file [" << file << "]\n";
   // std::cout << "cgi File path [" << cgiFilePath << "]\n";
   // std::cout << "cgi input [" << cgiInput << "]\n";
@@ -82,7 +83,6 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
   tmp[a.size()] = 0;
   char *argv[] = {tmp, NULL};
   std::cout << "[" << argv[0] << "]" << std::endl;
-
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
   long fdIn = fileno(fIn);

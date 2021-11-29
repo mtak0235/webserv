@@ -109,6 +109,7 @@ void Server::_getRequestInfo(int k)
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
 	_requestMethod = _request.getMethod();
+	
 	//파일인 경우
 	_found = _requestPath.find_last_of(".");
 	_isFile = _requestPath.substr(_found + 1);
@@ -205,7 +206,8 @@ std::string Server::_getBody(std::string file, int k)
 		else if (!_isFile.compare(_nowLocation.getCgiName()))
 		{
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
-			body = _cgi.getCgiResponseBody(); // 이거랑
+			_cgi.getCgiResponseHeader();
+			body = _cgi.getCgiResponseBody();
 			_statusCode = _cgi.getStatusCode();
 		}
 		else
@@ -217,6 +219,7 @@ std::string Server::_getBody(std::string file, int k)
 		if (!_isFile.compare(_nowLocation.getCgiName()))
 		{
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
+			_cgi.getCgiResponseHeader();
 			body = _cgi.getCgiResponseBody();
 			_statusCode = _cgi.getStatusCode();
 		}

@@ -15,7 +15,7 @@ Cgi::~Cgi(void)
 {
 }
 
-std::string Cgi::_setBody(std::string file)
+std::string Cgi::_getInput(std::string file)
 {
   std::string body = "";
   char c;
@@ -41,34 +41,33 @@ int Cgi::getStatusCode()
   return _statusCode;
 }
 
-void Cgi::_parseCgiResponse(std::string str)
+void Cgi::_setCgiResponseHeader(const std::vector<std::string>& v)
 {
-  std::stringstream ss;
-  ss << str;
-  std::vector<std::string> v;
-  while (!ss.eof())
-  {
-    std::string l;
-    std::getline(ss, l);
-    v.push_back(l);
-  }
-  int i;
-  for (i = 0; v[i] != ""; i++)
-    _cgiResponseHeader = _cgiResponseHeader + "\n" + v[i];
-  for (++i; i != v.size(); i++)
-    _cgiResponseBody = _cgiResponseBody + "\n" + v[i];
+	_cgiResponseHeader = v[0] + '\n' + v[1];
 }
 
-std::string Cgi::execute(Request req, std::string cgiFilePath, std::string file)
+void Cgi::_setCgiResponseBody(const std::vector<std::string>& v)
 {
-  // cgiPath = "." + cgiPath;
-  std::string ret = "";
+	std::string temp;
+	for (size_t i = 2; i < v.size(); i++)
+	{
+		temp += v[i];
+		if (i != v.size() - 1) temp += '\n';
+	}
+	// std::cout << '[' << result << "]\n";
+	_cgiResponseBody = temp;
+}
+
+void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
+{
+  cgiFilePath = "." + cgiFilePath;
+  std::string result = "";
   std::string cgiInput = req.getBody();
   std::string a = "./www" + req.getPath();
   _setEnviron(req);
 
-  // std::cout << "[" << cgiFilePath << "]\n";
-  // std::cout << "[" << cgiInput << "]\n";
+  std::cout << "[" << cgiFilePath << "]\n";
+  std::cout << "[" << cgiInput << "]\n";
 
   char *tmp = new char[a.size() + 1];
   for (unsigned long i = 0; i < a.size(); i++)
@@ -104,11 +103,20 @@ std::string Cgi::execute(Request req, std::string cgiFilePath, std::string file)
     while ((bytes = read(fdOut, buff, 1)) != 0)
     {
       std::string temp = buff;
-      ret += temp;
+      result += temp;
     }
   }
-  _parseCgiResponse(ret);
-  return ret;
+	std::vector<std::string> v;
+  std::stringstream ss;
+  ss << result;
+  while (!ss.eof())
+  {
+    std::string l;
+    std::getline(ss, l);
+    v.push_back(l);
+  }
+	_setCgiResponseHeader(v);
+	_setCgiResponseBody(v);
 }
 
 void Cgi::_setEnviron(const Request &req)

@@ -16,10 +16,11 @@ class Server : public ngxKqueue
 {
 	public :
 		Server();
-		~Server();
-		void acceptNewClient(int servSock);
-		int recvDataFromClient(int k);
-		void setStatus();
+		virtual ~Server();
+
+		virtual void acceptNewClient(int servSock);
+		virtual int recvDataFromClient(int k);
+		virtual void setStatus();
 
 	private :
 		Log _log;
@@ -48,12 +49,14 @@ class Server : public ngxKqueue
 		std::string _isFile;
 
 		int _responseDatatoServer(int k);
-		void _getRequestInfo(int k);
+		void _setRequestInfo(int k);
 		void _setResponse(int k);
 		std::string _getCgiFilePath(std::string fileName);
 		std::string _setBody(std::string file);
 		std::string _getBody(std::string file, int k);
 		std::string _methodPost(std::string file);
+		int _fileJudge(int k);
+		void _isDirectory(int k);
 
 };
 

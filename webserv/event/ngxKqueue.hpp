@@ -34,20 +34,26 @@ protected:
 	struct kevent *_currEvent;
 public:
   ngxKqueue();
-  ~ngxKqueue();
+  virtual ~ngxKqueue();
   ngxKqueue(ngxKqueue& x);
   // ngxKqueue operator=(ngxKqueue& x);
 
   void changeEvents(std::vector<struct kevent>& changeList, uintptr_t ident, int16_t filter,
         uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
   void disconnectClient(int clientFd, std::map<int, std::string>& clients);
-  int makeKqueue();
-  void ngxKqueueInit(int servSock);
-  int ngxKqueueProcessEvents(int x, std::vector<int> servSock);
-  void ngxKqueueStop();
 
+  virtual int makeKqueue();
+  virtual void ngxKqueueInit(int servSock);
+  virtual int ngxKqueueProcessEvents(int x, std::vector<int> servSock);
+
+	/* decl in Server */ 
 	virtual void acceptNewClient(int servSock) = 0;
 	virtual int recvDataFromClient(int k) = 0;
+	virtual void setStatus() = 0;
+
+  void ngxKqueueStop();
+
+	
 };
 
 #endif

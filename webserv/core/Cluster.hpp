@@ -14,10 +14,12 @@ class Cluster
 private:
     Parser _parser;
     Connection _connection;
+
 protected:
     std::vector<ServerConfig> _serverConfigs;
 		std::map<int, std::string> _status; 
 		Log _log;
+
 public:
 	Cluster(void);
 	virtual ~Cluster();

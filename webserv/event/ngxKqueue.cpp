@@ -27,7 +27,6 @@ void ngxKqueue::disconnectClient(int clientFd, std::map<int, std::string>& clien
 
 int ngxKqueue::makeKqueue()
 {
-
 	_kq = kqueue();
 	if (_kq == -1)
 	{

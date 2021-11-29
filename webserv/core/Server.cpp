@@ -4,7 +4,7 @@ Server::Server()
 {
 	_readDataSize = 0;
 	_clientReq = "";
-	_statusCode = 503;
+	_statusCode = 500;
 	_isAllow = false;
 }
 
@@ -85,7 +85,8 @@ int Server::_responseDatatoServer(int k)
 			  << _clientReq << std::endl;
 	if (_clientReq != "")
 	{
-		_getRequestInfo(k);
+		_statusCode = 500;
+		_setRequestInfo(k);
 		_setResponse(k);
 		if ((_n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size()) == -1))
 		{
@@ -100,17 +101,8 @@ int Server::_responseDatatoServer(int k)
 	return NGX_FAIL;
 }
 
-// allow method 안에서 있는지 확인
-void Server::_getRequestInfo(int k)
+int Server::_fileJudge(int k)
 {
-	_request.clear();
-	_request.setRequest(_clientReq);
-	if (!_request.getPath().compare("/favicon.ico"))
-		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-	_requestPath = _request.getPath();
-	_requestMethod = _request.getMethod();
-
-	//파일인 경우
 	_found = _requestPath.find_last_of(".");
 	_isFile = _requestPath.substr(_found + 1);
 	int slashCnt = 0;
@@ -136,9 +128,13 @@ void Server::_getRequestInfo(int k)
 	if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare(_nowLocation.getCgiName()))
 	{
 		_body = _getBody(_requestPath.substr(1), k);
-		return;
+		return 0;
 	}
-	//경로인 경우
+	return -1;
+}
+
+void Server::_isDirectory(int k)
+{
 	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
 	_allowMethods = _nowLocation.getAllowMethod();
 	_isAllow = false;
@@ -160,6 +156,27 @@ void Server::_getRequestInfo(int k)
 			_isFile = _indexList[0].substr(_found + 1);
 			_body = _getBody(_indexList[0], k);
 		}
+	}
+}
+
+// allow method 안에서 있는지 확인
+void Server::_setRequestInfo(int k)
+{
+	_request.clear();
+	_request.setRequest(_clientReq);
+	if (!_request.getPath().compare("/favicon.ico"))
+		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
+	_requestPath = _request.getPath();
+	_requestMethod = _request.getMethod();
+
+	//파일인 경우
+	if (_fileJudge(k) == NGX_OK && _statusCode == 200)
+		return;
+	_isDirectory(k);
+	if (_statusCode == 400 || _statusCode == 403 || _statusCode == 404 || _statusCode == 405)
+	{
+		_body = _setBody("400.html");
+		_statusCode = 400;
 	}
 }
 

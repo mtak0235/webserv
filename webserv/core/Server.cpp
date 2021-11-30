@@ -61,28 +61,31 @@ void Server::acceptNewClient(int servSock)
 
 int Server::recvDataFromClient(int k)
 {
-	_readDataSize = read(_currEvent->ident, _buf, sizeof(_buf));
-	if (_readDataSize <= 0)
+	memset(_buf, '\0', sizeof(_buf));
+
+	while ((_readDataSize = read(_currEvent->ident, _buf, 1)) > 0)
 	{
-		if (_readDataSize < 0)
-			std::cerr << "client read error!" << std::endl;
+		_buf[_readDataSize] = '\0';
+		_clients[_currEvent->ident] += _buf;
+		memset(_buf, '\0', sizeof(_buf));
+	}
+	if (_clients[_currEvent->ident] == "")
+	{
+		_log.debugLog("client read error");
 		disconnectClient(_currEvent->ident, _clients);
 	}
-	else
-	{
-		if (_responseDatatoServer(k) == NGX_FAIL)
-			return NGX_FAIL;
-	}
+	if (_responseDatatoServer(k) == NGX_FAIL)
+		return NGX_FAIL;
 	return NGX_OK;
 }
 
 int Server::_responseDatatoServer(int k)
 {
-	_buf[_readDataSize] = '\0';
-	_clients[_currEvent->ident] += _buf;
+	// _buf[_readDataSize] = '\0';
+	// _clients[_currEvent->ident] += _buf;
 	_clientReq = _clients[_currEvent->ident];
 	std::cout << "\033[36mreceived data from " << _currEvent->ident << "\033[37m\n"
-			  << _clientReq << std::endl;
+			  << "[" << _clientReq << "]" << std::endl;
 	if (_clientReq != "")
 	{
 		_statusCode = 500;
@@ -188,7 +191,7 @@ void Server::_setResponse(int k)
 	_body += "\n";
 	//+ content type
 	_lastRespnse = _response.makeResponse(_body);
-	std::cout << "\033[35msetResponse->_lastResopnse" << _lastRespnse << "\033[37m" << std::endl;
+	std::cout << "\n\n\n\n\n\033[35msetResponse->_lastResopnse" << _lastRespnse << "\033[37m" << std::endl;
 }
 
 std::string Server::_setBody(std::string file)
@@ -214,7 +217,7 @@ std::string Server::_getBody(std::string file, int k)
 {
 	std::string body;
 	std::string rootPulsFile = _nowLocation.getRoot() +  "/" + file;
-	std::cout << "\033[33m_getBody->file = " << rootPulsFile << "\033[37m\n";
+	// std::cout << "\033[33m_getBody->file = " << rootPulsFile << "\033[37m\n";
 	if (!_requestMethod.compare("GET"))
 	{
 		std::string cgiName = _nowLocation.getCgiName();

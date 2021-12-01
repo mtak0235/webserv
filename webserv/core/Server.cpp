@@ -63,10 +63,13 @@ int Server::recvDataFromClient(int k)
 {
 	memset(_buf, '\0', sizeof(_buf));
 
-	while ((_readDataSize = read(_currEvent->ident, _buf, 1)) > 0)
+	while ((_readDataSize = read(_currEvent->ident, _buf, 1)) >= 0)
 	{
 		_buf[_readDataSize] = '\0';
-		_clients[_currEvent->ident] += _buf;
+		if (_buf[0] == 0)
+			_clients[_currEvent->ident] += '\0';
+		else
+			_clients[_currEvent->ident] += _buf;
 		memset(_buf, '\0', sizeof(_buf));
 	}
 	if (_clients[_currEvent->ident] == "")

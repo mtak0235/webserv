@@ -19,6 +19,7 @@ class Request
       ACCEPT_CHARSET,
       KEEPALIVE,
       CONNECTION,
+      CONTENT_TYPE,
       CONTENTS_LENGTH,
       AVAIL_H,
     };

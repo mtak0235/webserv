@@ -65,6 +65,7 @@ void Request::_init(const std::string& r) {
     while (!ss.eof()) {
         std::string l;
         std::getline(ss, l);
+        l += '\n';
         v.push_back(l);
     }
     _parseRequestLine(v[0]);
@@ -123,9 +124,8 @@ void Request::_parseFileInfo(void) {
     for (size_t i = 0; i < _rawBody.size(); i++)
     {
         tmp += _rawBody[i];
-        if (_rawBody[i] == '\r')
+        if (i > 0 && _rawBody[i] == '\n' && _rawBody[i - 1] == '\r')
         {   
-            tmp.pop_back();
             info.push_back(tmp);
             tmp = "";
         }
@@ -133,9 +133,9 @@ void Request::_parseFileInfo(void) {
 
     for (size_t i = 0; i < info.size(); i++)
     {
-        if (info[i] ==  "--" + fi.boundaryCode)
+        if (info[i] ==  "--" + fi.boundaryCode + "\r\n")
         {
-            if (info[i + 4] == "--" + fi.boundaryCode + "--")
+            if (info[i + 4] == "--" + fi.boundaryCode + "--\r\n")
                 break;
             //i + 1 cotent diposiion;
             std::stringstream ss(info[i + 1]);

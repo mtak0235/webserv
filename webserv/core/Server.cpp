@@ -253,7 +253,8 @@ std::string Server::_getBody(std::string file, int k)
 				std::ofstream ofs;
 				std::string filePath = _nowLocation.getUploadFolder() + v[0].fileName;
 				ofs.open(filePath);
-				ofs << v[0].data;
+				std::cout << v[0].data.size();
+				// ofs << v[0].data;
 				ofs.close();
 			}
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);

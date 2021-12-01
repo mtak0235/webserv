@@ -171,7 +171,6 @@ void Server::_setRequestInfo(int k)
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
 	_requestMethod = _request.getMethod();
-
 	//파일인 경우
 	if (_fileJudge(k) == NGX_OK && _statusCode == 200)
 		return;
@@ -244,6 +243,7 @@ std::string Server::_getBody(std::string file, int k)
 			_cgi.getCgiResponseHeader();
 			body = _cgi.getCgiResponseBody();
 			_statusCode = _cgi.getStatusCode();
+			
 		}
 		else
 			_statusCode = 403;

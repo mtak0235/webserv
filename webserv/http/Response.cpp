@@ -12,6 +12,16 @@ Response::~Response()
 {
 }
 
+void Response::setLocation(const std::string& str) {
+  _location = str;
+}
+
+std::string Response::_makeLocation() {
+  std::string ret = "Location: ";
+  ret += _location + "\n";
+  return ret;
+}
+
 std::string Response::makeResponse(const std::string& body) {
   std::string ret = "";
   ret += (_makeStatusLine() + "\n");
@@ -51,5 +61,6 @@ std::string Response::_makeHeader() {
   std::string ret;
   ret += ("Date: " + Formatter::getDate());
   ret += _makeServerInfo();
+  ret += _makeLocation();
   return ret;
 }

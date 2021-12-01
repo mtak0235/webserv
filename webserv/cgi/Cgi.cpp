@@ -82,7 +82,7 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
     tmp[i] = a[i];
   tmp[a.size()] = 0;
   char *argv[] = {tmp, NULL};
-  std::cout << "[" << argv[0] << "]" << std::endl;
+  // std::cout << "[" << argv[0] << "]" << std::endl;
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
   long fdIn = fileno(fIn);
@@ -143,7 +143,7 @@ void Cgi::_setEnviron(const Request &req, std::string file)
     for (unsigned long i = 0; i < temp.size(); i++)
       _environ[idxEnv][i] = temp[i];
     _environ[idxEnv][temp.size()] = 0;
-    printf("%s\n", _environ[idxEnv]);
+    // printf("%s\n", _environ[idxEnv]);
     idxEnv++;
     itMap++;
   }

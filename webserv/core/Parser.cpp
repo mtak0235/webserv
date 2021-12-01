@@ -2,7 +2,7 @@
 
 const std::string Parser::_keyInit = "server";
 const std::string Parser::_keyServer[3] = {"listen", "server_name", "location"};
-const std::string Parser::_keyLocation[7] = {"client_max_body_size", "method", "index",
+const std::string Parser::_keyLocation[8] = {"autoindex","client_max_body_size", "method", "index",
                                          "root", "cgi_extension", "cgi_path", "upload_folder"};
 
 Parser::Parser(void)
@@ -40,6 +40,7 @@ ServerConfig Parser::_parseServerBlock(void)
         if (!_info.compare(_keyServer[LISTEN]))
 		{
 			_ifs >> tmp;
+			tmp = tmp.substr(0, tmp.find(";", 0));
             sc.setServerPort(tmp);   //serverPort;
 		}
 		else if (!_info.compare(_keyServer[SERVER_NAME]))
@@ -116,6 +117,12 @@ LocationConfig Parser::_parseLocationBlock(void)
 		{
 			_ifs >> tmp;
 			lc.setUploadFolder(tmp);
+		}
+		else if(!_info.compare(_keyLocation[AUTO_INDEX]))
+		{
+			_ifs >> tmp;
+			tmp = tmp.substr(0, tmp.find(";", 0));
+			lc.setAutoIndex(tmp);
 		}
     }
 	_info = "";

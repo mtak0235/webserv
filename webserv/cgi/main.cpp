@@ -127,6 +127,7 @@ int main()
                 res.setServerName("webserv");
                 res.setStatusCode(cgiStatusCode);
                 res.setStatusMsg(cgiStatusMsg);
+                
                 std::string response = res.makeResponse(cgiBody);
                 /* 여기까지임 */
 

@@ -78,6 +78,13 @@ void LocationConfig::setUploadFolder(std::string uploadFolder)
 	_uploadFolder = uploadFolder;
 }
 
+void LocationConfig::setAutoIndex(std::string autoindex)
+{
+	if (!autoindex.compare("on"))
+		_autoindex = ON;
+	else
+		_autoindex = OFF;
+}
 std::string LocationConfig::getLocationName()
 {
 	return _locationName;

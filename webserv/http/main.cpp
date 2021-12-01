@@ -286,8 +286,7 @@ int main(int argc, char **av){
 					// waitpid(-1, &stat, 0);
 					close(_cgiFd);
 					send(fd, response.c_str(), (int)strlen(response.c_str()), 0);
-					// printf("\033[34m %s \033[37m", response.c_str());
-					std::cout << response << std::endl;
+					std::cout << "\033[33m" << response << "\033[37m" << std::endl;
 					printf("Disconnect client : %d \n",fd); 
 					FD_CLR(fd,&reads); // 감시목록에서 제외 
 					close(fd); // 통신 종료 

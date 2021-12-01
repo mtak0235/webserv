@@ -23,7 +23,7 @@ void Server::setStatus()
 	// _status[206] = "Partial Content";
 	_status[300] = "Multiple Choice";
 	// _status[301] = "Moved Permanently";
-	// _status[302] = "Found";
+	_status[302] = "Found";
 	// _status[303] = "See Other";
 	// _status[304] = "Not Modified";
 	// _status[307] = "Temporary Redirect";
@@ -81,13 +81,13 @@ int Server::_responseDatatoServer(int k)
 	_buf[_readDataSize] = '\0';
 	_clients[_currEvent->ident] += _buf;
 	_clientReq = _clients[_currEvent->ident];
-	std::cout << "\033[36mreceived data from " << _currEvent->ident << "\033[37m\n"
-			  << _clientReq << std::endl;
+	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << _clientReq << std::endl;
 	if (_clientReq != "")
 	{
 		_statusCode = 500;
 		_setRequestInfo(k);
 		_setResponse(k);
+	std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastRespnse << std::endl;
 		if ((_n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size()) == -1))
 		{
 			std::cerr << "client write error!" << std::endl;
@@ -166,6 +166,8 @@ void Server::_setRequestInfo(int k)
 	_request.setRequest(_clientReq);
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
+	if (!_request.getPath().compare("/redirection_from"))
+		_statusCode = 302;
 	_requestPath = _request.getPath();
 	_requestMethod = _request.getMethod();
 
@@ -185,10 +187,11 @@ void Server::_setResponse(int k)
 	_response.setServerName(_serverConfigs[k].getServerName());
 	_response.setStatusCode(_statusCode);
 	_response.setStatusMsg(_status[_statusCode]);
+	if (_statusCode == 302)
+		_response.setLocation("http://localhost:" + _serverConfigs[k].getServerPort() + "/redirection_to");
 	_body += "\n";
 	//+ content type
 	_lastRespnse = _response.makeResponse(_body);
-	std::cout << "\033[35msetResponse->_lastResopnse" << _lastRespnse << "\033[37m" << std::endl;
 }
 
 std::string Server::_setBody(std::string file)
@@ -214,7 +217,6 @@ std::string Server::_getBody(std::string file, int k)
 {
 	std::string body;
 	std::string rootPulsFile = _nowLocation.getRoot() +  "/" + file;
-	std::cout << "\033[33m_getBody->file = " << rootPulsFile << "\033[37m\n";
 	if (!_requestMethod.compare("GET"))
 	{
 		std::string cgiName = _nowLocation.getCgiName();

@@ -18,6 +18,7 @@ class Response
     void setStatusCode(const int& n);
     void setStatusMsg(const std::string& str);
     void setServerName(const std::string& str);
+    void setLocation(const std::string& str);
     // void setContentLength(const int& n);
     // void setContentType(std::string type);
   private:
@@ -29,12 +30,12 @@ class Response
 
     std::string _makeStatusLine();
     std::string _makeHeader();
-
+    std::string _makeLocation();
     std::string _makeServerInfo(void);
 
     int _statusCode;
     std::string _statusMsg;
-
+    std::string _location;
     std::string _serverName;
     // int _contentLength;
 };

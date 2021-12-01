@@ -17,7 +17,12 @@ private:
 	std::string _cgiPath;
 	int _cliBodySize;
 	std::string _uploadFolder;
+	int _autoindex;
 public:
+	enum AUTO_INDEX {
+		ON,
+		OFF,
+	};
 	LocationConfig();
 	// LocationConfig(LocationConfig &x);
 	~LocationConfig();
@@ -32,6 +37,7 @@ public:
 	void setCgiPath(std::string cgiPath);
 	void setCliBodySize(int cliBodySize);
 	void setUploadFolder(std::string uploadFolder);
+	void setAutoIndex(std::string autoindex);
 
 	std::string getLocationName();
 	std::string getRoot();

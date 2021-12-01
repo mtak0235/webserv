@@ -18,6 +18,7 @@ class Parser
   };
 
   enum KEY_LOCATION {
+    AUTO_INDEX,
     BODY_SIZE,
     METHOD,
     INDEX,
@@ -36,7 +37,7 @@ class Parser
   private:
 		static const std::string _keyInit;
 		static const std::string _keyServer[3];
-		static const std::string _keyLocation[7];
+		static const std::string _keyLocation[8];
 		
 		std::ifstream _ifs;
 		std::string _info;

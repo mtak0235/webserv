@@ -35,6 +35,7 @@ void Request::clear()
 	/* request header */
 	for (int i = 0; i < AVAIL_H; i++)
 		_headerInfo[i] = "";
+    _fileInfo.clear();
 }
 
 std::string Request::getMethod(void) const
@@ -78,25 +79,7 @@ void Request::_init(const std::string& r) {
 					break ;
         }
     }
-    // /* test */
-    // std::cout << "test method : ["  << _method << "]\n";
-    // std::cout << "test path : ["  << _path << "]\n";
-    // std::cout << "test version : ["  << _httpVersion << "]\n";
-
-    // /* test */
-    // for (int h = 0; h < AVAIL_H; h++) {
-    //     std::cout << _availHeaderInfos[h] << " : ["  << _headerInfo[h] << "]\n";
-    // }
-
-    // /* test */
-    // std::cout << "test raw body : [" << _rawBody << "]\n";
-
-    // std::map<std::string, std::string>::iterator i = _body.begin();
-    // while (i != _body.end()) {
-    //     std::cout << "key [" << i->first << "] value [";
-    //     std::cout << i->second << "]\n";
-    //     i++;
-   // }
+    _parseFileInfo();
 }
 
 void Request::_parseRequestLine(const std::string& rl) {
@@ -123,31 +106,52 @@ void Request::_parseRequestHeader(const std::string& rh) {
     }
 }
 
-
-// void Request::_parseRequestBody (const std::string& rb) {
-//     _rawBody = rb;
-//     for (size_t i = 0; i < _rawBody.size(); i++) {
-//         if (_rawBody[i] == '+') _rawBody[i] = ' ';
-//     }
-//     size_t idx = 0;
-//     while (idx < _rawBody.size()) {
-//         size_t idxSep;
-//         if ((idxSep = _rawBody.find('=', idx + 1)) == std::string::npos)
-//             break ;
-//         std::string key = _rawBody.substr(idx, idxSep - idx);
-//         idx += key.size() + 1;
-//         if ((idxSep = _rawBody.find('&', idx + 1)) == std::string::npos) {
-//             _body[key] = _rawBody.substr(idx);
-//             break ;
-//         } else {
-//             _body[key] = _rawBody.substr(idx, idxSep - idx);
-//             idx = idxSep + 1;
-//         }
-//     }
-// 		std::cout << " raw body ["<< _rawBody << "]\n";
-//     // printf("raw body : %s \n", _rawBody.c_str());
-// }
-
 std::string Request::getBody() const {
     return _rawBody;
+}
+
+void Request::_parseFileInfo(void) {
+    FileInfo fi;
+    if (!_headerInfo[CONTENT_TYPE].find("multipart/form-data")) {
+        const std::string keyBoundary = "boundary=";
+        size_t idx = _headerInfo[CONTENT_TYPE].find(keyBoundary);
+        fi.boundaryCode = _headerInfo[CONTENT_TYPE].substr(idx + keyBoundary.length());
+        fi.boundaryCode.pop_back();
+    }
+    std::vector<std::string> info;
+    std::string tmp = "";
+    for (size_t i = 0; i < _rawBody.size(); i++)
+    {
+        tmp += _rawBody[i];
+        if (_rawBody[i] == '\r')
+        {   
+            tmp.pop_back();
+            info.push_back(tmp);
+            tmp = "";
+        }
+    }
+
+    for (size_t i = 0; i < info.size(); i++)
+    {
+        if (info[i] ==  "--" + fi.boundaryCode)
+        {
+            if (info[i + 4] == "--" + fi.boundaryCode + "--")
+                break;
+            //i + 1 cotent diposiion;
+            std::stringstream ss(info[i + 1]);
+            std::string tmp1, tmp2, tmp3, fName;
+            ss >> tmp1 >>tmp2 >> tmp3 >> fName;
+            fi.fileName = fName.substr(9);
+            ss.clear();
+            ss.str(info[i + 2]);
+            ss >> tmp1 >> fi.type;
+            fi.data = info[i + 4];
+        }
+    }
+    if (fi.boundaryCode.length())
+      _fileInfo.push_back(fi);
+}
+
+std::vector<FileInfo> Request::getFileInfo(void) const {
+    return _fileInfo;
 }

@@ -167,6 +167,14 @@ void Server::_setRequestInfo(int k)
 {
 	_request.clear();
 	_request.setRequest(_clientReq);
+	std::vector<FileInfo> v = _request.getFileInfo();
+	for (size_t i = 0; i < v.size(); i++) {
+		std::cout << "vector " << i << "'s boundary code [" << v[i].boundaryCode << "]\n";
+		std::cout << "vector " << i << "'s file name [" << v[i].fileName << "]\n";
+		std::cout << "vector " << i << "'s type [" << v[i].type << "]\n";
+		std::cout << "vector " << i << "'s data [" << v[i].data << "]\n";
+	}
+	
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();

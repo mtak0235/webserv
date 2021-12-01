@@ -7,6 +7,15 @@
 #include <string>
 #include <iostream>
 
+
+struct FileInfo
+{
+      std::string boundaryCode;
+      std::string fileName;
+      std::string data;
+      std::string type;
+};
+
 class Request
 {
   public:
@@ -35,6 +44,7 @@ class Request
 		std::string getHttpVersion(void) const;
 		std::string getHeaderInfo(const HEADER_INFO& i) const;
     std::string getBody() const;
+    std::vector<FileInfo> getFileInfo(void) const;
 		void clear();
 
   private:
@@ -51,6 +61,7 @@ class Request
     void _init(const std::string& r);
     void _parseRequestLine(const std::string& rl);
     void _parseRequestHeader(const std::string& rh);
+    void _parseFileInfo(void);
     // void _parseRequestBody(const std::string& rb);
 
     /* request line */
@@ -63,7 +74,9 @@ class Request
 
     /* request body */
     std::string _rawBody;
-    std::map<std::string, std::string> _body;
+
+    /* */
+    std::vector<FileInfo> _fileInfo;
 };
 
 #endif

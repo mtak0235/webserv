@@ -1,5 +1,5 @@
 #include "Response.hpp"
-#include <cstring>
+
 
 const std::string Response::_httpVersion = "1.1";
 
@@ -63,4 +63,98 @@ std::string Response::_makeHeader() {
   ret += _makeServerInfo();
   ret += _makeLocation();
   return ret;
+}
+
+const std::string	Response::generateAutoindexPage(std::string const &path) const//./Youpi// 경로가 dir일 뗴만 실행.
+{
+	std::cout << "\033[36m" << path << "\033[37m" << std::endl;
+	DIR				*dir = opendir(path.c_str());
+	struct dirent	*dirInfo;
+	struct stat		statBuf;
+	std::string		addPrefix, fileName, lastModTime, fileSize, content;
+	/* begin html */
+	content = "<html>\n";
+	content += "<head><title>autoindex</title></head>\n";
+	content += "<body>\n";
+	content += "<h1>Index of ";
+	content += path.substr(7);
+	content += "</h1><hr/>\n";
+
+	/* create table */
+	content += "<table width=\"100%\" border=\"0\">\n";
+	content += "<tr>\n";
+	content += "<th align=\"left\">Name</th>\n";
+	content += "<th align=\"left\">Last modified</th>\n";
+	content += "<th align=\"left\">size</th>\n";
+	content += "</tr>\n";
+
+	if (dir == NULL) {
+	  std::cout << "opendir failed" << std::endl;
+		return std::string("");
+	}
+
+	/* create table content */
+	while ((dirInfo = readdir(dir)) != NULL) {
+		fileName = dirInfo->d_name;
+		if (fileName == ".") {
+			fileName.clear();
+			continue;
+		}
+		/* get absolut path */
+		addPrefix = path;
+		addPrefix += "/";
+		if (fileName != "..")
+			addPrefix += fileName;
+		else
+			addPrefix = fileName;
+
+		/* get file status */
+		stat(addPrefix.c_str(), &statBuf);
+
+		/* get file modify time */
+		lastModTime = ctime(&statBuf.st_mtime);
+		lastModTime.erase(lastModTime.end() - 1);
+
+		/* get file size */
+		fileSize = std::to_string(statBuf.st_size);
+
+		/* begin of content */
+		content += "<tr>\n";
+
+		/* element 1: path access */
+		content += "<td><a href=\"" + fileName;
+		if (S_ISDIR(statBuf.st_mode))
+			content += "/";
+		content += "\">";
+		content += fileName;
+		if (S_ISDIR(statBuf.st_mode))
+			content += "/";		
+		content += "</a></td>\n";
+
+		/* element 2: modify time */
+		content += "<td>" + content + lastModTime + "</td>";
+
+		/* element 3: file size */
+		content += "<td>";
+		if (S_ISDIR(statBuf.st_mode))
+			content += "_";
+		else
+			content += fileSize;
+		content += "</td>";
+
+		/* end of content */
+		content += "</tr>\n";
+
+		addPrefix.clear();
+		fileName.clear();
+		lastModTime.clear();
+		fileSize.clear();
+	}
+	closedir(dir);
+	/* end of html */
+	content += "</table>\n";
+	content += "</body>\n";
+	content += "</html>\n";
+
+	return content;
 }

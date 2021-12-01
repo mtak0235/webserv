@@ -215,6 +215,7 @@ std::string Server::_setBody(std::string file)
 
 std::string Server::_getBody(std::string file, int k)
 {
+	printf("getBody file : %s", file.c_str());
 	std::string body;
 	std::string rootPulsFile = _nowLocation.getRoot() +  "/" + file;
 	if (!_requestMethod.compare("GET"))
@@ -222,17 +223,25 @@ std::string Server::_getBody(std::string file, int k)
 		std::string cgiName = _nowLocation.getCgiName();
 		if (!_isFile.compare("html") || !_isFile.compare("htm"))
 		{
+			printf("\033[31m[1]\033[37m\n");
 			body = _setBody(rootPulsFile);
 		}
 		else if (!_isFile.compare(_nowLocation.getCgiName()))
 		{
+			printf("\033[31m[2]\033[37m\n");
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
 			_cgi.getCgiResponseHeader();
 			body = _cgi.getCgiResponseBody();
 			_statusCode = _cgi.getStatusCode();
 		}
+		else if (_nowLocation.getAutoIndex() == 0)
+		{
+			printf("\033[31m[3]\033[37m\n");
+			body = _response.generateAutoindexPage("./YoupiBanane" + _request.getPath());
+		}
 		else
 			_statusCode = 403;
+		printf("\033[31m[4]\033[37m\n");
 		
 	}
 	else if (!_requestMethod.compare("POST"))

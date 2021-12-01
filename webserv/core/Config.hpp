@@ -47,6 +47,7 @@ public:
 	std::string getCgiPath();
 	int getCliBodySize();
 	std::string getUploadFolder();
+	int getAutoIndex();
 
 	bool empty();
 };

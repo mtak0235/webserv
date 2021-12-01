@@ -8,6 +8,7 @@ LocationConfig::LocationConfig()
 	_cgiPath = "";
 	_cliBodySize = 0;
 	_uploadFolder = "";
+	_autoindex = 1;
 }
 
 LocationConfig::~LocationConfig()
@@ -123,6 +124,11 @@ int LocationConfig::getCliBodySize()
 std::string LocationConfig::getUploadFolder()
 {
 	return _uploadFolder;
+}
+
+int LocationConfig::getAutoIndex()  
+{
+	return _autoindex;
 }
 
 bool LocationConfig::empty()

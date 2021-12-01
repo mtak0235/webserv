@@ -4,6 +4,12 @@
 #include <ctime>
 #include <string>
 #include <sstream>
+#include <dirent.h>
+#include <cstring>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <iostream>
 
 #include "../core/Formatter.hpp"
 
@@ -19,8 +25,8 @@ class Response
     void setStatusMsg(const std::string& str);
     void setServerName(const std::string& str);
     void setLocation(const std::string& str);
-    // void setContentLength(const int& n);
-    // void setContentType(std::string type);
+    const std::string	generateAutoindexPage(std::string const &path) const;
+
   private:
     static const std::string _httpVersion;
 

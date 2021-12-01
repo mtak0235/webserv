@@ -167,13 +167,13 @@ void Server::_setRequestInfo(int k)
 {
 	_request.clear();
 	_request.setRequest(_clientReq);
-	std::vector<FileInfo> v = _request.getFileInfo();
-	for (size_t i = 0; i < v.size(); i++) {
-		std::cout << "vector " << i << "'s boundary code [" << v[i].boundaryCode << "]\n";
-		std::cout << "vector " << i << "'s file name [" << v[i].fileName << "]\n";
-		std::cout << "vector " << i << "'s type [" << v[i].type << "]\n";
-		std::cout << "vector " << i << "'s data [" << v[i].data << "]\n";
-	}
+
+	// for (size_t i = 0; i < v.size(); i++) {
+	// 	std::cout << "vector " << i << "'s boundary code [" << v[i].boundaryCode << "]\n";
+	// 	std::cout << "vector " << i << "'s file name [" << v[i].fileName << "]\n";
+	// 	std::cout << "vector " << i << "'s type [" << v[i].type << "]\n";
+	// 	std::cout << "vector " << i << "'s data [" << v[i].data << "]\n";
+	// }
 	
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
@@ -228,7 +228,7 @@ std::string Server::_getBody(std::string file, int k)
 	if (!_requestMethod.compare("GET"))
 	{
 		std::string cgiName = _nowLocation.getCgiName();
-		if (!_isFile.compare("html") || !_isFile.compare("htm"))
+		if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare("txt"))
 		{
 			body = _setBody(rootPulsFile);
 		}
@@ -247,6 +247,15 @@ std::string Server::_getBody(std::string file, int k)
 	{
 		if (!_isFile.compare(_nowLocation.getCgiName()))
 		{
+			std::vector<FileInfo> v = _request.getFileInfo();
+			if (!v.empty())
+			{
+				std::ofstream ofs;
+				std::string filePath = _nowLocation.getUploadFolder() + v[0].fileName;
+				ofs.open(filePath);
+				ofs << v[0].data;
+				ofs.close();
+			}
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
 			_cgi.getCgiResponseHeader();
 			body = _cgi.getCgiResponseBody();

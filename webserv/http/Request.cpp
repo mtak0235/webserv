@@ -141,7 +141,8 @@ void Request::_parseFileInfo(void) {
             std::stringstream ss(info[i + 1]);
             std::string tmp1, tmp2, tmp3, fName;
             ss >> tmp1 >>tmp2 >> tmp3 >> fName;
-            fi.fileName = fName.substr(9);
+            fi.fileName = fName.substr(10);
+            fi.fileName.pop_back();
             ss.clear();
             ss.str(info[i + 2]);
             ss >> tmp1 >> fi.type;

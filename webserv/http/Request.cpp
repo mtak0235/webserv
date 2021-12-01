@@ -32,6 +32,7 @@ void Request::clear()
 	_method = "";
 	_path = "";
 	_httpVersion = "";
+	_rawBody = "";
 	/* request header */
 	for (int i = 0; i < AVAIL_H; i++)
 		_headerInfo[i] = "";
@@ -113,42 +114,64 @@ std::string Request::getBody() const {
 
 void Request::_parseFileInfo(void) {
     FileInfo fi;
+		// size_t start = 0;
+		// for (unsigned long i = 0; i < _rawBody.size(); i++)
+		// {
+		// 	if (_rawBody[i] == '\n')
+		// 		start++;
+		// 	else
+		// 		break;
+		// }
+		// _rawBody = _rawBody.substr(start);
     if (!_headerInfo[CONTENT_TYPE].find("multipart/form-data")) {
         const std::string keyBoundary = "boundary=";
         size_t idx = _headerInfo[CONTENT_TYPE].find(keyBoundary);
         fi.boundaryCode = _headerInfo[CONTENT_TYPE].substr(idx + keyBoundary.length());
-        fi.boundaryCode.pop_back();
+        // fi.boundaryCode.pop_back();
     }
     std::vector<std::string> info;
+		std::vector<size_t> checkIdx;
     std::string tmp = "";
+		std::string endCode = fi.boundaryCode;
+		endCode.pop_back();
+		endCode.pop_back();
+		endCode += "--\r\n";
     for (size_t i = 0; i < _rawBody.size(); i++)
     {
         tmp += _rawBody[i];
         if (i > 0 && _rawBody[i] == '\n' && _rawBody[i - 1] == '\r')
         {   
             info.push_back(tmp);
+						if (tmp == "--" + fi.boundaryCode)
+							checkIdx.push_back(info.size() - 1);
+						if (tmp == "--" + endCode)
+							checkIdx.push_back(info.size() - 1);
             tmp = "";
         }
     }
+		if (checkIdx.empty())
+			return;
+		for (size_t i = 0; i < checkIdx.size() - 2; i++)
+		{
+			// checkIdx[i] -> 시작 인덱스
+			// checkIdx[i + 1] -> 끝 인덱스
+			int j = checkIdx[i];
+			std::stringstream ss(info[j + 1]);
+			std::string contentDisposition, formData, name, fileName;
+			ss >> contentDisposition >> formData >> name >> fileName;
+			fi.fileName = fileName.substr(10);
+			fi.fileName.pop_back();
+			ss.clear();
+			ss.str(info[j + 2]);
+			std::string tmp;
+			ss >> tmp >> fi.type;
+			fi.data = "";
+			for (size_t kk = j + 4; kk < checkIdx[i + 1]; kk++)
+				fi.data += info[kk];
+			fi.data.pop_back();
+			fi.data.pop_back();
+		}
 
-    for (size_t i = 0; i < info.size(); i++)
-    {
-        if (info[i] ==  "--" + fi.boundaryCode + "\r\n")
-        {
-            if (info[i + 4] == "--" + fi.boundaryCode + "--\r\n")
-                break;
-            //i + 1 cotent diposiion;
-            std::stringstream ss(info[i + 1]);
-            std::string tmp1, tmp2, tmp3, fName;
-            ss >> tmp1 >>tmp2 >> tmp3 >> fName;
-            fi.fileName = fName.substr(10);
-            fi.fileName.pop_back();
-            ss.clear();
-            ss.str(info[i + 2]);
-            ss >> tmp1 >> fi.type;
-            fi.data = info[i + 4];
-        }
-    }
     if (fi.boundaryCode.length())
       _fileInfo.push_back(fi);
 }

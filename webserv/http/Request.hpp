@@ -51,7 +51,7 @@ class Request
     void _init(const std::string& r);
     void _parseRequestLine(const std::string& rl);
     void _parseRequestHeader(const std::string& rh);
-    void _parseRequestBody(const std::string& rb);
+    std::string _parseRequestBody(const std::string& rb);
 
     /* request line */
     std::string _method;

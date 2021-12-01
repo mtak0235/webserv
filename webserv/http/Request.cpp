@@ -70,7 +70,10 @@ void Request::_init(const std::string& r) {
     for (size_t l = 1; l < v.size(); l++) {
         _parseRequestHeader(v[l]);
         if (v[l][0] == '\r') {
-            _parseRequestBody(v[++l]);
+            while (l < v.size()) {
+                l++;
+                _rawBody += _parseRequestBody(v[l]);
+            }
             break ;
         }
     }
@@ -121,26 +124,28 @@ void Request::_parseRequestHeader(const std::string& rh) {
 }
 
 
-void Request::_parseRequestBody (const std::string& rb) {
-    _rawBody = rb;
-    for (size_t i = 0; i < _rawBody.size(); i++) {
-        if (_rawBody[i] == '+') _rawBody[i] = ' ';
+std::string Request::_parseRequestBody (const std::string& rb) {
+    // _rawBody = rb;
+    std::string ret = rb;
+    for (size_t i = 0; i < ret.size(); i++) {
+        if (ret[i] == '+') ret[i] = ' ';
     }
     size_t idx = 0;
-    while (idx < _rawBody.size()) {
+    while (idx < ret.size()) {
         size_t idxSep;
-        if ((idxSep = _rawBody.find('=', idx + 1)) == std::string::npos)
+        if ((idxSep = ret.find('=', idx + 1)) == std::string::npos)
             break ;
-        std::string key = _rawBody.substr(idx, idxSep - idx);
+        std::string key = ret.substr(idx, idxSep - idx);
         idx += key.size() + 1;
-        if ((idxSep = _rawBody.find('&', idx + 1)) == std::string::npos) {
-            _body[key] = _rawBody.substr(idx);
+        if ((idxSep = ret.find('&', idx + 1)) == std::string::npos) {
+            _body[key] = ret.substr(idx);
             break ;
         } else {
-            _body[key] = _rawBody.substr(idx, idxSep - idx);
+            _body[key] = ret.substr(idx, idxSep - idx);
             idx = idxSep + 1;
         }
     }
+    return ret;
     // printf("raw body : %s \n", _rawBody.c_str());
 }
 

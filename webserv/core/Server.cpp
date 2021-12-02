@@ -104,6 +104,8 @@ int Server::_responseDatatoServer(int k)
 int Server::_fileJudge(int k)
 {
 	_found = _requestPath.find_last_of(".");
+	if (_found == std::string::npos)
+		return -1;
 	_isFile = _requestPath.substr(_found + 1);
 	int slashCnt = 0;
 	for (unsigned long i = 0; i < _requestPath.size(); i++)
@@ -121,11 +123,13 @@ int Server::_fileJudge(int k)
 		if (cnt == slashCnt)
 			break;
 	}
+	// if (_isFile == "/")
+	//  _isFile = "";
 	if (getPath.size() != 1 && getPath[getPath.size() - 1] == '/')
 		getPath.pop_back();
 	_nowLocation = _serverConfigs[k].getLocationsFind(getPath);
 	_body = "";
-	if (!_isFile.compare("html") || !_isFile.compare("htm") || !_isFile.compare(_nowLocation.getCgiName()))
+	if (_isFile != "")
 	{
 		_body = _getBody(_requestPath.substr(1), k);
 		return 0;
@@ -135,21 +139,21 @@ int Server::_fileJudge(int k)
 
 void Server::_isDirectory(int k)
 {
-	// _nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
-	// _allowMethods = _nowLocation.getAllowMethod();
-	// _isAllow = false;
-	// for (unsigned long i = 0; i < _allowMethods.size(); i++)
-	// {
-	// 	if (!_allowMethods[i].compare(_requestMethod))
-	// 		_isAllow = true;
-	// }
-	// if (!_isAllow)
-	// 	_statusCode = 405;
-	// else
-	// {
-		_indexList = _nowLocation.getIndexList();
-		_isFile = "";
-		_found = 0;
+	if (_requestPath.size() != 1 && _requestPath.back() == '/')
+		_requestPath.pop_back();
+	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
+	_allowMethods = _nowLocation.getAllowMethod();
+	_isAllow = false;
+	for (unsigned long i = 0; i < _allowMethods.size(); i++)
+	{
+		if (!_allowMethods[i].compare(_requestMethod))
+			_isAllow = true;
+	}
+	if (!_isAllow)
+		_statusCode = 405;
+	else
+	{
+
 		if (_nowLocation.getAutoIndex() == 0)
 		{
 			std::string tmp = _response.generateAutoindexPage("./YoupiBanane" + _request.getPath());;
@@ -158,15 +162,21 @@ void Server::_isDirectory(int k)
 				_body = tmp;
 				_statusCode = 200;
 			}
-			else if (_indexList.size() > 0) //경로인 경우
+		}
+		else
+		{
+			_indexList = _nowLocation.getIndexList();
+			if (_indexList.size() > 0) //경로인 경우
 			{
+				_isFile = "";
+				_found = 0;
 				_found = _indexList[0].find_last_of(".");
 				_isFile = _indexList[0].substr(_found + 1);
 				_body = _getBody(_indexList[0], k);
 			}
 		}
 		printf("body\n%s\n", _body.c_str());
-	// }
+	}
 }
 
 // allow method 안에서 있는지 확인
@@ -184,7 +194,9 @@ void Server::_setRequestInfo(int k)
 	//파일인 경우
 	if (_fileJudge(k) == NGX_OK && _statusCode == 200)
 		return;
+
 	_isDirectory(k);
+
 	if (_statusCode == 400 || _statusCode == 403 || _statusCode == 404 || _statusCode == 405)
 	{
 		_body = _setBody("400.html");
@@ -227,11 +239,11 @@ std::string Server::_getBody(std::string file, int k)
 {
 	printf("getBody file : %s", file.c_str());
 	std::string body;
-	std::string rootPulsFile = _nowLocation.getRoot() +  "/" + file;
+	std::string rootPulsFile = "./YoupiBanane/" + file;
 	if (!_requestMethod.compare("GET"))
 	{
 
-		if (!_isFile.compare("html") || !_isFile.compare("htm"))
+		if (_isFile != "")
 			body = _setBody(rootPulsFile);
 		else if (!_isFile.compare(_nowLocation.getCgiName()))
 		{	

@@ -169,7 +169,7 @@ std::map<std::string, std::string> Cgi::_makeEnvMap(const Request &req, std::str
   ret[_environList[REQUEST_URI]] = req.getPath();
   ret[_environList[REDIRECT_STATUS]] = "CGI";
   ret[_environList[SERVER_PROTOCOL]] = "HTTP/1.1";
-  ret[_environList[CONTENT_TYPE]] = "application/x-www-form-urlencoded";
+  ret[_environList[CONTENT_TYPE]] = "image/jpeg";//"application/x-www-form-urlencoded";
   ret[_environList[GATEWAY_INTERFACE]] = "CGI/1.1";
   ret[_environList[REMOTE_ADDR]] = "127.0.0.1";
   ret[_environList[SERVER_PORT]] = "80";

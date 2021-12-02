@@ -32,6 +32,11 @@ void Response::setServerName(const std::string& str) {
   _serverName = str;
 }
 
+void Response::setContentType(std::string type)
+{
+	_contentType = type;
+}
+
 std::string Response::_makeServerInfo(void) {
   std::string ret = "Server: ";
   ret += _serverName + "\n";
@@ -49,7 +54,10 @@ std::string Response::_makeStatusLine() {
 
 std::string Response::_makeHeader() {
   std::string ret;
+	// ret += "Content-Type: image/jpeg\n";
   ret += ("Date: " + Formatter::getDate());
-  ret += _makeServerInfo();
+	ret += _makeServerInfo();
+	
   return ret;
 }
+

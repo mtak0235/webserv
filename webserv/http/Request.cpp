@@ -155,25 +155,25 @@ void Request::_parseFileInfo(void) {
 		{
 			// checkIdx[i] -> 시작 인덱스
 			// checkIdx[i + 1] -> 끝 인덱스
+			FileInfo f;
+			f.boundaryCode = fi.boundaryCode;
 			int j = checkIdx[i];
 			std::stringstream ss(info[j + 1]);
 			std::string contentDisposition, formData, name, fileName;
 			ss >> contentDisposition >> formData >> name >> fileName;
-			fi.fileName = fileName.substr(10);
-			fi.fileName.pop_back();
+			f.fileName = fileName.substr(10);
+			f.fileName.pop_back();
 			ss.clear();
 			ss.str(info[j + 2]);
 			std::string tmp;
-			ss >> tmp >> fi.type;
-			fi.data = "";
+			ss >> tmp >> f.type;
+			f.data = "";
 			for (size_t kk = j + 4; kk < checkIdx[i + 1]; kk++)
-				fi.data += info[kk];
-			fi.data.pop_back();
-			fi.data.pop_back();
+				f.data += info[kk];
+			f.data.pop_back();
+			f.data.pop_back();
+			_fileInfo.push_back(f);
 		}
-
-    if (fi.boundaryCode.length())
-      _fileInfo.push_back(fi);
 }
 
 std::vector<FileInfo> Request::getFileInfo(void) const {

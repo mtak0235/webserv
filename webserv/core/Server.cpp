@@ -198,6 +198,7 @@ void Server::_setResponse(int k)
 	_response.setServerName(_serverConfigs[k].getServerName());
 	_response.setStatusCode(_statusCode);
 	_response.setStatusMsg(_status[_statusCode]);
+	// _response.setContentType("image/jpeg");
 	_body += "\n";
 	//+ content type
 	_lastRespnse = _response.makeResponse(_body);
@@ -251,20 +252,19 @@ std::string Server::_getBody(std::string file, int k)
 		if (!_isFile.compare(_nowLocation.getCgiName()))
 		{
 			std::vector<FileInfo> v = _request.getFileInfo();
-			if (!v.empty())
+			for (unsigned long i = 0; i < v.size(); i++)
 			{
 				std::ofstream ofs;
-				std::string filePath = _nowLocation.getUploadFolder() + v[0].fileName;
+				std::string filePath = _nowLocation.getUploadFolder() + v[i].fileName;
 				ofs.open(filePath);
-				std::cout << v[0].data.size();
-				ofs.write(v[0].data.c_str(), v[0].data.size());
+				std::cout << v[i].data.size();
+				ofs.write(v[0].data.c_str(), v[i].data.size());
 				ofs.close();
 			}
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
 			_cgi.getCgiResponseHeader();
 			body = _cgi.getCgiResponseBody();
 			_statusCode = _cgi.getStatusCode();
-			
 		}
 		else
 			_statusCode = 403;

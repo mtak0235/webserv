@@ -2,8 +2,8 @@
 
 const std::string Parser::_keyInit = "server";
 const std::string Parser::_keyServer[3] = {"listen", "server_name", "location"};
-const std::string Parser::_keyLocation[8] = {"autoindex","client_max_body_size", "method", "index",
-                                         "root", "cgi_extension", "cgi_path", "upload_folder"};
+const std::string Parser::_keyLocation[9] = {"autoindex","client_max_body_size", "method", "index",
+                                         "root", "cgi_extension", "cgi_path", "upload_folder", "return"};
 
 Parser::Parser(void)
     : _serverConfigs(std::vector<ServerConfig>())
@@ -124,6 +124,14 @@ LocationConfig Parser::_parseLocationBlock(void)
 			_ifs >> tmp;
 			tmp = tmp.substr(0, 2);
 			lc.setAutoIndex(tmp);
+		}
+		else if (!_info.compare(_keyLocation[REDIRECTION]))
+		{
+			int code;
+			_ifs >> code >> tmp;
+			tmp = tmp.substr(0, tmp.find(";", 0));
+			lc.setRedirectionCode(code);
+			lc.setRedirectionAddress(tmp);
 		}
     }
 	_info = "";

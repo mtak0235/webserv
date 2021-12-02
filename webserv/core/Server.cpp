@@ -163,7 +163,10 @@ void Server::_isDirectory(int k)
 				_statusCode = 200;
 			}
 		}
-		else
+		_indexList = _nowLocation.getIndexList();
+		if (_nowLocation.getRedirectionCode() >= 300 && _nowLocation.getRedirectionCode() < 400)
+			_statusCode = _nowLocation.getRedirectionCode();
+		else if (_indexList.size() > 0) //경로인 경우
 		{
 			_indexList = _nowLocation.getIndexList();
 			if (_indexList.size() > 0) //경로인 경우
@@ -186,8 +189,10 @@ void Server::_setRequestInfo(int k)
 	_request.setRequest(_clientReq);
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-	if (!_request.getPath().compare("/redirection_from"))
-		_statusCode = 302;
+	// if (!_request.getPath().compare("/redirection_from"))
+	// {
+	// 	_statusCode = 302;
+	// }
 	_requestPath = _request.getPath();
 	_requestMethod = _request.getMethod();
 
@@ -210,7 +215,7 @@ void Server::_setResponse(int k)
 	_response.setStatusCode(_statusCode);
 	_response.setStatusMsg(_status[_statusCode]);
 	if (300 <= _statusCode && _statusCode < 400)
-		_response.setLocation("http://localhost:" + _serverConfigs[k].getServerPort() + "/redirection_to");
+		_response.setLocation("http://localhost:" + _serverConfigs[k].getServerPort() + _nowLocation.getRedirectionAddress());
 	_body += "\n";
 	//+ content type
 	_lastRespnse = _response.makeResponse(_body);

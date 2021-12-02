@@ -8,7 +8,9 @@ LocationConfig::LocationConfig()
 	_cgiPath = "";
 	_cliBodySize = 0;
 	_uploadFolder = "";
-	_autoindex = 1;
+	_autoindex = false;
+	_redirectCode = 0; //고침
+	_redirectAddress = "";
 }
 
 LocationConfig::~LocationConfig()
@@ -27,6 +29,8 @@ LocationConfig LocationConfig::operator=(LocationConfig &x)
 	_indexList = x._indexList;
 	_allowMethods = x._allowMethods;
 	_autoindex = x._autoindex;
+	_redirectCode = x._redirectCode;
+	_redirectAddress = x._redirectAddress;
 	return *this;
 }
 
@@ -82,11 +86,25 @@ void LocationConfig::setUploadFolder(std::string uploadFolder)
 
 void LocationConfig::setAutoIndex(std::string autoindex)
 {
-	if (!autoindex.compare("on"))
-		_autoindex = ON;
+	// autoindex on;
+	// autoindex 파싱된게 "on;"임
+
+	if (!autoindex.compare("on;"))
+		_autoindex = true;
 	else
-		_autoindex = OFF;
+		_autoindex = false;
 }
+
+void LocationConfig::setRedirectionCode(int redirectionCode)
+{
+	_redirectCode = redirectionCode;
+}
+
+void LocationConfig::setRedirectionAddress(std::string redirectionAddress)
+{
+	_redirectAddress = redirectionAddress;
+}
+
 std::string LocationConfig::getLocationName()
 {
 	return _locationName;
@@ -131,6 +149,18 @@ int LocationConfig::getAutoIndex()
 {
 	return _autoindex;
 }
+
+
+int LocationConfig::getRedirectionCode(void)
+{
+	return _redirectCode;
+}
+
+std::string LocationConfig::getRedirectionAddress(void)
+{
+	return _redirectAddress;
+}
+
 
 bool LocationConfig::empty()
 {

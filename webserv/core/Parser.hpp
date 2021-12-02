@@ -26,6 +26,7 @@ class Parser
     CGI_EXTENSION,
     CGI_PATH,
     UPLOAD_FOLDER,
+		REDIRECTION
   };
 
   public:
@@ -37,7 +38,7 @@ class Parser
   private:
 		static const std::string _keyInit;
 		static const std::string _keyServer[3];
-		static const std::string _keyLocation[8];
+		static const std::string _keyLocation[9];
 		
 		std::ifstream _ifs;
 		std::string _info;

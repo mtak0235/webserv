@@ -104,6 +104,8 @@ int Server::_responseDatatoServer(int k)
 int Server::_fileJudge(int k)
 {
 	_found = _requestPath.find_last_of(".");
+	if (_found == std::string::npos)
+		return -1;
 	_isFile = _requestPath.substr(_found + 1);
 	int slashCnt = 0;
 	for (unsigned long i = 0; i < _requestPath.size(); i++)
@@ -150,7 +152,9 @@ void Server::_isDirectory(int k)
 		_indexList = _nowLocation.getIndexList();
 		_isFile = "";
 		_found = 0;
-		if (_indexList.size() > 0) //경로인 경우
+		if (_nowLocation.getRedirectionCode() >= 300 && _nowLocation.getRedirectionCode() < 400)
+			_statusCode = _nowLocation.getRedirectionCode();
+		else if (_indexList.size() > 0) //경로인 경우
 		{
 			_found = _indexList[0].find_last_of(".");
 			_isFile = _indexList[0].substr(_found + 1);
@@ -166,8 +170,10 @@ void Server::_setRequestInfo(int k)
 	_request.setRequest(_clientReq);
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-	if (!_request.getPath().compare("/redirection_from"))
-		_statusCode = 302;
+	// if (!_request.getPath().compare("/redirection_from"))
+	// {
+	// 	_statusCode = 302;
+	// }
 	_requestPath = _request.getPath();
 	_requestMethod = _request.getMethod();
 
@@ -188,7 +194,7 @@ void Server::_setResponse(int k)
 	_response.setStatusCode(_statusCode);
 	_response.setStatusMsg(_status[_statusCode]);
 	if (300 <= _statusCode && _statusCode < 400)
-		_response.setLocation("http://localhost:" + _serverConfigs[k].getServerPort() + "/redirection_to");
+		_response.setLocation("http://localhost:" + _serverConfigs[k].getServerPort() + _nowLocation.getRedirectionAddress());
 	_body += "\n";
 	//+ content type
 	_lastRespnse = _response.makeResponse(_body);

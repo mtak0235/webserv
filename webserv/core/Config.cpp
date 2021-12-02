@@ -26,6 +26,7 @@ LocationConfig LocationConfig::operator=(LocationConfig &x)
 	_uploadFolder = x._uploadFolder;
 	_indexList = x._indexList;
 	_allowMethods = x._allowMethods;
+	_autoindex = x._autoindex;
 	return *this;
 }
 

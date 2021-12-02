@@ -77,7 +77,7 @@ const std::string	Response::generateAutoindexPage(std::string const &path) const
 	content += "<head><title>autoindex</title></head>\n";
 	content += "<body>\n";
 	content += "<h1>Index of ";
-	content += path.substr(7);
+	content += path.substr(13);
 	content += "</h1><hr/>\n";
 
 	/* create table */
@@ -89,7 +89,7 @@ const std::string	Response::generateAutoindexPage(std::string const &path) const
 	content += "</tr>\n";
 
 	if (dir == NULL) {
-	  std::cout << "opendir failed" << std::endl;
+		std::cout << "opendir failed" << std::endl;
 		return std::string("");
 	}
 
@@ -100,6 +100,7 @@ const std::string	Response::generateAutoindexPage(std::string const &path) const
 			fileName.clear();
 			continue;
 		}
+
 		/* get absolut path */
 		addPrefix = path;
 		addPrefix += "/";
@@ -122,7 +123,8 @@ const std::string	Response::generateAutoindexPage(std::string const &path) const
 		content += "<tr>\n";
 
 		/* element 1: path access */
-		content += "<td><a href=\"" + fileName;
+		content += "<td><a href=\"";
+		content += fileName;
 		if (S_ISDIR(statBuf.st_mode))
 			content += "/";
 		content += "\">";
@@ -132,7 +134,9 @@ const std::string	Response::generateAutoindexPage(std::string const &path) const
 		content += "</a></td>\n";
 
 		/* element 2: modify time */
-		content += "<td>" + content + lastModTime + "</td>";
+		content += "<td>";
+		content += lastModTime;
+		content += "</td>";
 
 		/* element 3: file size */
 		content += "<td>";
@@ -150,11 +154,14 @@ const std::string	Response::generateAutoindexPage(std::string const &path) const
 		lastModTime.clear();
 		fileSize.clear();
 	}
+
 	closedir(dir);
+
 	/* end of html */
 	content += "</table>\n";
 	content += "</body>\n";
 	content += "</html>\n";
 
+	// printf("%s\n", content.c_str());
 	return content;
 }

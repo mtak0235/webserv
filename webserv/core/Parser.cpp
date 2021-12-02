@@ -56,6 +56,7 @@ ServerConfig Parser::_parseServerBlock(void)
 		}
     }
 	_serverRemoveSemicolon(&sc);
+
     return sc;
 }
 
@@ -121,7 +122,7 @@ LocationConfig Parser::_parseLocationBlock(void)
 		else if(!_info.compare(_keyLocation[AUTO_INDEX]))
 		{
 			_ifs >> tmp;
-			tmp = tmp.substr(0, tmp.find(";", 0));
+			tmp = tmp.substr(0, 2);
 			lc.setAutoIndex(tmp);
 		}
     }

@@ -135,28 +135,38 @@ int Server::_fileJudge(int k)
 
 void Server::_isDirectory(int k)
 {
-	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
-	_allowMethods = _nowLocation.getAllowMethod();
-	_isAllow = false;
-	for (unsigned long i = 0; i < _allowMethods.size(); i++)
-	{
-		if (!_allowMethods[i].compare(_requestMethod))
-			_isAllow = true;
-	}
-	if (!_isAllow)
-		_statusCode = 405;
-	else
-	{
+	// _nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
+	// _allowMethods = _nowLocation.getAllowMethod();
+	// _isAllow = false;
+	// for (unsigned long i = 0; i < _allowMethods.size(); i++)
+	// {
+	// 	if (!_allowMethods[i].compare(_requestMethod))
+	// 		_isAllow = true;
+	// }
+	// if (!_isAllow)
+	// 	_statusCode = 405;
+	// else
+	// {
 		_indexList = _nowLocation.getIndexList();
 		_isFile = "";
 		_found = 0;
-		if (_indexList.size() > 0) //경로인 경우
+		if (_nowLocation.getAutoIndex() == 0)
 		{
-			_found = _indexList[0].find_last_of(".");
-			_isFile = _indexList[0].substr(_found + 1);
-			_body = _getBody(_indexList[0], k);
+			std::string tmp = _response.generateAutoindexPage("./YoupiBanane" + _request.getPath());;
+			if (tmp != "")
+			{
+				_body = tmp;
+				_statusCode = 200;
+			}
+			else if (_indexList.size() > 0) //경로인 경우
+			{
+				_found = _indexList[0].find_last_of(".");
+				_isFile = _indexList[0].substr(_found + 1);
+				_body = _getBody(_indexList[0], k);
+			}
 		}
-	}
+		printf("body\n%s\n", _body.c_str());
+	// }
 }
 
 // allow method 안에서 있는지 확인
@@ -220,28 +230,19 @@ std::string Server::_getBody(std::string file, int k)
 	std::string rootPulsFile = _nowLocation.getRoot() +  "/" + file;
 	if (!_requestMethod.compare("GET"))
 	{
-		std::string cgiName = _nowLocation.getCgiName();
+
 		if (!_isFile.compare("html") || !_isFile.compare("htm"))
-		{
-			printf("\033[31m[1]\033[37m\n");
 			body = _setBody(rootPulsFile);
-		}
 		else if (!_isFile.compare(_nowLocation.getCgiName()))
-		{
+		{	
 			printf("\033[31m[2]\033[37m\n");
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
 			_cgi.getCgiResponseHeader();
 			body = _cgi.getCgiResponseBody();
 			_statusCode = _cgi.getStatusCode();
 		}
-		else if (_nowLocation.getAutoIndex() == 0)
-		{
-			printf("\033[31m[3]\033[37m\n");
-			body = _response.generateAutoindexPage("./YoupiBanane" + _request.getPath());
-		}
 		else
 			_statusCode = 403;
-		printf("\033[31m[4]\033[37m\n");
 	}
 	else if (!_requestMethod.compare("POST"))
 	{

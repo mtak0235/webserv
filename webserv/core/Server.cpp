@@ -187,7 +187,7 @@ void Server::_setResponse(int k)
 	_response.setServerName(_serverConfigs[k].getServerName());
 	_response.setStatusCode(_statusCode);
 	_response.setStatusMsg(_status[_statusCode]);
-	if (_statusCode == 302)
+	if (300 <= _statusCode && _statusCode < 400)
 		_response.setLocation("http://localhost:" + _serverConfigs[k].getServerPort() + "/redirection_to");
 	_body += "\n";
 	//+ content type
@@ -242,7 +242,6 @@ std::string Server::_getBody(std::string file, int k)
 		else
 			_statusCode = 403;
 		printf("\033[31m[4]\033[37m\n");
-		
 	}
 	else if (!_requestMethod.compare("POST"))
 	{

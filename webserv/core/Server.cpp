@@ -33,8 +33,7 @@ void Server::acceptNewClient(int servSock)
 	fcntl(client_socket, F_SETFL, O_NONBLOCK);
 
 	/* add event for client socket - add read && write event */
-	changeEvents(_changeList, client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
-	changeEvents(_changeList, client_socket, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	changeEvents(_changeList, client_socket, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 	_clients[client_socket] = "";
 }
 

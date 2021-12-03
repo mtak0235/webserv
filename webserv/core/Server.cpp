@@ -228,7 +228,12 @@ std::string Server::_getBody(std::string file, int k)
 {
 	printf("getBody file : %s", file.c_str());
 	std::string body;
-	std::string rootPulsFile = "./YoupiBanane/" + file;
+	std::string root;
+	if (!_nowLocation.getRoot().compare(""))
+		root = "./YoupiBanane/";
+	else
+		root = _nowLocation.getRoot() + "/";	
+	std::string rootPulsFile = root + file;
 	if (!_requestMethod.compare("GET"))
 	{
 		if (!_isFile.compare(_nowLocation.getCgiName()))

@@ -15,34 +15,13 @@ Server::~Server()
 void Server::setStatus()
 {
 	_status[200] = "OK";
-	// _status[201] = "Created";
-	// _status[202] = "Accepted";
-	// _status[203] = "Non-Authoritative Information";
-	// _status[204] = "No Content";
-	// _status[205] = "Reset Content";
-	// _status[206] = "Partial Content";
 	_status[300] = "Multiple Choice";
-	// _status[301] = "Moved Permanently";
 	_status[302] = "Found";
-	// _status[303] = "See Other";
-	// _status[304] = "Not Modified";
-	// _status[307] = "Temporary Redirect";
-	// _status[308] = "Permanent Redirect";
 	_status[400] = "Bad Request";
-	// _status[401] = "Unauthorized";
-	// _status[402] = "Payment Required";
 	_status[403] = "Forbidden";
 	_status[404] = "Not Found";
 	_status[405] = "Method Not Allowed";
-	// _status[406] = "Not Acceptable";
-	// _status[407] = "Proxy Authentication Required";
-	// _status[408] = "Request Timeout";
 	_status[500] = "Internal Server Error";
-	// _status[501] = "Not Implemented";
-	// _status[502] = "Bad Gateway";
-	// _status[503] = "Service Unavailable";
-	// _status[504] = "Gateway Timeout";
-	// _status[505] = "HTTP Version Not Supported";
 }
 
 void Server::acceptNewClient(int servSock)
@@ -61,6 +40,7 @@ void Server::acceptNewClient(int servSock)
 
 int Server::recvDataFromClient(int k)
 {
+	/*  서버로 부터 데이터를 읽어옴 */
 	_readDataSize = read(_currEvent->ident, _buf, sizeof(_buf));
 	if (_readDataSize <= 0)
 	{
@@ -128,6 +108,11 @@ int Server::_fileJudge(int k)
 	if (getPath.size() != 1 && getPath[getPath.size() - 1] == '/')
 		getPath.pop_back();
 	_nowLocation = _serverConfigs[k].getLocationsFind(getPath);
+	if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
+	{
+		_statusCode = 400;
+		return -1;
+	}
 	_body = "";
 	if (_isFile != "")
 	{
@@ -142,6 +127,11 @@ void Server::_isDirectory(int k)
 	if (_requestPath.size() != 1 && _requestPath.back() == '/')
 		_requestPath.pop_back();
 	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
+	if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
+	{
+		_statusCode = 400;
+		return;
+	}
 	_allowMethods = _nowLocation.getAllowMethod();
 	_isAllow = false;
 	for (unsigned long i = 0; i < _allowMethods.size(); i++)
@@ -178,7 +168,6 @@ void Server::_isDirectory(int k)
 				_body = _getBody(_indexList[0], k);
 			}
 		}
-		printf("body\n%s\n", _body.c_str());
 	}
 }
 
@@ -189,10 +178,6 @@ void Server::_setRequestInfo(int k)
 	_request.setRequest(_clientReq);
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-	// if (!_request.getPath().compare("/redirection_from"))
-	// {
-	// 	_statusCode = 302;
-	// }
 	_requestPath = _request.getPath();
 	_requestMethod = _request.getMethod();
 
@@ -247,10 +232,7 @@ std::string Server::_getBody(std::string file, int k)
 	std::string rootPulsFile = "./YoupiBanane/" + file;
 	if (!_requestMethod.compare("GET"))
 	{
-
-		if (_isFile != "")
-			body = _setBody(rootPulsFile);
-		else if (!_isFile.compare(_nowLocation.getCgiName()))
+		if (!_isFile.compare(_nowLocation.getCgiName()))
 		{	
 			printf("\033[31m[2]\033[37m\n");
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
@@ -258,6 +240,8 @@ std::string Server::_getBody(std::string file, int k)
 			body = _cgi.getCgiResponseBody();
 			_statusCode = _cgi.getStatusCode();
 		}
+		else if (_isFile != "")
+			body = _setBody(rootPulsFile);
 		else
 			_statusCode = 403;
 	}
@@ -282,25 +266,3 @@ std::string Server::_getBody(std::string file, int k)
 	return body;
 }
 
-//location block 탐색해서 그에 대한 정보를 지움 프로그램 안에서
-
-// post 성공적으로 post 됬다는 메시지를 보냄
-
-// get
-
-// [ abcdef] [서브밋]/포스트
-// post /save http/1.1
-// cotent-type: text/json
-
-// {acdef}
-// fd = open(OCREATE)
-// //
-// acdef
-// ab[delete] /delete
-// //
-// delete /remove HTTP/1.1
-// content-Type : text/json
-
-// {ab}
-// //fd = ab(x)
-// cdef

@@ -20,7 +20,7 @@ class Request
       KEEPALIVE,
       CONNECTION,
       CONTENTS_LENGTH,
-      AVAIL_H,
+      AVAIL_H
     };
 
 	public:
@@ -41,7 +41,7 @@ class Request
     GET,
     POST,
     DELETE,
-    AVAIL_M,
+    AVAIL_M
     };
 
     static const std::string _availMethods[AVAIL_M];

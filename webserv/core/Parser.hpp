@@ -14,7 +14,7 @@ class Parser
   enum KEY_SERVER {
     LISTEN,
     SERVER_NAME,
-    LOCATION,
+    LOCATION
   };
 
   enum KEY_LOCATION {

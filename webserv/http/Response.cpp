@@ -67,7 +67,6 @@ std::string Response::_makeHeader() {
 
 const std::string	Response::generateAutoindexPage(std::string const &path) const//./Youpi// 경로가 dir일 뗴만 실행.
 {
-	std::cout << "\033[36m" << path << "\033[37m" << std::endl;
 	DIR				*dir = opendir(path.c_str());
 	struct dirent	*dirInfo;
 	struct stat		statBuf;

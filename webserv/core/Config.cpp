@@ -171,7 +171,7 @@ bool LocationConfig::empty()
 
 ServerConfig::ServerConfig()
 {
-	_serverName = "";
+	_serverName = "webserv";
 	_serverPort = "";
 }
 

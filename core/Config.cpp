@@ -18,6 +18,21 @@ LocationConfig::~LocationConfig()
 
 }
 
+void LocationConfig::clear()
+{
+	_locationName = "";
+	_root = "";
+	_indexList.clear();
+	_allowMethods.clear();
+	_cgiName = "";
+	_cgiPath = "";
+	_cliBodySize = 10000;
+	_uploadFolder = "";
+	_autoindex = false;
+	_redirectCode =0;
+	_redirectAddress = "";
+}
+
 LocationConfig LocationConfig::operator=(LocationConfig &x)
 {
 	_locationName = x._locationName;
@@ -59,9 +74,9 @@ void LocationConfig::popAllowMethod()
 	_allowMethods.pop_back();
 }
 
-void LocationConfig::setAllowMethod(std::string allowMethod)
+void LocationConfig::setAllowMethod(std::vector<std::string> methods)
 {
-	_allowMethods.push_back(allowMethod);
+	_allowMethods = methods;
 }
 
 void LocationConfig::setCgiName(std::string cgiName)
@@ -89,7 +104,7 @@ void LocationConfig::setAutoIndex(std::string autoindex)
 	// autoindex on;
 	// autoindex 파싱된게 "on;"임
 
-	if (!autoindex.compare("on;"))
+	if (!autoindex.compare("on"))
 		_autoindex = true;
 	else
 		_autoindex = false;
@@ -178,6 +193,14 @@ ServerConfig::ServerConfig()
 ServerConfig::~ServerConfig()
 {
 
+}
+
+void ServerConfig::clear()
+{
+	_serverName = "";
+	_serverPort = "";
+	_locations.clear();
+	_locationsFind.clear();
 }
 
 ServerConfig ServerConfig::operator=(ServerConfig &x)

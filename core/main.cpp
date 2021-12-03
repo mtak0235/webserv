@@ -13,7 +13,9 @@ int main(int ag, char **av)
 		conf = av[1];
 	if (conf.compare(""))
 	{
-		cluster.init(conf);
+		
+		if (cluster.init(conf) == NGX_FAIL)
+			return NGX_FAIL;
 		cluster.run();
 		cluster.stop();
 	}

@@ -31,7 +31,7 @@ public:
 	void popIndexList();
 	void setIndexList(std::string index);
 	void popAllowMethod();
-	void setAllowMethod(std::string allowMethod);
+	void setAllowMethod(std::vector<std::string> methods);
 	void setCgiName(std::string cgiName);
 	void setCgiPath(std::string cgiPath);
 	void setCliBodySize(int cliBodySize);
@@ -39,6 +39,7 @@ public:
 	void setAutoIndex(std::string autoindex);
 	void setRedirectionCode(int redirectionCode);
 	void setRedirectionAddress(std::string redirectionAddress);
+	void clear();
 
 	std::string getLocationName();
 	std::string getRoot();
@@ -66,6 +67,7 @@ private:
 public:
 	ServerConfig();
 	~ServerConfig();
+	void clear();
 	ServerConfig operator=(ServerConfig &x);
 	void setServerName(const std::string serverName);
 	void setServerPort(const std::string serverPort);

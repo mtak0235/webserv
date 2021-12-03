@@ -107,10 +107,13 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
     wait(NULL);
     lseek(fdOut, 0, SEEK_SET);
     size_t bytes = 0;
-    while ((bytes = read(fdOut, buff, 1)) != 0)
+    while ((bytes = read(fdOut, buff, 1024)) > 0)
     {
+			buff[bytes] = 0;
       std::string temp = buff;
+			std::cout << "test [" << temp << "]\n";
       result += temp;
+			memset(buff, 0, sizeof(buff));
     }
   }
 	std::vector<std::string> v;

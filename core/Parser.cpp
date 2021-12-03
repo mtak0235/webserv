@@ -14,184 +14,228 @@ Parser::~Parser()
 {
 }
 
-void Parser::parse(const std::string& confFile)
+bool Parser::_checkSemicolon(char c)
 {
-    _ifs.open(confFile);
-
-    while (!_ifs.eof())
-    {
-        _ifs >> _info;
-        if (!_info.compare(_keyInit))
-            _serverConfigs.push_back(_parseServerBlock());
-    }
-
+	return c == ';';
 }
 
-ServerConfig Parser::_parseServerBlock(void)
+int Parser::_getLocationInfo(std::stringstream &ss, std::string msg)
 {
-    ServerConfig sc;
-    std::string tmp;
-
-	_ifs >> _info;
-	if (_info != "{")
-		return sc;
-    while (_info[0] != '}') {
-		_ifs >> _info;
-        if (!_info.compare(_keyServer[LISTEN]))
-		{
-			_ifs >> tmp;
-			tmp = tmp.substr(0, tmp.find(";", 0));
-            sc.setServerPort(tmp);   //serverPort;
-		}
-		else if (!_info.compare(_keyServer[SERVER_NAME]))
-		{
-			_ifs >> tmp;
-            sc.setServerName(tmp);//serverName;
-		}
-		else if (!_info.compare(_keyServer[LOCATION]))
-		{
-			sc.setLocations(_parseLocationBlock());
-			std::vector<LocationConfig> tmp = sc.getLocations();
-			sc.setLocationsFind(tmp[tmp.size() - 1].getLocationName(), tmp[tmp.size() - 1]);
-		}
-    }
-	_serverRemoveSemicolon(&sc);
-
-    return sc;
+	ss >> _info;
+	if (_info.back() != ';')
+	{
+		_log.debugLog(msg);
+		return NGX_FAIL;
+	}
+	_info.pop_back();
+	return NGX_OK;
 }
 
-LocationConfig Parser::_parseLocationBlock(void)
+int Parser::parse(const std::string& confFile)
 {
-    LocationConfig lc;
-	std::string tmp;
-	lc.setCliBodySize(10);
-
-	_ifs >> tmp >> _info;
-	lc.setLocationName(tmp);
-	if (_info != "{")
-		return lc;
-    while (_info[0] != '}') {
-        _ifs >> _info;
-        if (!_info.compare(_keyLocation[BODY_SIZE]))
+	size_t found = confFile.find_last_of(".");
+	if (found == std::string::npos)
+	{
+		_log.debugLog("not conf file");
+		return NGX_FAIL;
+	}
+	std::string tmp = confFile.substr(found + 1);
+	if (tmp.compare("conf"))
+	{
+		_log.debugLog("not conf file");
+		return NGX_FAIL;
+	}
+	_ifs.open(confFile);
+	std::vector<std::string> file;
+	while (!_ifs.eof())
+	{
+		std::string line;
+		getline(_ifs, line);
+		file.push_back(line);
+	}
+	int serverBlock = 0;
+	int locationBlock = 0;
+	ServerConfig sc;
+	LocationConfig lc;
+	for (size_t i = 0; i < file.size(); i++)
+	{
+		std::stringstream ss(file[i]);
+		_info = "";
+		ss >> _info;
+		if (_info == "server")
 		{
-			_ifs >> tmp;
-            lc.setCliBodySize(stoi(tmp));
+			ss >> _info;
+			if (_info != "{")
+				return NGX_FAIL;
+			serverBlock = 1;
+			continue;
 		}
-        else if (!_info.compare(_keyLocation[METHOD]))
+		else if (serverBlock == 1 && _info == "listen")
 		{
-			std::string method;
- 			while (1)
+			ss >> _info;
+			if (_info.back() != ';')
 			{
-				_ifs >> method;
-				lc.setAllowMethod(method);
-				if (method[method.length() - 1] == ';')
-					break;
+				_log.debugLog("listen semicolon error");
+				return NGX_FAIL;
+			}
+			_info.pop_back();
+			for (size_t k = 0; k < _info.size(); k++)
+			{
+				if (!isnumber(_info[k]))
+				{
+					_log.debugLog("port num is not number");
+					return NGX_FAIL;
+				}
+			}
+			sc.setServerPort(_info);
+		}
+		else if (serverBlock == 1 && _info == "server_name")
+		{
+			ss >> _info;
+			if (_info.back() != ';')
+			{
+				_log.debugLog("server name semi error");
+				return NGX_FAIL;
+			}
+			_info.pop_back();
+			sc.setServerName(_info);
+		}
+		else if (serverBlock == 1 && _info == "location")
+		{
+			std::string bracket;
+			ss >> _info >> bracket;
+			if (bracket != "{")
+			{
+				_log.debugLog("location start bracket error");
+				return NGX_FAIL;
+			}
+			locationBlock = 1;
+			lc.setLocationName(_info);
+		}
+		else if (serverBlock == 1 && locationBlock == 1)
+		{
+			if (_info == "root")
+			{
+				if (_getLocationInfo(ss, "root parsing error") == NGX_FAIL)
+					return NGX_FAIL;
+				lc.setRoot(_info);
+			}
+			else if (_info == "index")
+			{
+				if (_getLocationInfo(ss, "index parsing error") == NGX_FAIL)
+					return NGX_FAIL;
+				lc.setIndexList(_info);
+			}
+			else if (_info == "method")
+			{
+				std::string method;
+				std::vector<std::string> tmp;
+				while (ss >> method)
+					tmp.push_back(method);
+				if (tmp[tmp.size() - 1].back() != ';')
+				{
+					_log.debugLog("method semi error");
+					return NGX_FAIL;
+				}
+				tmp[tmp.size() - 1].pop_back();
+				for (size_t k = 0; k < tmp.size(); k++)
+				{
+					if (tmp[k] != "GET" && tmp[k] != "POST" && tmp[k] != "DELETE")
+					{
+						_log.debugLog("not correct method");
+						return NGX_FAIL;
+					}
+				}
+				lc.setAllowMethod(tmp);
+			}
+			else if (_info == "cgi_path")
+			{
+				if (_getLocationInfo(ss, "cgi path parsing error") == NGX_FAIL)
+					return NGX_FAIL;
+				lc.setCgiPath(_info);
+			}
+			else if (_info == "cgi_extension")
+			{
+				if (_getLocationInfo(ss, "cgi extension parsing error") == NGX_FAIL)
+					return NGX_FAIL;
+				lc.setCgiName(_info);
+			}
+			else if (_info == "client_max_body_size")
+			{
+				if (_getLocationInfo(ss, "cgi extension parsing error") == NGX_FAIL)
+					return NGX_FAIL;
+				for (size_t k = 0; k < _info.size(); k++)
+				{
+					if (!isnumber(_info[k]))
+					{
+						_log.debugLog("client body size is not number");
+						return NGX_FAIL;
+					}
+				}
+				lc.setCliBodySize(stoi(_info));
+			}
+			else if (_info == "upload_folder")
+			{
+				if (_getLocationInfo(ss, "cgi extension parsing error") == NGX_FAIL)
+					return NGX_FAIL;
+				lc.setUploadFolder(_info);
+			}
+			else if (_info == "autoindex")
+			{
+				if (_getLocationInfo(ss, "cgi extension parsing error") == NGX_FAIL)
+					return NGX_FAIL;
+				lc.setAutoIndex(_info);
+			}
+			else if (_info == "return")
+			{
+				int code;
+				std::string address;
+				ss >> code >> address;
+				if (code < 300 || code >= 400)
+				{
+					_log.debugLog("return parsing error: not correct status code ");
+					return NGX_FAIL;
+				}
+				if (address.back() != ';')
+				{
+					_log.debugLog("return semi error");
+					return NGX_FAIL;
+				}
+				address.pop_back();
+				lc.setRedirectionCode(code);
+				lc.setRedirectionAddress(address);
+			}
+			else if (_info == "}")
+			{
+				locationBlock = 0;
+				sc.setLocations(lc);
+				sc.setLocationsFind(lc.getLocationName(), lc);
+				lc.clear();
+			}
+			else
+			{
+				_log.debugLog("Not location block keyword");
+				return NGX_FAIL;
 			}
 		}
-		else if (!_info.compare(_keyLocation[INDEX]))
-        {
-			std::string index;
-			while (1)
-			{
-				_ifs >> index;
-				lc.setIndexList(index);
-				if (index[index.length() - 1] == ';')
-					break;
-			}
-		}
-        else if (!_info.compare(_keyLocation[ROOT]))
+		else if (serverBlock == 1 && locationBlock == 0 && _info == "}")
 		{
-			_ifs >> tmp;
-			lc.setRoot(tmp);
+			serverBlock = 0;
+			_serverConfigs.push_back(sc);
+			sc.clear();
 		}
-		else if (!_info.compare(_keyLocation[CGI_EXTENSION]))
+		else if (_info == "")
+			continue;
+		else
 		{
-			_ifs >> tmp;
-			lc.setCgiName(tmp);
+			_log.debugLog("No keyword");
+			return NGX_FAIL;
 		}
-		else if (!_info.compare(_keyLocation[CGI_PATH]))
-		{
-			_ifs >> tmp;
-			lc.setCgiPath(tmp);
-		}
-        else if (!_info.compare(_keyLocation[UPLOAD_FOLDER]))
-		{
-			_ifs >> tmp;
-			lc.setUploadFolder(tmp);
-		}
-		else if(!_info.compare(_keyLocation[AUTO_INDEX]))
-		{
-			_ifs >> tmp;
-			tmp = tmp.substr(0, 2);
-			lc.setAutoIndex(tmp);
-		}
-		else if (!_info.compare(_keyLocation[REDIRECTION]))
-		{
-			int code;
-			_ifs >> code >> tmp;
-			tmp = tmp.substr(0, tmp.find(";", 0));
-			lc.setRedirectionCode(code);
-			lc.setRedirectionAddress(tmp);
-		}
-    }
-	_info = "";
-	_locationRemoveSemicolon(&lc);
-	return lc;
-}
+	}
 
-void Parser::_locationRemoveSemicolon(LocationConfig *lc)
-{
-	std::string tmpStr;
-	std::vector<std::string> tmpVec;
-	tmpStr = lc->getRoot();
-	if (!tmpStr.empty())
-	{
-		tmpStr.pop_back();
-		lc->setRoot(tmpStr);
-	}
-	tmpVec = lc->getIndexList();
-	if (tmpVec.size() != 0)
-	{
-		tmpVec[tmpVec.size() - 1].pop_back();
-		lc->popIndexList();
-		lc->setIndexList(tmpVec[tmpVec.size() - 1]);
-	}
-	tmpVec = lc->getAllowMethod();
-	if (tmpVec.size() != 0)
-	{
-		tmpVec[tmpVec.size() - 1].pop_back();
-		lc->popAllowMethod();
-		lc->setAllowMethod(tmpVec[tmpVec.size() - 1]);
-	}
-	tmpStr = lc->getCgiName();
-	if (!tmpStr.empty())
-	{
-		tmpStr.pop_back();
-		lc->setCgiName(tmpStr);
-	}
-	tmpStr = lc->getCgiPath();
-	if (!tmpStr.empty())
-	{
-		tmpStr.pop_back();
-		lc->setCgiPath(tmpStr);
-	}
-	tmpStr = lc->getUploadFolder();
-	if (!tmpStr.empty())
-	{
-		tmpStr.pop_back();
-		lc->setUploadFolder(tmpStr);
-	}
-}
-
-void Parser::_serverRemoveSemicolon(ServerConfig *sc)
-{
-	std::string tmp;
-	tmp = sc->getServerName();
-	if (!tmp.empty())
-	{
-		tmp.pop_back();
-		sc->setServerName(tmp);
-	}
+	if (serverBlock != 0 || locationBlock != 0)
+		return NGX_FAIL;
+	return NGX_OK;
 }
 
 std::vector<ServerConfig> Parser::getServerConfig(void) const

@@ -147,8 +147,7 @@ void Server::_isDirectory(int k)
 		_statusCode = 405;
 	else
 	{
-
-		if (_nowLocation.getAutoIndex() == 0)
+		if (_nowLocation.getAutoIndex() == true)
 		{
 			std::string tmp = _response.generateAutoindexPage("./YoupiBanane" + _request.getPath());;
 			if (tmp != "")

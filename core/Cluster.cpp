@@ -10,7 +10,11 @@ Cluster::~Cluster()
 
 int Cluster::init(const std::string& confFile) 
 {
-	_parser.parse(confFile);
+	if (_parser.parse(confFile) == NGX_FAIL)
+	{
+		_log.debugLog("No correct config file");
+		return NGX_FAIL;
+	}
 	_serverConfigs = _parser.getServerConfig();
 	setStatus();
 	int n = _serverConfigs.size();

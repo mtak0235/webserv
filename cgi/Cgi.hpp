@@ -60,7 +60,7 @@ class Cgi
     size_t _allocSize;
     std::string _cgiResponseHeader;
     std::string _cgiResponseBody;
-
+			std::string _cgiInput;
 		int _statusCode;
 };
 

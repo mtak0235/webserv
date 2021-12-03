@@ -71,7 +71,7 @@ int Server::_responseDatatoServer(int k)
 		_statusCode = 500;
 		_setRequestInfo(k);
 		_setResponse(k);
-	std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastRespnse << std::endl;
+		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastRespnse << std::endl;
 		if ((_n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size()) == -1))
 		{
 			std::cerr << "client write error!" << std::endl;
@@ -179,14 +179,6 @@ void Server::_setRequestInfo(int k)
 {
 	_request.clear();
 	_request.setRequest(_clientReq);
-
-	// for (size_t i = 0; i < v.size(); i++) {
-	// 	std::cout << "vector " << i << "'s boundary code [" << v[i].boundaryCode << "]\n";
-	// 	std::cout << "vector " << i << "'s file name [" << v[i].fileName << "]\n";
-	// 	std::cout << "vector " << i << "'s type [" << v[i].type << "]\n";
-	// 	std::cout << "vector " << i << "'s data [" << v[i].data << "]\n";
-	// }
-	
 	if (!_request.getPath().compare("/favicon.ico"))
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
@@ -237,7 +229,6 @@ std::string Server::_setBody(std::string file)
 
 std::string Server::_getBody(std::string file, int k)
 {
-	printf("getBody file : %s", file.c_str());
 	std::string body;
 	std::string root;
 	if (!_nowLocation.getRoot().compare(""))
@@ -249,7 +240,7 @@ std::string Server::_getBody(std::string file, int k)
 	{
 		if (!_isFile.compare(_nowLocation.getCgiName()))
 		{	
-			printf("\033[31m[2]\033[37m\n");
+			// printf("\033[31m[2]\033[37m\n");
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
 			_cgi.getCgiResponseHeader();
 			body = _cgi.getCgiResponseBody();

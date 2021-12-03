@@ -59,36 +59,33 @@ void Cgi::_setCgiResponseBody(const std::vector<std::string>& v)
 	_cgiResponseBody = temp;
 }
 
+// cgi 실행 함수
 void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 {
-  // cgiFilePath = "." + cgiFilePath;
   std::string result = "";
-	std::string cgiInput; // php req.getBody();
+
 	if (cgiFilePath.find("cgi_tester") == std::string::npos)
 	{
 		_statusCode = 200;
-		cgiInput = req.getBody();
+		_cgiInput = req.getBody();
 	}
 	else
-		cgiInput = _getInput(file);
+		_cgiInput = _getInput(file);
   std::string a = cgiFilePath;
   _setEnviron(req, file);
-	// std::cout << "file [" << file << "]\n";
-  // std::cout << "cgi File path [" << cgiFilePath << "]\n";
-  // std::cout << "cgi input [" << cgiInput << "]\n";
 
   char *tmp = new char[a.size() + 1];
   for (unsigned long i = 0; i < a.size(); i++)
     tmp[i] = a[i];
   tmp[a.size()] = 0;
   char *argv[] = {tmp, NULL};
-  // std::cout << "[" << argv[0] << "]" << std::endl;
+	// char *argv[] = {"./YoupiBanane/action.php", NULL};
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
   long fdIn = fileno(fIn);
   long fdOut = fileno(fOut);
-
-  write(fdIn, cgiInput.c_str(), cgiInput.size());
+	std::cin.clear();
+  write(fdIn, _cgiInput.c_str(), _cgiInput.size());
   lseek(fdIn, 0, SEEK_SET);
 
   pid_t pid = fork();
@@ -111,7 +108,6 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
     {
 			buff[bytes] = 0;
       std::string temp = buff;
-			std::cout << "test [" << temp << "]\n";
       result += temp;
 			memset(buff, 0, sizeof(buff));
     }
@@ -172,13 +168,13 @@ std::map<std::string, std::string> Cgi::_makeEnvMap(const Request &req, std::str
   ret[_environList[REQUEST_URI]] = req.getPath();
   ret[_environList[REDIRECT_STATUS]] = "CGI";
   ret[_environList[SERVER_PROTOCOL]] = "HTTP/1.1";
-  ret[_environList[CONTENT_TYPE]] = "image/jpeg";//"application/x-www-form-urlencoded";
+  ret[_environList[CONTENT_TYPE]] = "application/x-www-form-urlencoded";
   ret[_environList[GATEWAY_INTERFACE]] = "CGI/1.1";
   ret[_environList[REMOTE_ADDR]] = "127.0.0.1";
   ret[_environList[SERVER_PORT]] = "80";
   ret[_environList[SERVER_SOFTWARE]] = "versbew";
   ret[_environList[PATH_TRANSLATED]] = req.getPath();
-  ret[_environList[CONTENT_LENGTH]] = std::to_string(req.getBody().size());
+  ret[_environList[CONTENT_LENGTH]] = std::to_string(_cgiInput.size());
   return ret;
 }
 

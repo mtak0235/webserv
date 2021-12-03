@@ -100,6 +100,17 @@ int Parser::parse(const std::string& confFile)
 			_info.pop_back();
 			sc.setServerName(_info);
 		}
+		else if (serverBlock == 1 && _info == "error_page")
+		{
+			ss >> _info;
+			if (_info.back() != ';')
+			{
+				_log.debugLog("server name semi error");
+				return NGX_FAIL;
+			}
+			_info.pop_back();
+			sc.setErrorPage(_info);
+		}
 		else if (serverBlock == 1 && _info == "location")
 		{
 			std::string bracket;
@@ -235,6 +246,18 @@ int Parser::parse(const std::string& confFile)
 
 	if (serverBlock != 0 || locationBlock != 0)
 		return NGX_FAIL;
+	std::map<std::string, int> portCheck;
+	for (size_t i = 0; i < _serverConfigs.size(); i++)
+		portCheck[_serverConfigs[i].getServerPort()] += 1;
+	for (std::map<std::string, int>::iterator it = portCheck.begin(); it != portCheck.end(); it++)
+	{
+		if (it->second > 1)
+		{
+			_log.debugLog("overlap port multi server");
+			return NGX_FAIL;
+		}
+	}
+
 	return NGX_OK;
 }
 

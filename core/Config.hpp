@@ -63,6 +63,7 @@ private:
 	std::string _serverPort;
 	std::vector<LocationConfig> _locations;
 	std::map<std::string, LocationConfig> _locationsFind;
+	std::string _errorPage;
 
 public:
 	ServerConfig();
@@ -73,6 +74,7 @@ public:
 	void setServerPort(const std::string serverPort);
 	void setLocations(LocationConfig location);
 	void setLocationsFind(std::string locationName, LocationConfig config);
+	void setErrorPage(std::string errorPage);
 	void eraseLocation(std::string locationName);
 
 	std::string getServerName();

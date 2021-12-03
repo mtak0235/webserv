@@ -107,16 +107,14 @@ int Server::_fileJudge(int k)
 		if (cnt == slashCnt)
 			break;
 	}
-	// if (_isFile == "/")
-	//  _isFile = "";
 	if (getPath.size() != 1 && getPath[getPath.size() - 1] == '/')
 		getPath.pop_back();
 	_nowLocation = _serverConfigs[k].getLocationsFind(getPath);
-	// if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
-	// {
-	// 	_statusCode = 400;
-	// 	return -1;
-	// }
+	if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
+	{
+		_statusCode = 400;
+		return -1;
+	}
 	_body = "";
 	if (_isFile != "")
 	{
@@ -131,11 +129,11 @@ void Server::_isDirectory(int k)
 	if (_requestPath.size() != 1 && _requestPath.back() == '/')
 		_requestPath.pop_back();
 	_nowLocation = _serverConfigs[k].getLocationsFind(_requestPath);
-	// if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
-	// {
-	// 	_statusCode = 400;
-	// 	return;
-	// }
+	if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
+	{
+		_statusCode = 400;
+		return;
+	}
 	_allowMethods = _nowLocation.getAllowMethod();
 	_isAllow = false;
 	for (unsigned long i = 0; i < _allowMethods.size(); i++)
@@ -147,7 +145,7 @@ void Server::_isDirectory(int k)
 		_statusCode = 405;
 	else
 	{
-		if (_nowLocation.getAutoIndex() == true)
+		if (_nowLocation.getAutoIndex())
 		{
 			std::string tmp = _response.generateAutoindexPage("./YoupiBanane" + _request.getPath());;
 			if (tmp != "")
@@ -159,17 +157,13 @@ void Server::_isDirectory(int k)
 		_indexList = _nowLocation.getIndexList();
 		if (_nowLocation.getRedirectionCode() >= 300 && _nowLocation.getRedirectionCode() < 400)
 			_statusCode = _nowLocation.getRedirectionCode();
-		else if (_indexList.size() > 0) //경로인 경우
+		else if (_indexList.size() > 0 && !_nowLocation.getAutoIndex()) //경로인 경우
 		{
-			_indexList = _nowLocation.getIndexList();
-			if (_indexList.size() > 0) //경로인 경우
-			{
-				_isFile = "";
-				_found = 0;
-				_found = _indexList[0].find_last_of(".");
-				_isFile = _indexList[0].substr(_found + 1);
-				_body = _getBody(_indexList[0], k);
-			}
+			_isFile = "";
+			_found = 0;
+			_found = _indexList[0].find_last_of(".");
+			_isFile = _indexList[0].substr(_found + 1);
+			_body = _getBody(_indexList[0], k);
 		}
 	}
 }

@@ -6,7 +6,7 @@ LocationConfig::LocationConfig()
 	_root = "";
 	_cgiName = "";
 	_cgiPath = "";
-	_cliBodySize = 0;
+	_cliBodySize = 10000;
 	_uploadFolder = "";
 	_autoindex = false;
 	_redirectCode = 0; //고침
@@ -225,6 +225,11 @@ void ServerConfig::setServerPort(const std::string serverPort)
 void ServerConfig::setLocations(LocationConfig location)
 {
 	_locations.push_back(location);
+}
+
+void ServerConfig::setErrorPage(std::string errorPage)
+{
+	_errorPage = errorPage;
 }
 
 void ServerConfig::setLocationsFind(std::string locationName, LocationConfig config)

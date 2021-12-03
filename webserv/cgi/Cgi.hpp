@@ -34,7 +34,7 @@ class Cgi
     SERVER_PROTOCOL,
     SERVER_SOFTWARE,
     REDIRECT_STATUS,
-    NON_OF_ALL,
+    NON_OF_ALL
   };
 
   public:

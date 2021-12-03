@@ -2,8 +2,8 @@
 
 const std::string Parser::_keyInit = "server";
 const std::string Parser::_keyServer[3] = {"listen", "server_name", "location"};
-const std::string Parser::_keyLocation[7] = {"client_max_body_size", "method", "index",
-                                         "root", "cgi_extension", "cgi_path", "upload_folder"};
+const std::string Parser::_keyLocation[9] = {"autoindex","client_max_body_size", "method", "index",
+                                         "root", "cgi_extension", "cgi_path", "upload_folder", "return"};
 
 Parser::Parser(void)
     : _serverConfigs(std::vector<ServerConfig>())
@@ -40,6 +40,7 @@ ServerConfig Parser::_parseServerBlock(void)
         if (!_info.compare(_keyServer[LISTEN]))
 		{
 			_ifs >> tmp;
+			tmp = tmp.substr(0, tmp.find(";", 0));
             sc.setServerPort(tmp);   //serverPort;
 		}
 		else if (!_info.compare(_keyServer[SERVER_NAME]))
@@ -55,6 +56,7 @@ ServerConfig Parser::_parseServerBlock(void)
 		}
     }
 	_serverRemoveSemicolon(&sc);
+
     return sc;
 }
 
@@ -116,6 +118,20 @@ LocationConfig Parser::_parseLocationBlock(void)
 		{
 			_ifs >> tmp;
 			lc.setUploadFolder(tmp);
+		}
+		else if(!_info.compare(_keyLocation[AUTO_INDEX]))
+		{
+			_ifs >> tmp;
+			tmp = tmp.substr(0, 2);
+			lc.setAutoIndex(tmp);
+		}
+		else if (!_info.compare(_keyLocation[REDIRECTION]))
+		{
+			int code;
+			_ifs >> code >> tmp;
+			tmp = tmp.substr(0, tmp.find(";", 0));
+			lc.setRedirectionCode(code);
+			lc.setRedirectionAddress(tmp);
 		}
     }
 	_info = "";

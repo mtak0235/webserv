@@ -17,6 +17,10 @@ private:
 	std::string _cgiPath;
 	int _cliBodySize;
 	std::string _uploadFolder;
+	bool _autoindex;
+	int _redirectCode;
+	std::string _redirectAddress;
+
 public:
 	LocationConfig();
 	// LocationConfig(LocationConfig &x);
@@ -32,6 +36,9 @@ public:
 	void setCgiPath(std::string cgiPath);
 	void setCliBodySize(int cliBodySize);
 	void setUploadFolder(std::string uploadFolder);
+	void setAutoIndex(std::string autoindex);
+	void setRedirectionCode(int redirectionCode);
+	void setRedirectionAddress(std::string redirectionAddress);
 
 	std::string getLocationName();
 	std::string getRoot();
@@ -41,6 +48,9 @@ public:
 	std::string getCgiPath();
 	int getCliBodySize();
 	std::string getUploadFolder();
+	int getAutoIndex();
+	int getRedirectionCode(void);
+	std::string getRedirectionAddress(void);
 
 	bool empty();
 };
@@ -52,6 +62,7 @@ private:
 	std::string _serverPort;
 	std::vector<LocationConfig> _locations;
 	std::map<std::string, LocationConfig> _locationsFind;
+
 public:
 	ServerConfig();
 	~ServerConfig();

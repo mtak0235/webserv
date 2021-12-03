@@ -38,7 +38,7 @@ int ngxKqueue::makeKqueue()
 
 void ngxKqueue::ngxKqueueInit(int servSock)
 {
-	changeEvents(_changeList, servSock, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+	changeEvents(_changeList, servSock, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
 }
 
 int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)

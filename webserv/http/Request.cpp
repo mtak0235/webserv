@@ -59,7 +59,6 @@ std::string Request::getHeaderInfo(const HEADER_INFO& i) const {
 }
 
 void Request::_init(const std::string& r) {
-    printf("%s\n", r.c_str());
     std::stringstream ss;
     ss << r;
     std::vector<std::string> v;

@@ -1,6 +1,6 @@
 NAME = webserv
 COMPILER = clang++
-CFLAGS = -g3 -fsanitize=address -Wall -Wextra -Werror
+CFLAGS = -g3 -fsanitize=address -Wall -Wextra -Werror -std=c++98 -pedantic
 CPP_VERSION = -std=c++98
 
 DIR_CORE = ./core/

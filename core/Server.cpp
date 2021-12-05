@@ -2,10 +2,19 @@
 
 Server::Server()
 {
-  _readDataSize = 0;
   _clientReq = "";
-  _statusCode = 500;
+  _body = "";
+  _lastRespnse = "";
+  _requestMethod = "";
+  _requestPath = "";
+  _isFile = "";
+
+  _c = 0;
   _isAllow = false;
+  _found = 0;
+  _readDataSize = 0;
+  _statusCode = 500;
+  _n = 0;
 }
 
 Server::~Server() { }

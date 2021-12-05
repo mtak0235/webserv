@@ -53,12 +53,8 @@ int Server::recvDataFromClient(int k)
 	clear();
 	// int cnt = 0;
 	_clients[_currEvent->ident] = "";
-  while ((_readDataSize = recv(_currEvent->ident, _buf, 1, 0)) >= 0)
+  while ((_readDataSize = recv(_currEvent->ident, _buf, 1, MSG_DONTROUTE | MSG_DONTWAIT)) >= 0)
   {
-		if (_readDataSize == 0) {
-			std::cout << std::endl;
-			break ;
-		}
     _buf[_readDataSize] = '\0';
 		// std::cout << cnt << std::endl;
 		// std::cout << std::flush << std::flush << std::flush;
@@ -180,7 +176,7 @@ std::string Server::_getBody(std::string file, int k)
         std::ofstream ofs;
         std::string filePath = _nowLocation.getUploadFolder() + v[i].fileName;
         ofs.open(filePath);
-        std::cout << v[i].data.size();
+        // std::cout << v[i].data.size();
         ofs.write(v[0].data.c_str(), v[i].data.size());
         ofs.close();
       }
@@ -211,15 +207,15 @@ int Server::_responseDatatoServer(int k)
     _setRequestInfo(k);
     _setResponse(k);
     std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastRespnse << std::endl;
-    if ((_n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size()) == -1))
+    if ((_n = send(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size(), MSG_DONTROUTE | MSG_DONTWAIT) == -1))
     {
       std::cerr << "client write error!" << std::endl;
       disconnectClient(_currEvent->ident, _clients);
     }
     else {
-	_clients[_currEvent->ident].clear();
+	  _clients[_currEvent->ident].clear();
 		// shutdown(_currEvent->ident, SHUT_WR);
-		read(_currEvent->ident, _buf, 4000);
+		// read(_currEvent->ident, _buf, 4000);
 		disconnectClient(_currEvent->ident, _clients);
 		}
     return NGX_OK;

@@ -51,6 +51,7 @@ class Server : public ngxKqueue
     int _responseDatatoServer(int k);
     int _fileJudge(int k);
     void _isDirectory(int k);
+		void clear();
 };
 
 #endif

@@ -17,6 +17,23 @@ Server::Server()
   _n = 0;
 }
 
+void Server::clear()
+{
+  _clientReq = "";
+  _body = "";
+  _lastRespnse = "";
+  _requestMethod = "";
+  _requestPath = "";
+  _isFile = "";
+
+  _c = 0;
+  _isAllow = false;
+  _found = 0;
+  _readDataSize = 0;
+  _statusCode = 500;
+  _n = 0;
+}
+
 Server::~Server() { }
 
 void Server::acceptNewClient(int servSock)
@@ -32,16 +49,29 @@ void Server::acceptNewClient(int servSock)
 
 int Server::recvDataFromClient(int k)
 {
-  memset(_buf, '\0', sizeof(_buf));
-  while ((_readDataSize = read(_currEvent->ident, _buf, 1)) >= 0)
+  memset(_buf, '\0', 2048);
+	clear();
+	// int cnt = 0;
+	_clients[_currEvent->ident] = "";
+  while ((_readDataSize = recv(_currEvent->ident, _buf, 1, 0)) >= 0)
   {
+		if (_readDataSize == 0) {
+			std::cout << std::endl;
+			break ;
+		}
     _buf[_readDataSize] = '\0';
+		// std::cout << cnt << std::endl;
+		// std::cout << std::flush << std::flush << std::flush;
     if (_buf[0] == 0)
       _clients[_currEvent->ident] += '\0';
     else
       _clients[_currEvent->ident] += _buf;
-    memset(_buf, '\0', sizeof(_buf));
+    // memset(_buf, '\0', 2048);
+		_buf[0] = 0;
+		_buf[1] = 0;
+		// cnt++;
   }
+	// std::cout << std::endl;
   if (_clients[_currEvent->ident] == "")
   {
     _log.debugLog("client read error");
@@ -49,6 +79,8 @@ int Server::recvDataFromClient(int k)
   }
   if (_responseDatatoServer(k) == NGX_FAIL)
     return NGX_FAIL;
+	// std::fflush(_currEvent->ident);
+	// std::cout << std::flush;
   return NGX_OK;
 }
 

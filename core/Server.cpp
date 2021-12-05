@@ -70,8 +70,9 @@ void Server::_setRequestInfo(int k)
   _isDirectory(k);
   if (_statusCode == 400 || _statusCode == 403 || _statusCode == 404 || _statusCode == 405)
   {
+    int temp = _statusCode;
     _body = _setBody("400.html");
-    _statusCode = 400;
+    _statusCode = temp;
   }
 }
 
@@ -175,14 +176,11 @@ int Server::_responseDatatoServer(int k)
       disconnectClient(_currEvent->ident, _clients);
     }
     else {
-		read(_currEvent->ident, )
-
-      _clients[_currEvent->ident].clear();
-
-	  disconnectClient(_currEvent->ident, _clients);
-	}
-
-    
+	_clients[_currEvent->ident].clear();
+		// shutdown(_currEvent->ident, SHUT_WR);
+		read(_currEvent->ident, _buf, 4000);
+		disconnectClient(_currEvent->ident, _clients);
+		}
     return NGX_OK;
   }
   return NGX_FAIL;

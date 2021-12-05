@@ -27,7 +27,7 @@ class ngxKqueue : public Cluster
 private:
   int _newEvents[6];
   int _kq;
-  struct kevent _eventList[1024];
+  struct kevent _eventList[10000];
 protected:
 	std::vector<struct kevent> _changeList;
 	std::map<int, std::string> _clients;

@@ -39,6 +39,7 @@ void Server::acceptNewClient(int servSock)
 
 int Server::recvDataFromClient(int k)
 {
+	_clients[_currEvent->ident] = "";
 	memset(_buf, '\0', sizeof(_buf));
 	while ((_readDataSize = read(_currEvent->ident, _buf, 1)) >= 0)
 	{
@@ -49,10 +50,12 @@ int Server::recvDataFromClient(int k)
 			_clients[_currEvent->ident] += _buf;
 		memset(_buf, '\0', sizeof(_buf));
 	}
+
 	if (_clients[_currEvent->ident] == "")
 	{
 		_log.debugLog("client read error");
 		disconnectClient(_currEvent->ident, _clients);
+		return NGX_FAIL;
 	}
 	if (_responseDatatoServer(k) == NGX_FAIL)
 		return NGX_FAIL;
@@ -71,14 +74,17 @@ int Server::_responseDatatoServer(int k)
 		_setRequestInfo(k);
 		_setResponse(k);
 		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastRespnse << std::endl;
-		if ((_n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size()) == -1))
+		if ((_n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size())) == -1)
 		{
 			_log.debugLog("client write error!");
 			disconnectClient(_currEvent->ident, _clients);
 		}
 		else
 			_clients[_currEvent->ident].clear();
-		disconnectClient(_currEvent->ident, _clients);
+		shutdown(_currEvent->ident, SHUT_WR);
+		read(_currEvent->ident, _buf, 4000);
+		close(_currEvent->ident);
+		// disconnectClient(_currEvent->ident, _clients);
 		return NGX_OK;
 	}
 	return NGX_FAIL;
@@ -148,8 +154,13 @@ void Server::_isDirectory(int k)
 		if (!_allowMethods[i].compare(_requestMethod))
 			_isAllow = true;
 	}
+
 	if (!_isAllow)
+	{
 		_statusCode = 405;
+		if (!_requestMethod.compare("GET"))
+			_statusCode = 404;
+	}
 	else
 	{
 		if (_nowLocation.getAutoIndex())
@@ -194,8 +205,9 @@ void Server::_setRequestInfo(int k)
 		_isDirectory(k);
 	if (_statusCode == 400 || _statusCode == 403 || _statusCode == 404 || _statusCode == 405)
 	{
+		int tmp = _statusCode;
 		_body = _setBody("400.html");
-		_statusCode = 400;
+		_statusCode = tmp;
 	}
 }
 
@@ -264,7 +276,7 @@ std::string Server::_getBody(std::string file, int k)
 				std::ofstream ofs;
 				std::string filePath = _nowLocation.getUploadFolder() + v[i].fileName;
 				ofs.open(filePath);
-				std::cout << v[i].data.size();
+				// std::cout << v[i].data.size();
 				ofs.write(v[0].data.c_str(), v[i].data.size());
 				ofs.close();
 			}

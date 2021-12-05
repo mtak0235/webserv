@@ -1,59 +1,40 @@
 #ifndef NGX_KQUEUE_HPP
-#define NGX_KQUEUE_HPP
+# define NGX_KQUEUE_HPP
 
-#include <iostream>
-#include <vector>
-#include <deque>
-#include <map>
-#include <string>
-#include <sys/event.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/event.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <fstream>
-#include "Log.hpp"
-#include "Core.hpp"
-#include "Request.hpp"
-#include "Response.hpp"
-#include "Config.hpp"
 #include "Cluster.hpp"
-// #include "Server.hpp"
 
 class ngxKqueue : public Cluster
 {
-private:
-  int _newEvents[6];
-  int _kq;
-  struct kevent _eventList[10000];
-protected:
-	std::vector<struct kevent> _changeList;
-	std::map<int, std::string> _clients;
-	struct kevent *_currEvent;
-public:
-  ngxKqueue();
-  virtual ~ngxKqueue();
-  ngxKqueue(ngxKqueue& x);
-  // ngxKqueue operator=(ngxKqueue& x);
+  public:
+    /* constructor & destructor */
+    ngxKqueue();
+    virtual ~ngxKqueue();
 
-  void changeEvents(std::vector<struct kevent>& changeList, uintptr_t ident, int16_t filter,
-        uint16_t flags, uint32_t fflags, intptr_t data, void *udata);
-  void disconnectClient(int clientFd, std::map<int, std::string>& clients);
+    /* public function */
+    virtual int makeKqueue(void);
+    virtual void ngxKqueueInit(int servSock);
+    virtual int ngxKqueueProcessEvents(int x, std::vector<int> servSock);
+    void disconnectClient(int clientFd, std::map<int, std::string>& clients);
+    void ngxKqueueStop(void); // ************** 구현안댐 사용유무 확인 필요~~
+    void changeEvents(std::vector<struct kevent>& changeList, uintptr_t ident,
+                      int16_t filter, uint16_t flags, uint32_t fflags,
+                      intptr_t data, void *udata);
 
-  virtual int makeKqueue();
-  virtual void ngxKqueueInit(int servSock);
-  virtual int ngxKqueueProcessEvents(int x, std::vector<int> servSock);
+    /* pure virtual function */
+    virtual void acceptNewClient(int servSock) = 0;
+    virtual int recvDataFromClient(int k) = 0;
 
-	/* decl in Server */ 
-	virtual void acceptNewClient(int servSock) = 0;
-	virtual int recvDataFromClient(int k) = 0;
-	virtual void setStatus() = 0;
+  protected:
+    /* protected variable */
+    std::vector<struct kevent> _changeList;
+    std::map<int, std::string> _clients;
+    struct kevent* _currEvent;
 
-  void ngxKqueueStop();
-
-	
+  private:
+    /* private variable */
+    int _kq;
+    int _newEvents[6];
+    struct kevent _eventList[1024];
 };
 
 #endif

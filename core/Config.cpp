@@ -1,52 +1,72 @@
 #include "Config.hpp"
 
+/************************************************************/
+/*                   LocationConfig Class                   */
+/************************************************************/
+
 LocationConfig::LocationConfig()
 {
 	_locationName = "";
+	// _allowMethods 초기화 빠짐
 	_root = "";
+	// _indexList 초기화 빠짐
 	_cgiName = "";
 	_cgiPath = "";
-	_cliBodySize = 10000;
 	_uploadFolder = "";
 	_autoindex = false;
-	_redirectCode = 0; //고침
+	_redirectCode = 0;
 	_redirectAddress = "";
-}
-
-LocationConfig::~LocationConfig()
-{
-
-}
-
-void LocationConfig::clear()
-{
-	_locationName = "";
-	_root = "";
-	_indexList.clear();
-	_allowMethods.clear();
-	_cgiName = "";
-	_cgiPath = "";
 	_cliBodySize = 10000;
-	_uploadFolder = "";
-	_autoindex = false;
-	_redirectCode =0;
-	_redirectAddress = "";
 }
+
+LocationConfig::~LocationConfig() { }
 
 LocationConfig LocationConfig::operator=(LocationConfig &x)
 {
 	_locationName = x._locationName;
+	_allowMethods = x._allowMethods;
 	_root = x._root;
+	_indexList = x._indexList;
 	_cgiName = x._cgiName;
 	_cgiPath = x._cgiPath;
-	_cliBodySize = x._cliBodySize;
 	_uploadFolder = x._uploadFolder;
-	_indexList = x._indexList;
-	_allowMethods = x._allowMethods;
 	_autoindex = x._autoindex;
 	_redirectCode = x._redirectCode;
 	_redirectAddress = x._redirectAddress;
+	_cliBodySize = x._cliBodySize;
 	return *this;
+}
+
+void LocationConfig::clear(void)
+{
+	_locationName = "";
+	_allowMethods.clear();
+	_root = "";
+	_indexList.clear();
+	_cgiName = "";
+	_cgiPath = "";
+	_uploadFolder = "";
+	_autoindex = false;
+	_redirectCode = 0;
+	_redirectAddress = "";
+	_cliBodySize = 10000;
+}
+
+bool LocationConfig::empty(void)
+{
+	if (_locationName == "")
+		return true;
+	return false;
+}
+
+void LocationConfig::popIndexList(void)
+{
+	_indexList.pop_back();
+}
+
+void LocationConfig::popAllowMethod(void)
+{
+	_allowMethods.pop_back();
 }
 
 void LocationConfig::setLocationName(const std::string locationName)
@@ -62,16 +82,6 @@ void LocationConfig::setRoot(const std::string root)
 void LocationConfig::setIndexList(std::string index)
 {
 	_indexList.push_back(index);
-}
-
-void LocationConfig::popIndexList()
-{
-	_indexList.pop_back();
-}
-
-void LocationConfig::popAllowMethod()
-{
-	_allowMethods.pop_back();
 }
 
 void LocationConfig::setAllowMethod(std::vector<std::string> methods)
@@ -101,9 +111,6 @@ void LocationConfig::setUploadFolder(std::string uploadFolder)
 
 void LocationConfig::setAutoIndex(std::string autoindex)
 {
-	// autoindex on;
-	// autoindex 파싱된게 "on;"임
-
 	if (!autoindex.compare("on"))
 		_autoindex = true;
 	else
@@ -120,47 +127,47 @@ void LocationConfig::setRedirectionAddress(std::string redirectionAddress)
 	_redirectAddress = redirectionAddress;
 }
 
-std::string LocationConfig::getLocationName()
+std::string LocationConfig::getLocationName(void)
 {
 	return _locationName;
 }
 
-std::string LocationConfig::getRoot()
+std::string LocationConfig::getRoot(void)
 {
 	return _root;
 }
 
-std::vector<std::string> LocationConfig::getIndexList()
+std::vector<std::string> LocationConfig::getIndexList(void)
 {
 	return _indexList;
 }
 
-std::vector<std::string> LocationConfig::getAllowMethod()
+std::vector<std::string> LocationConfig::getAllowMethod(void)
 {
 	return _allowMethods;
 }
 
-std::string LocationConfig::getCgiName()
+std::string LocationConfig::getCgiName(void)
 {
 	return _cgiName;
 }
 
-std::string LocationConfig::getCgiPath()
+std::string LocationConfig::getCgiPath(void)
 {
 	return _cgiPath;
 }
 
-int LocationConfig::getCliBodySize()
+int LocationConfig::getCliBodySize(void)
 {
 	return _cliBodySize;
 }
 
-std::string LocationConfig::getUploadFolder()
+std::string LocationConfig::getUploadFolder(void)
 {
 	return _uploadFolder;
 }
 
-int LocationConfig::getAutoIndex()  
+int LocationConfig::getAutoIndex(void)
 {
 	return _autoindex;
 }
@@ -177,30 +184,34 @@ std::string LocationConfig::getRedirectionAddress(void)
 }
 
 
-bool LocationConfig::empty()
-{
-	if (_locationName == "")
-		return true;
-	return false;
-}
+
+/************************************************************/
+/*                    ServerConfig Class                    */
+/************************************************************/
 
 ServerConfig::ServerConfig()
 {
 	_serverName = "webserv";
 	_serverPort = "";
+	// _locations 초기화 빠짐
+	// _locationsFind 초기화 빠짐
+	// _errorPage 초기화 빠짐
 }
 
-ServerConfig::~ServerConfig()
-{
+ServerConfig::~ServerConfig() { }
 
-}
-
-void ServerConfig::clear()
+void ServerConfig::clear(void)
 {
 	_serverName = "";
 	_serverPort = "";
 	_locations.clear();
 	_locationsFind.clear();
+	// _errorPage 클리어 빠짐
+}
+
+void ServerConfig::eraseLocation(std::string locationName)
+{
+	_locationsFind.erase(locationName);
 }
 
 ServerConfig ServerConfig::operator=(ServerConfig &x)
@@ -209,6 +220,7 @@ ServerConfig ServerConfig::operator=(ServerConfig &x)
 	_serverPort = x._serverPort;
 	_locations = x._locations;
 	_locationsFind = x._locationsFind;
+	_errorPage = x._errorPage;
 	return *this;
 }
 
@@ -227,27 +239,27 @@ void ServerConfig::setLocations(LocationConfig location)
 	_locations.push_back(location);
 }
 
-void ServerConfig::setErrorPage(std::string errorPage)
-{
-	_errorPage = errorPage;
-}
-
 void ServerConfig::setLocationsFind(std::string locationName, LocationConfig config)
 {
 	_locationsFind[locationName] = config;
 }
 
-std::string ServerConfig::getServerName()
+void ServerConfig::setErrorPage(std::string errorPage)
+{
+	_errorPage = errorPage;
+}
+
+std::string ServerConfig::getServerName(void)
 {
 	return _serverName;
 }
 
-std::string ServerConfig::getServerPort()
+std::string ServerConfig::getServerPort(void)
 {
 	return _serverPort;
 }
 
-std::vector<LocationConfig> ServerConfig::getLocations()
+std::vector<LocationConfig> ServerConfig::getLocations(void)
 {
 	return _locations;
 }
@@ -256,9 +268,3 @@ LocationConfig &ServerConfig::getLocationsFind(std::string locationName)
 {
 	return _locationsFind[locationName];
 }
-
-void ServerConfig::eraseLocation(std::string locationName)
-{
-	_locationsFind.erase(locationName);
-}
-

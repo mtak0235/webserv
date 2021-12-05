@@ -5,31 +5,9 @@ const std::string Parser::_keyServer[3] = {"listen", "server_name", "location"};
 const std::string Parser::_keyLocation[9] = {"autoindex","client_max_body_size", "method", "index",
                                          "root", "cgi_extension", "cgi_path", "upload_folder", "return"};
 
-Parser::Parser(void)
-    : _serverConfigs(std::vector<ServerConfig>())
-{
-}
+Parser::Parser(void) { }
 
-Parser::~Parser()
-{
-}
-
-bool Parser::_checkSemicolon(char c)
-{
-	return c == ';';
-}
-
-int Parser::_getLocationInfo(std::stringstream &ss, std::string msg)
-{
-	ss >> _info;
-	if (_info.back() != ';')
-	{
-		_log.debugLog(msg);
-		return NGX_FAIL;
-	}
-	_info.pop_back();
-	return NGX_OK;
-}
+Parser::~Parser() { }
 
 int Parser::parse(const std::string& confFile)
 {
@@ -37,13 +15,13 @@ int Parser::parse(const std::string& confFile)
 	if (found == std::string::npos)
 	{
 		_log.debugLog("not conf file");
-		return NGX_FAIL;
+		return PARSE_FAIL;
 	}
 	std::string tmp = confFile.substr(found + 1);
 	if (tmp.compare("conf"))
 	{
 		_log.debugLog("not conf file");
-		return NGX_FAIL;
+		return PARSE_FAIL;
 	}
 	_ifs.open(confFile);
 	std::vector<std::string> file;
@@ -66,7 +44,7 @@ int Parser::parse(const std::string& confFile)
 		{
 			ss >> _info;
 			if (_info != "{")
-				return NGX_FAIL;
+				return PARSE_FAIL;
 			serverBlock = 1;
 			continue;
 		}
@@ -76,7 +54,7 @@ int Parser::parse(const std::string& confFile)
 			if (_info.back() != ';')
 			{
 				_log.debugLog("listen semicolon error");
-				return NGX_FAIL;
+				return PARSE_FAIL;
 			}
 			_info.pop_back();
 			for (size_t k = 0; k < _info.size(); k++)
@@ -84,7 +62,7 @@ int Parser::parse(const std::string& confFile)
 				if (!isnumber(_info[k]))
 				{
 					_log.debugLog("port num is not number");
-					return NGX_FAIL;
+					return PARSE_FAIL;
 				}
 			}
 			sc.setServerPort(_info);
@@ -95,7 +73,7 @@ int Parser::parse(const std::string& confFile)
 			if (_info.back() != ';')
 			{
 				_log.debugLog("server name semi error");
-				return NGX_FAIL;
+				return PARSE_FAIL;
 			}
 			_info.pop_back();
 			sc.setServerName(_info);
@@ -106,7 +84,7 @@ int Parser::parse(const std::string& confFile)
 			if (_info.back() != ';')
 			{
 				_log.debugLog("server name semi error");
-				return NGX_FAIL;
+				return PARSE_FAIL;
 			}
 			_info.pop_back();
 			sc.setErrorPage(_info);
@@ -118,7 +96,7 @@ int Parser::parse(const std::string& confFile)
 			if (bracket != "{")
 			{
 				_log.debugLog("location start bracket error");
-				return NGX_FAIL;
+				return PARSE_FAIL;
 			}
 			locationBlock = 1;
 			lc.setLocationName(_info);
@@ -127,14 +105,14 @@ int Parser::parse(const std::string& confFile)
 		{
 			if (_info == "root")
 			{
-				if (_getLocationInfo(ss, "root parsing error") == NGX_FAIL)
-					return NGX_FAIL;
+				if (_getLocationInfo(ss, "root parsing error") == PARSE_FAIL)
+					return PARSE_FAIL;
 				lc.setRoot(_info);
 			}
 			else if (_info == "index")
 			{
-				if (_getLocationInfo(ss, "index parsing error") == NGX_FAIL)
-					return NGX_FAIL;
+				if (_getLocationInfo(ss, "index parsing error") == PARSE_FAIL)
+					return PARSE_FAIL;
 				lc.setIndexList(_info);
 			}
 			else if (_info == "method")
@@ -146,7 +124,7 @@ int Parser::parse(const std::string& confFile)
 				if (tmp[tmp.size() - 1].back() != ';')
 				{
 					_log.debugLog("method semi error");
-					return NGX_FAIL;
+					return PARSE_FAIL;
 				}
 				tmp[tmp.size() - 1].pop_back();
 				for (size_t k = 0; k < tmp.size(); k++)
@@ -154,47 +132,47 @@ int Parser::parse(const std::string& confFile)
 					if (tmp[k] != "GET" && tmp[k] != "POST" && tmp[k] != "DELETE")
 					{
 						_log.debugLog("not correct method");
-						return NGX_FAIL;
+						return PARSE_FAIL;
 					}
 				}
 				lc.setAllowMethod(tmp);
 			}
 			else if (_info == "cgi_path")
 			{
-				if (_getLocationInfo(ss, "cgi path parsing error") == NGX_FAIL)
-					return NGX_FAIL;
+				if (_getLocationInfo(ss, "cgi path parsing error") == PARSE_FAIL)
+					return PARSE_FAIL;
 				lc.setCgiPath(_info);
 			}
 			else if (_info == "cgi_extension")
 			{
-				if (_getLocationInfo(ss, "cgi extension parsing error") == NGX_FAIL)
-					return NGX_FAIL;
+				if (_getLocationInfo(ss, "cgi extension parsing error") == PARSE_FAIL)
+					return PARSE_FAIL;
 				lc.setCgiName(_info);
 			}
 			else if (_info == "client_max_body_size")
 			{
-				if (_getLocationInfo(ss, "cgi extension parsing error") == NGX_FAIL)
-					return NGX_FAIL;
+				if (_getLocationInfo(ss, "cgi extension parsing error") == PARSE_FAIL)
+					return PARSE_FAIL;
 				for (size_t k = 0; k < _info.size(); k++)
 				{
 					if (!isnumber(_info[k]))
 					{
 						_log.debugLog("client body size is not number");
-						return NGX_FAIL;
+						return PARSE_FAIL;
 					}
 				}
 				lc.setCliBodySize(stoi(_info));
 			}
 			else if (_info == "upload_folder")
 			{
-				if (_getLocationInfo(ss, "cgi extension parsing error") == NGX_FAIL)
-					return NGX_FAIL;
+				if (_getLocationInfo(ss, "cgi extension parsing error") == PARSE_FAIL)
+					return PARSE_FAIL;
 				lc.setUploadFolder(_info);
 			}
 			else if (_info == "autoindex")
 			{
-				if (_getLocationInfo(ss, "cgi extension parsing error") == NGX_FAIL)
-					return NGX_FAIL;
+				if (_getLocationInfo(ss, "cgi extension parsing error") == PARSE_FAIL)
+					return PARSE_FAIL;
 				lc.setAutoIndex(_info);
 			}
 			else if (_info == "return")
@@ -205,12 +183,12 @@ int Parser::parse(const std::string& confFile)
 				if (code < 300 || code >= 400)
 				{
 					_log.debugLog("return parsing error: not correct status code ");
-					return NGX_FAIL;
+					return PARSE_FAIL;
 				}
 				if (address.back() != ';')
 				{
 					_log.debugLog("return semi error");
-					return NGX_FAIL;
+					return PARSE_FAIL;
 				}
 				address.pop_back();
 				lc.setRedirectionCode(code);
@@ -226,7 +204,7 @@ int Parser::parse(const std::string& confFile)
 			else
 			{
 				_log.debugLog("Not location block keyword");
-				return NGX_FAIL;
+				return PARSE_FAIL;
 			}
 		}
 		else if (serverBlock == 1 && locationBlock == 0 && _info == "}")
@@ -240,28 +218,43 @@ int Parser::parse(const std::string& confFile)
 		else
 		{
 			_log.debugLog("No keyword");
-			return NGX_FAIL;
+			return PARSE_FAIL;
 		}
 	}
-
 	if (serverBlock != 0 || locationBlock != 0)
-		return NGX_FAIL;
+		return PARSE_FAIL;
 	std::map<std::string, int> portCheck;
 	for (size_t i = 0; i < _serverConfigs.size(); i++)
 		portCheck[_serverConfigs[i].getServerPort()] += 1;
 	for (std::map<std::string, int>::iterator it = portCheck.begin(); it != portCheck.end(); it++)
 	{
-		if (it->second > 1) 
+		if (it->second > 1)
 		{
 			_log.debugLog("overlap port multi server");
-			return NGX_FAIL;
+			return PARSE_FAIL;
 		}
 	}
-
-	return NGX_OK;
+	return PARSE_OK;
 }
 
 std::vector<ServerConfig> Parser::getServerConfig(void) const
 {
 	return _serverConfigs;
+}
+
+int Parser::_getLocationInfo(std::stringstream &ss, std::string msg)
+{
+	ss >> _info;
+	if (_info.back() != ';')
+	{
+		_log.debugLog(msg);
+		return PARSE_FAIL;
+	}
+	_info.pop_back();
+	return PARSE_OK;
+}
+
+bool Parser::_checkSemicolon(char c)
+{
+	return c == ';';
 }

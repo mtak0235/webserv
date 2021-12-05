@@ -1,14 +1,11 @@
 #include "Formatter.hpp"
 
-Formatter::Formatter(void)
-{
-}
+Formatter::Formatter() { }
 
-Formatter::~Formatter()
-{
-}
+Formatter::~Formatter() { }
 
-const std::string Formatter::getDate(void) {
+const std::string Formatter::getDate(void)
+{
   std::string ret = "";
   time_t timer = time(NULL);
   struct tm* t = localtime(&timer);
@@ -27,7 +24,8 @@ const std::string Formatter::getDate(void) {
   return ret;
 }
 
-const std::string Formatter::makeFormat(const int& num) {
+const std::string Formatter::makeFormat(const int& num)
+{
   std::string ret = "";
   if (num < 10) ret += "0";
   std::stringstream ss;
@@ -38,20 +36,24 @@ const std::string Formatter::makeFormat(const int& num) {
   return ret;
 }
 
-const std::string Formatter::ft_to_string(int n) {
+const std::string Formatter::ft_to_string(int n)
+{
   bool isNeg = false;
-  if (n < 0) {
+  if (n < 0)
+  {
     n *= -1;
     isNeg = true;
   }
   int digit = 1, decimal = 1, temp = n;
-  while (temp /= 10) {
+  while (temp /= 10)
+  {
     digit++;
     decimal *= 10;
   }
   std::string ret;
   if (isNeg) ret += '-';
-  for (int d = 0; d < digit; d++) {
+  for (int d = 0; d < digit; d++)
+  {
     ret += n / decimal + '0';
     n %= decimal;
     decimal /= 10;

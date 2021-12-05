@@ -15,7 +15,9 @@
 
 class Cgi
 {
-  enum ENVIRON_LIST {
+  /* enumerator */
+  enum ENVIRON_LIST
+  {
     AUTH_TYPE,
     CONTENT_LENGTH,
     CONTENT_TYPE,
@@ -38,30 +40,39 @@ class Cgi
   };
 
   public:
+    /* constructor & destructor */
     Cgi(void);
     ~Cgi();
 
+    /* public function */
     void execute(Request req, std::string cgiFilePath, std::string file);
-    std::string getCgiResponseBody();
-    std::string getCgiResponseHeader();
-		int getStatusCode();
+
+    /* getter & setter */
+    std::string getCgiResponseHeader(void);
+    std::string getCgiResponseBody(void);
+    int getStatusCode(void);
 
   private:
+    /* private static variable */
     static const std::string _environList[NON_OF_ALL];
 
-    void _setEnviron(const Request& req, std::string file);
-		std::string _getInput(std::string file);
-    std::map<std::string, std::string> _makeEnvMap(const Request& req, std::string file) const;
-    const std::string _getCwd(void) const;
-		void _setCgiResponseHeader(const std::vector<std::string>& str);
-		void _setCgiResponseBody(const std::vector<std::string>& str);
-
+    /* private variable */
     char** _environ;
     size_t _allocSize;
     std::string _cgiResponseHeader;
     std::string _cgiResponseBody;
-			std::string _cgiInput;
-		int _statusCode;
+    std::string _cgiInput;
+    int _statusCode;
+
+    /* private function */
+    std::map<std::string, std::string> _makeEnvMap(const Request& req, std::string file) const;
+    std::string _getInput(std::string file);
+    void _setEnviron(const Request& req, std::string file);
+    void _setCgiResponseHeader(const std::vector<std::string>& str);
+    void _setCgiResponseBody(const std::vector<std::string>& str);
+    const std::string _getCwd(void) const; // 안쓰는 함수 같음
+
+
 };
 
 #endif

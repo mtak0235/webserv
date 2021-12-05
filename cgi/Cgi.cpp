@@ -1,69 +1,30 @@
 #include "Cgi.hpp"
 #include <fcntl.h>
 
-const std::string Cgi::_environList[NON_OF_ALL] = {"AUTH_TYPE", "CONTENT_LENGTH", "CONTENT_TYPE", "GATEWAY_INTERPACE", "PATH_INFO",
-                                                   "PATH_TRANSLATED", "QUERY_STRING", "REMOTE_ADDR", "REMOTE_IDENT", "REMOTE_USER",
-                                                   "REQUEST_METHOD", "REQUEST_URI", "SCRIPT_FILENAME", "SERVER_NAME", "SERVER_PORT",
-                                                   "SERVER_PROTOCOL", "SERVER_SOFTWARE", "REDIRECT_STATUS"};
+const std::string Cgi::_environList[NON_OF_ALL] =
+{"AUTH_TYPE", "CONTENT_LENGTH", "CONTENT_TYPE", "GATEWAY_INTERPACE", "PATH_INFO",
+ "PATH_TRANSLATED", "QUERY_STRING", "REMOTE_ADDR", "REMOTE_IDENT", "REMOTE_USER",
+ "REQUEST_METHOD", "REQUEST_URI", "SCRIPT_FILENAME", "SERVER_NAME", "SERVER_PORT",
+ "SERVER_PROTOCOL", "SERVER_SOFTWARE", "REDIRECT_STATUS"};
 
-Cgi::Cgi(void)
+Cgi::Cgi()
 {
+  //  _environ 초기화 빠짐
+  //  _allocSize 초기화 빠짐
+  //  _cgiResponseHeader 초기화 빠짐
+  //  _cgiResponseBody 초기화 빠짐
+  //  _cgiInput 초기화 빠짐
   _statusCode = 400;
 }
 
 Cgi::~Cgi(void)
 {
+  // char** _environ 할당 해제 여기서 안해도 대는지 확인
 }
 
-std::string Cgi::_getInput(std::string file)
-{
-  std::string body = "";
-  char c;
-  std::ifstream ifs;
-  ifs.open(file);
-  if (!ifs)
-  {
-    std::cout << "file open error\n";
-    _statusCode = 404;
-  }
-  else
-  {
-    while (ifs.get(c))
-      body += c;
-    _statusCode = 200;
-  }
-  ifs.close();
-  return body;
-}
-
-int Cgi::getStatusCode()
-{
-  return _statusCode;
-}
-
-void Cgi::_setCgiResponseHeader(const std::vector<std::string>& v)
-{
-	if (v.size() >= 2)
-		_cgiResponseHeader = v[0] + '\n' + v[1];
-}
-
-void Cgi::_setCgiResponseBody(const std::vector<std::string>& v)
-{
-	std::string temp;
-	for (size_t i = 2; i < v.size(); i++)
-	{
-		temp += v[i];
-		if (i != v.size() - 1) temp += '\n';
-	}
-	// std::cout << '[' << result << "]\n";
-	_cgiResponseBody = temp;
-}
-
-// cgi 실행 함수
 void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 {
   std::string result = "";
-
 	if (cgiFilePath.find("cgi_tester") == std::string::npos)
 	{
 		_statusCode = 200;
@@ -73,13 +34,11 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 		_cgiInput = _getInput(file);
   std::string a = cgiFilePath;
   _setEnviron(req, file);
-
   char *tmp = new char[a.size() + 1];
   for (unsigned long i = 0; i < a.size(); i++)
     tmp[i] = a[i];
   tmp[a.size()] = 0;
   char *argv[] = {tmp, NULL};
-	// char *argv[] = {"./YoupiBanane/action.php", NULL};
   FILE *fIn = tmpfile();
   FILE *fOut = tmpfile();
   long fdIn = fileno(fIn);
@@ -87,7 +46,6 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 	std::cin.clear();
   write(fdIn, _cgiInput.c_str(), _cgiInput.size());
   lseek(fdIn, 0, SEEK_SET);
-
   pid_t pid = fork();
   if (pid == 0)
   {
@@ -126,37 +84,19 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 	delete[] tmp;
 }
 
-void Cgi::_setEnviron(const Request &req, std::string file)
+std::string Cgi::getCgiResponseBody()
 {
-  std::map<std::string, std::string> envMap = _makeEnvMap(req, file);
-  _allocSize = envMap.size() + 1;
-  // _environ = (char**)malloc(sizeof(char *) * _allocSize);
-  _environ = new char *[_allocSize];
-  std::map<std::string, std::string>::iterator itMap = envMap.begin();
-  size_t idxEnv = 0;
-  while (itMap != envMap.end())
-  {
-    std::string temp = itMap->first + "=" + itMap->second;
-    // _environ[idxEnv] = (char*)malloc(temp.size() + 1);
-    // _environ[idxEnv] = (char*)temp.c_str();
-    _environ[idxEnv] = new char[temp.size() + 1];
-    for (unsigned long i = 0; i < temp.size(); i++)
-      _environ[idxEnv][i] = temp[i];
-    _environ[idxEnv][temp.size()] = 0;
-    // printf("%s\n", _environ[idxEnv]);
-    idxEnv++;
-    itMap++;
-  }
-  _environ[idxEnv] = NULL;
+  return _cgiResponseBody;
 }
 
-const std::string Cgi::_getCwd(void) const
+std::string Cgi::getCgiResponseHeader()
 {
-  const int buffSize = 512;
-  char buff[buffSize];
-  getcwd(buff, buffSize);
-  std::string ret = buff;
-  return ret;
+  return _cgiResponseHeader;
+}
+
+int Cgi::getStatusCode()
+{
+  return _statusCode;
 }
 
 std::map<std::string, std::string> Cgi::_makeEnvMap(const Request &req, std::string file) const
@@ -178,12 +118,69 @@ std::map<std::string, std::string> Cgi::_makeEnvMap(const Request &req, std::str
   return ret;
 }
 
-std::string Cgi::getCgiResponseBody()
+std::string Cgi::_getInput(std::string file)
 {
-  return _cgiResponseBody;
+  std::string body = "";
+  char c;
+  std::ifstream ifs;
+  ifs.open(file);
+  if (!ifs)
+  {
+    std::cout << "file open error\n";
+    _statusCode = 404;
+  }
+  else
+  {
+    while (ifs.get(c))
+      body += c;
+    _statusCode = 200;
+  }
+  ifs.close();
+  return body;
 }
 
-std::string Cgi::getCgiResponseHeader()
+void Cgi::_setEnviron(const Request &req, std::string file)
 {
-  return _cgiResponseHeader;
+  std::map<std::string, std::string> envMap = _makeEnvMap(req, file);
+  _allocSize = envMap.size() + 1;
+  _environ = new char *[_allocSize];
+  std::map<std::string, std::string>::iterator itMap = envMap.begin();
+  size_t idxEnv = 0;
+  while (itMap != envMap.end())
+  {
+    std::string temp = itMap->first + "=" + itMap->second;
+    _environ[idxEnv] = new char[temp.size() + 1];
+    for (unsigned long i = 0; i < temp.size(); i++)
+      _environ[idxEnv][i] = temp[i];
+    _environ[idxEnv][temp.size()] = 0;
+    idxEnv++;
+    itMap++;
+  }
+  _environ[idxEnv] = NULL;
+}
+
+void Cgi::_setCgiResponseHeader(const std::vector<std::string>& v)
+{
+	if (v.size() >= 2)
+		_cgiResponseHeader = v[0] + '\n' + v[1];
+}
+
+void Cgi::_setCgiResponseBody(const std::vector<std::string>& v)
+{
+	std::string temp;
+	for (size_t i = 2; i < v.size(); i++)
+	{
+		temp += v[i];
+		if (i != v.size() - 1) temp += '\n';
+	}
+	_cgiResponseBody = temp;
+}
+
+const std::string Cgi::_getCwd(void) const
+{
+  const int buffSize = 512;
+  char buff[buffSize];
+  getcwd(buff, buffSize);
+  std::string ret = buff;
+  return ret;
 }

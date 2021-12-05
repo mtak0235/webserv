@@ -46,7 +46,7 @@ class Server : public ngxKqueue
 		std::string _requestPath;
 
 		size_t _found;
-		std::string _isFile;
+		std::string _fileExtension;
 
 		int _responseDatatoServer(int k);
 		void _setRequestInfo(int k);
@@ -55,7 +55,9 @@ class Server : public ngxKqueue
 		std::string _setBody(std::string file);
 		std::string _getBody(std::string file, int k);
 		std::string _methodPost(std::string file);
-		int _fileJudge(int k);
+		std::string _getPathFromFile();
+		void _fileJudge(int k);
+		bool _isFile();
 		void _isDirectory(int k);
 
 };

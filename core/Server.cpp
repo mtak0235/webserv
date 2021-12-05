@@ -40,7 +40,6 @@ void Server::acceptNewClient(int servSock)
 int Server::recvDataFromClient(int k)
 {
 	memset(_buf, '\0', sizeof(_buf));
-
 	while ((_readDataSize = read(_currEvent->ident, _buf, 1)) >= 0)
 	{
 		_buf[_readDataSize] = '\0';
@@ -74,7 +73,7 @@ int Server::_responseDatatoServer(int k)
 		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastRespnse << std::endl;
 		if ((_n = write(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size()) == -1))
 		{
-			std::cerr << "client write error!" << std::endl;
+			_log.debugLog("client write error!");
 			disconnectClient(_currEvent->ident, _clients);
 		}
 		else
@@ -85,12 +84,18 @@ int Server::_responseDatatoServer(int k)
 	return NGX_FAIL;
 }
 
-int Server::_fileJudge(int k)
+bool Server::_isFile()
 {
-	_found = _requestPath.find_last_of(".");
+	_found = 0;
+	_found = 	_found = _requestPath.find_last_of(".");
 	if (_found == std::string::npos)
-		return -1;
-	_isFile = _requestPath.substr(_found + 1);
+		return false;
+	_fileExtension = _requestPath.substr(_found + 1);
+	return true;
+}
+
+std::string Server::_getPathFromFile()
+{
 	int slashCnt = 0;
 	for (unsigned long i = 0; i < _requestPath.size(); i++)
 	{
@@ -109,19 +114,21 @@ int Server::_fileJudge(int k)
 	}
 	if (getPath.size() != 1 && getPath[getPath.size() - 1] == '/')
 		getPath.pop_back();
+	return getPath;
+}
+
+
+void Server::_fileJudge(int k)
+{
+	std::string getPath = _getPathFromFile();
 	_nowLocation = _serverConfigs[k].getLocationsFind(getPath);
 	if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
 	{
 		_statusCode = 400;
-		return -1;
+		return;
 	}
 	_body = "";
-	if (_isFile != "")
-	{
-		_body = _getBody(_requestPath.substr(1), k);
-		return 0;
-	}
-	return -1;
+	_body = _getBody(_requestPath.substr(1), k);
 }
 
 void Server::_isDirectory(int k)
@@ -159,10 +166,10 @@ void Server::_isDirectory(int k)
 			_statusCode = _nowLocation.getRedirectionCode();
 		else if (_indexList.size() > 0 && !_nowLocation.getAutoIndex()) //경로인 경우
 		{
-			_isFile = "";
+			_fileExtension = "";
 			_found = 0;
 			_found = _indexList[0].find_last_of(".");
-			_isFile = _indexList[0].substr(_found + 1);
+			_fileExtension = _indexList[0].substr(_found + 1);
 			_body = _getBody(_indexList[0], k);
 		}
 	}
@@ -177,12 +184,14 @@ void Server::_setRequestInfo(int k)
 		_request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
 	_requestPath = _request.getPath();
 	_requestMethod = _request.getMethod();
-	//파일인 경우
-	if (_fileJudge(k) == NGX_OK && _statusCode == 200)
+	//path 가 파일인 경우와 경로인 경우로 나눔
+	if (_isFile())
+	{
+		_fileJudge(k);
 		return;
-
-	_isDirectory(k);
-
+	}
+	else
+		_isDirectory(k);
 	if (_statusCode == 400 || _statusCode == 403 || _statusCode == 404 || _statusCode == 405)
 	{
 		_body = _setBody("400.html");
@@ -232,7 +241,7 @@ std::string Server::_getBody(std::string file, int k)
 	std::string rootPulsFile = root + file;
 	if (!_requestMethod.compare("GET"))
 	{
-		if (!_isFile.compare(_nowLocation.getCgiName()))
+		if (!_fileExtension.compare(_nowLocation.getCgiName()))
 		{	
 			// printf("\033[31m[2]\033[37m\n");
 			_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
@@ -240,14 +249,14 @@ std::string Server::_getBody(std::string file, int k)
 			body = _cgi.getCgiResponseBody();
 			_statusCode = _cgi.getStatusCode();
 		}
-		else if (_isFile != "")
+		else if (_fileExtension != "")
 			body = _setBody(rootPulsFile);
 		else
 			_statusCode = 403;
 	}
 	else if (!_requestMethod.compare("POST"))
 	{
-		if (!_isFile.compare(_nowLocation.getCgiName()))
+		if (!_fileExtension.compare(_nowLocation.getCgiName()))
 		{
 			std::vector<FileInfo> v = _request.getFileInfo();
 			for (unsigned long i = 0; i < v.size(); i++)

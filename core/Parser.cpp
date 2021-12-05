@@ -251,7 +251,7 @@ int Parser::parse(const std::string& confFile)
 		portCheck[_serverConfigs[i].getServerPort()] += 1;
 	for (std::map<std::string, int>::iterator it = portCheck.begin(); it != portCheck.end(); it++)
 	{
-		if (it->second > 1)
+		if (it->second > 1) 
 		{
 			_log.debugLog("overlap port multi server");
 			return NGX_FAIL;

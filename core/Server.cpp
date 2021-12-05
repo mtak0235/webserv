@@ -243,7 +243,11 @@ void Server::_isDirectory(int k)
       _isAllow = true;
   }
   if (!_isAllow)
-    _statusCode = 405;
+	{
+		_statusCode = 405;
+		if (!_requestMethod.compare("GET"))
+			_statusCode = 404;
+	}
   else
   {
     if (_nowLocation.getAutoIndex())

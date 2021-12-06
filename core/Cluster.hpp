@@ -68,26 +68,20 @@ class Cluster
     std::string _getBody(std::string file, int idxServer);
     void _isDirectory(int idxServer);
     bool _isRequestRemained(const std::string& cliReq) const;
-		void clear();
+		void _clear();
 
 
   private:
     /* private variable */
-    std::string _configFile;
-    std::ifstream _ifs;
-
-    size_t _cntServer;
     Parser _parser;
-    std::vector<ServerConfig> _serverInfos;
-    std::map<int, std::string> _statusMap;
     Connector _connector;
-    Cgi _cgi;
     Request _request;
     Response _response;
+    Cgi _cgi;
     LocationConfig _nowLocation;
-
+    std::vector<ServerConfig> _serverInfos;
     std::vector<int> _ServerSocketList;
-
+    std::map<int, std::string> _statusMap;
 
     struct kevent* _currEvent;
     int _fdEventQueue;
@@ -96,14 +90,16 @@ class Cluster
     std::vector<struct kevent> _changeList;
     std::map<int, std::string> _clientsMap;
 
+    std::vector<std::string> _allowMethods;
+    std::vector<std::string> _indexList;
+    std::string _configFile;
     std::string _clientReq;
     std::string _body;
     std::string _lastResponse;
     std::string _requestMethod;
     std::string _requestPath;
     std::string _isFile;
-    std::vector<std::string> _allowMethods;
-    std::vector<std::string> _indexList;
+    size_t _cntServer;
 
     char _buf[BUFF_SIZE];
     char _c;

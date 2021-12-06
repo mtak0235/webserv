@@ -50,36 +50,24 @@ void Server::acceptNewClient(int servSock)
 int Server::recvDataFromClient(int k)
 {
   memset(_buf, '\0', 2048);
-	clear();
+	// clear();
 	// int cnt = 0;
-	_clients[_currEvent->ident] = "";
-	bool check = true;
-	while (check)
-	{
-		_readDataSize = recv(_currEvent->ident, _buf, 2048, MSG_DONTWAIT);
-		if (_readDataSize == -1)
-		{
-			if (errno == EINTR)
-				continue;
-			else if (errno == EAGAIN)
-				break;
-			else
-			{
-				disconnectClient(_currEvent->ident, _clients);
-				std::cout << "error\n";
-			}
-		}
-		else
-		{
-			_buf[_readDataSize] = '\0';
-			if (_buf[0] == 0)
-				_clients[_currEvent->ident] += '\0';
-			else
-				_clients[_currEvent->ident] += _buf;
+	// _clients[_currEvent->ident] = "";
+    // usleep(10000);
+    std::cout << "data size " << _currEvent->data << "\n";
+		_readDataSize = recv(_currEvent->ident, _buf, _currEvent->data, MSG_DONTWAIT);
+    std::cout << "read data size " << _readDataSize << "\n";
+    if (_readDataSize == -1)
+      return NGX_OK;
+    else if (_readDataSize >= 0)
+    {
+      // _buf[_readDataSize] = 0;
+      _clients[_currEvent->ident] += _buf;
 			memset(_buf, '\0', 2048);
-		}
+      if (_clients[_currEvent->ident].back() != '\n')
+        return NGX_OK;
+    }
 		
-	}
   // while ((_readDataSize = recv(_currEvent->ident, _buf, 1, MSG_DONTROUTE | MSG_DONTWAIT)) >= 0)
   // {
   //   _buf[_readDataSize] = '\0';

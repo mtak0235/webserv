@@ -38,7 +38,7 @@ void Server::acceptNewClient(int servSock)
 {
   int client_socket;
   if ((client_socket = accept(servSock, NULL, NULL)) == -1)
-    _log.debugLog("accept Error");
+    Debug::log("accept Error");
   fcntl(client_socket, F_SETFL, O_NONBLOCK);
   changeEvents(_changeList, client_socket, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
   _clients[client_socket] = "";
@@ -66,24 +66,12 @@ int Server::recvDataFromClient(int k)
   }
   if (_clients[_currEvent->ident] == "")
   {
-    _log.debugLog("client read error");
+    Debug::log("client read error");
     disconnectClient(_currEvent->ident, _clients);
   }
   if (_responseDatatoServer(k) == NGX_FAIL)
     return NGX_FAIL;
   return NGX_OK;
-}
-
-void Server::setStatus(void)
-{
-  _status[200] = "OK";
-  _status[300] = "Multiple Choice";
-  _status[302] = "Found";
-  _status[400] = "Bad Request";
-  _status[403] = "Forbidden";
-  _status[404] = "Not Found";
-  _status[405] = "Method Not Allowed";
-  _status[500] = "Internal Server Error";
 }
 
 void Server::_setRequestInfo(int k)
@@ -122,7 +110,7 @@ std::string Server::_setBody(std::string file)
   _ifs.open(file);
   if (!_ifs)
   {
-    _log.debugLog("file open error");
+    Debug::log("file open error");
     _statusCode = 404;
   }
   else

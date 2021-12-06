@@ -4,6 +4,8 @@
 #include "ngxKqueue.hpp"
 
 #define BUFF_SIZE 2048
+#define SUCCESS 0
+#define FAIL -1
 
 class Server : public ngxKqueue
 {
@@ -19,7 +21,6 @@ class Server : public ngxKqueue
 
   private :
     /* private variable */
-    Log _log;
     Cgi _cgi;
     Request _request;
     Response _response;

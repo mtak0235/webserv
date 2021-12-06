@@ -4,17 +4,6 @@ ngxKqueue::ngxKqueue() { }
 
 ngxKqueue::~ngxKqueue() { }
 
-int ngxKqueue::makeKqueue()
-{
-  _kq = kqueue();
-  if (_kq == -1)
-  {
-    _log.debugLog("kqueue() error");
-    return NGX_FAIL;
-  }
-  return NGX_OK;
-}
-
 void ngxKqueue::ngxKqueueInit(int servSock)
 {
   changeEvents(_changeList, servSock, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
@@ -27,8 +16,8 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
     _newEvents[i] = kevent(_kq, &_changeList[i], _changeList.size(), _eventList, 1024, NULL);
     if (_newEvents[i] == -1)
     {
-      _log.debugLog("kevent error");
-      return NGX_FAIL;
+      Debug::log("kevent error");
+      return FAIL;
     }
   }
   _changeList.clear();
@@ -42,8 +31,8 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
       {
         if (_currEvent->ident == (uintptr_t)servSock[k])
         {
-          _log.debugLog("socket error");
-          return NGX_FAIL;
+          Debug::log("socket error");
+          return FAIL;
         }
         else
           disconnectClient(_currEvent->ident, _clients);
@@ -54,13 +43,13 @@ int ngxKqueue::ngxKqueueProcessEvents(int x, std::vector<int> servSock)
           acceptNewClient(servSock[k]);
         else if (_clients.find(_currEvent->ident)!= _clients.end())
         {
-          if (recvDataFromClient(k) == NGX_FAIL)
-            return NGX_FAIL;
+          if (recvDataFromClient(k) == FAIL)
+            return FAIL;
         }
       }
     }
   }
-  return NGX_OK;
+  return SUCCESS;
 }
 
 void ngxKqueue::disconnectClient(int clientFd, std::map<int, std::string>& clients)

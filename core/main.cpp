@@ -3,10 +3,13 @@
 int main(int argc, char *argv[])
 {
   std::string configFile = Parser::getConfigFile(argc, argv);
-  Server cluster;
-	if (cluster.init(configFile) == NGX_FAIL)
-		return NGX_FAIL;
-	cluster.run();
-	cluster.stop();
-	return 0;
+
+  Cluster cluster(configFile);
+	if (cluster.init() == FAIL)
+		return FAIL;
+	if (cluster.run() == FAIL) {
+		cluster.closeAllConnection();
+		return FAIL;
+	}
+	return SUCCESS;
 }

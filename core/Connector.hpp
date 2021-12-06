@@ -1,5 +1,5 @@
-#ifndef CONNECTION_HPP
-# define CONNECTION_HPP
+#ifndef CONNECTOR_HPP
+# define CONNECTOR_HPP
 
 #include <cstring>
 #include <iostream>
@@ -10,29 +10,27 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "Log.hpp"
+#include "Debug.hpp"
 
 #define CONNECTION_OK 0
 #define CONNECTION_FAIL -1
 
-class Connection
+class Connector
 {
 	public:
     /* constructor & destructor */
-    Connection();
-    Connection(int& x); // 사용유무 확인 필요
-    ~Connection();
+    Connector();
+    ~Connector();
 
     /* public function */
-    int connection_init(std::string port, int i);
-    void closeConnection(int i);
+    int makeConnection(const std::string& portNum, int idxServer);
+    void closeConnection(int idxServer);
 
     /* getter & setter */
-    int getSockFd(int i);
+    int getSockFd(int idxServer);
 
   private:
     /* private variable */
-    Log _log;
     struct sockaddr_in _servAddr[10];
     int _servSockFd[10];
 };

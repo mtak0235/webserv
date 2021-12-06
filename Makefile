@@ -18,7 +18,7 @@ SRCS = main.cpp \
 	Parser.cpp \
 	Server.cpp \
 	Cgi.cpp \
-	Log.cpp \
+	Debug.cpp \
 	Request.cpp \
 	Response.cpp \
 	Formatter.cpp \

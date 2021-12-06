@@ -7,7 +7,7 @@
 #include <sstream>
 #include <vector>
 
-#include "Log.hpp"
+#include "Debug.hpp"
 #include "Config.hpp"
 
 # define PARSE_FAIL -1 // core.hpp 삭제하면서 ngx_OK 랑 중복 define 이라 이름 바꿈
@@ -56,20 +56,12 @@ class Parser
     static const std::string _keyLocation[9]; // 하드코딩 9 빼기
 
     /* private variable */
-    Log _log;
     std::ifstream _ifs;
     std::string _info;
     std::vector<ServerConfig> _serverConfigs;
 
     /* private function */
     int _getLocationInfo(std::stringstream &ss, std::string msg);
-
-    bool _checkSemicolon(char c); // 안쓰는 함수같음
-
-	  int _locationRemoveSemicolon(LocationConfig *lc); // 파싱 다시 짜면서 필요없어짐
-	  int _serverRemoveSemicolon(ServerConfig *sc); // ㅇㅎ~ 상동
-    ServerConfig _parseServerBlock(); // 마찬가지
-    LocationConfig _parseLocationBlock(); // 마찬가지
 };
 
 #endif

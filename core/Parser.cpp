@@ -24,13 +24,13 @@ int Parser::parse(const std::string& confFile)
 	size_t found = confFile.find_last_of(".");
 	if (found == std::string::npos)
 	{
-		_log.debugLog("not conf file");
+		Debug::log("not conf file");
 		return PARSE_FAIL;
 	}
 	std::string tmp = confFile.substr(found + 1);
 	if (tmp.compare("conf"))
 	{
-		_log.debugLog("not conf file");
+		Debug::log("not conf file");
 		return PARSE_FAIL;
 	}
 	_ifs.open(confFile);
@@ -64,7 +64,7 @@ int Parser::parse(const std::string& confFile)
 			ss >> _info;
 			if (_info.back() != ';')
 			{
-				_log.debugLog("listen semicolon error");
+				Debug::log("listen semicolon error");
 				return PARSE_FAIL;
 			}
 			_info.pop_back();
@@ -72,7 +72,7 @@ int Parser::parse(const std::string& confFile)
 			{
 				if (!isnumber(_info[k]))
 				{
-					_log.debugLog("port num is not number");
+					Debug::log("port num is not number");
 					return PARSE_FAIL;
 				}
 			}
@@ -83,7 +83,7 @@ int Parser::parse(const std::string& confFile)
 			ss >> _info;
 			if (_info.back() != ';')
 			{
-				_log.debugLog("server name semi error");
+				Debug::log("server name semi error");
 				return PARSE_FAIL;
 			}
 			_info.pop_back();
@@ -94,7 +94,7 @@ int Parser::parse(const std::string& confFile)
 			ss >> _info;
 			if (_info.back() != ';')
 			{
-				_log.debugLog("server name semi error");
+				Debug::log("server name semi error");
 				return PARSE_FAIL;
 			}
 			_info.pop_back();
@@ -106,7 +106,7 @@ int Parser::parse(const std::string& confFile)
 			ss >> _info >> bracket;
 			if (bracket != "{")
 			{
-				_log.debugLog("location start bracket error");
+				Debug::log("location start bracket error");
 				return PARSE_FAIL;
 			}
 			locationBlock = 1;
@@ -134,7 +134,7 @@ int Parser::parse(const std::string& confFile)
 					tmp.push_back(method);
 				if (tmp[tmp.size() - 1].back() != ';')
 				{
-					_log.debugLog("method semi error");
+					Debug::log("method semi error");
 					return PARSE_FAIL;
 				}
 				tmp[tmp.size() - 1].pop_back();
@@ -142,7 +142,7 @@ int Parser::parse(const std::string& confFile)
 				{
 					if (tmp[k] != "GET" && tmp[k] != "POST" && tmp[k] != "DELETE")
 					{
-						_log.debugLog("not correct method");
+						Debug::log("not correct method");
 						return PARSE_FAIL;
 					}
 				}
@@ -168,7 +168,7 @@ int Parser::parse(const std::string& confFile)
 				{
 					if (!isnumber(_info[k]))
 					{
-						_log.debugLog("client body size is not number");
+						Debug::log("client body size is not number");
 						return PARSE_FAIL;
 					}
 				}
@@ -193,12 +193,12 @@ int Parser::parse(const std::string& confFile)
 				ss >> code >> address;
 				if (code < 300 || code >= 400)
 				{
-					_log.debugLog("return parsing error: not correct status code ");
+					Debug::log("return parsing error: not correct status code ");
 					return PARSE_FAIL;
 				}
 				if (address.back() != ';')
 				{
-					_log.debugLog("return semi error");
+					Debug::log("return semi error");
 					return PARSE_FAIL;
 				}
 				address.pop_back();
@@ -214,34 +214,34 @@ int Parser::parse(const std::string& confFile)
 			}
 			else
 			{
-				_log.debugLog("Not location block keyword");
+				Debug::log("Not location block keyword");
 				return PARSE_FAIL;
 			}
 		}
 		else if (serverBlock == 1 && locationBlock == 0 && _info == "}")
 		{
 			serverBlock = 0;
-			_serverConfigs.push_back(sc);
+			_serverInfos.push_back(sc);
 			sc.clear();
 		}
 		else if (_info == "")
 			continue;
 		else
 		{
-			_log.debugLog("No keyword");
+			Debug::log("No keyword");
 			return PARSE_FAIL;
 		}
 	}
 	if (serverBlock != 0 || locationBlock != 0)
 		return PARSE_FAIL;
 	std::map<std::string, int> portCheck;
-	for (size_t i = 0; i < _serverConfigs.size(); i++)
-		portCheck[_serverConfigs[i].getServerPort()] += 1;
+	for (size_t i = 0; i < _serverInfos.size(); i++)
+		portCheck[_serverInfos[i].getServerPort()] += 1;
 	for (std::map<std::string, int>::iterator it = portCheck.begin(); it != portCheck.end(); it++)
 	{
 		if (it->second > 1)
 		{
-			_log.debugLog("overlap port multi server");
+			Debug::log("overlap port multi server");
 			return PARSE_FAIL;
 		}
 	}
@@ -250,7 +250,7 @@ int Parser::parse(const std::string& confFile)
 
 std::vector<ServerConfig> Parser::getServerConfig(void) const
 {
-	return _serverConfigs;
+	return _serverInfos;
 }
 
 int Parser::_getLocationInfo(std::stringstream &ss, std::string msg)
@@ -258,14 +258,9 @@ int Parser::_getLocationInfo(std::stringstream &ss, std::string msg)
 	ss >> _info;
 	if (_info.back() != ';')
 	{
-		_log.debugLog(msg);
+		Debug::log(msg);
 		return PARSE_FAIL;
 	}
 	_info.pop_back();
 	return PARSE_OK;
-}
-
-bool Parser::_checkSemicolon(char c)
-{
-	return c == ';';
 }

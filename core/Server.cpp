@@ -8,7 +8,6 @@ Server::Server()
   _requestMethod = "";
   _requestPath = "";
   _isFile = "";
-
   _c = 0;
   _isAllow = false;
   _found = 0;
@@ -25,7 +24,6 @@ void Server::clear()
   _requestMethod = "";
   _requestPath = "";
   _isFile = "";
-
   _c = 0;
   _isAllow = false;
   _found = 0;
@@ -42,47 +40,30 @@ void Server::acceptNewClient(int servSock)
   if ((client_socket = accept(servSock, NULL, NULL)) == -1)
     _log.debugLog("accept Error");
   fcntl(client_socket, F_SETFL, O_NONBLOCK);
-  /* add event for client socket - add read && write event */
   changeEvents(_changeList, client_socket, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
   _clients[client_socket] = "";
 }
 
+bool Server::_isRequestRemained(const std::string& cliReq) const {
+  size_t lenReq = cliReq.length();
+  if (cliReq[lenReq - 2] != '\r' && cliReq[lenReq - 1] != '\n')
+    return true;
+  return false;
+}
+
 int Server::recvDataFromClient(int k)
 {
-  memset(_buf, '\0', 2048);
-	// clear();
-	// int cnt = 0;
-	// _clients[_currEvent->ident] = "";
-    // usleep(10000);
-    std::cout << "data size " << _currEvent->data << "\n";
-		_readDataSize = recv(_currEvent->ident, _buf, _currEvent->data, MSG_DONTWAIT);
-    std::cout << "read data size " << _readDataSize << "\n";
-    if (_readDataSize == -1)
+  memset(_buf, '\0', BUFF_SIZE);
+  _readDataSize = recv(_currEvent->ident, _buf, _currEvent->data, MSG_DONTWAIT);
+  if (_readDataSize == -1)
+    return NGX_OK;
+  else if (_readDataSize >= 0)
+  {
+    _clients[_currEvent->ident] += _buf;
+    memset(_buf, '\0', BUFF_SIZE);
+    if (_isRequestRemained(_clients[_currEvent->ident]))
       return NGX_OK;
-    else if (_readDataSize >= 0)
-    {
-      // _buf[_readDataSize] = 0;
-      _clients[_currEvent->ident] += _buf;
-			memset(_buf, '\0', 2048);
-      if (_clients[_currEvent->ident].back() != '\n')
-        return NGX_OK;
-    }
-		
-  // while ((_readDataSize = recv(_currEvent->ident, _buf, 1, MSG_DONTROUTE | MSG_DONTWAIT)) >= 0)
-  // {
-  //   _buf[_readDataSize] = '\0';
-	// 	// std::cout << cnt << std::endl;
-	// 	// std::cout << std::flush << std::flush << std::flush;
-  //   if (_buf[0] == 0)
-  //     _clients[_currEvent->ident] += '\0';
-  //   else
-  //     _clients[_currEvent->ident] += _buf;
-  //   // memset(_buf, '\0', 2048);
-	// 	_buf[0] = 0;
-	// 	_buf[1] = 0;
-	// 	// cnt++;
-  // }
-	// std::cout << std::endl;
+  }
   if (_clients[_currEvent->ident] == "")
   {
     _log.debugLog("client read error");
@@ -90,8 +71,6 @@ int Server::recvDataFromClient(int k)
   }
   if (_responseDatatoServer(k) == NGX_FAIL)
     return NGX_FAIL;
-	// std::fflush(_currEvent->ident);
-	// std::cout << std::flush;
   return NGX_OK;
 }
 
@@ -107,7 +86,6 @@ void Server::setStatus(void)
   _status[500] = "Internal Server Error";
 }
 
-// allow method 안에서 있는지 확인
 void Server::_setRequestInfo(int k)
 {
   _request.clear();
@@ -116,7 +94,6 @@ void Server::_setRequestInfo(int k)
     _request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
   _requestPath = _request.getPath();
   _requestMethod = _request.getMethod();
-  //파일인 경우
   if (_fileJudge(k) == NGX_OK && _statusCode == 200)
     return;
   _isDirectory(k);
@@ -191,7 +168,6 @@ std::string Server::_getBody(std::string file, int k)
         std::ofstream ofs;
         std::string filePath = _nowLocation.getUploadFolder() + v[i].fileName;
         ofs.open(filePath);
-        // std::cout << v[i].data.size();
         ofs.write(v[0].data.c_str(), v[i].data.size());
         ofs.close();
       }
@@ -229,10 +205,8 @@ int Server::_responseDatatoServer(int k)
     }
     else {
       _clients[_currEvent->ident].clear();
-      // shutdown(_currEvent->ident, SHUT_WR);
-      read(_currEvent->ident, _buf, 2048);
+      read(_currEvent->ident, _buf, BUFF_SIZE);
       memset(_buf, 0, sizeof(_buf));
-      // disconnectClient(_currEvent->ident, _clients);
     }
 		disconnectClient(_currEvent->ident, _clients);
     return NGX_OK;
@@ -316,7 +290,7 @@ void Server::_isDirectory(int k)
     _indexList = _nowLocation.getIndexList();
     if (_nowLocation.getRedirectionCode() >= 300 && _nowLocation.getRedirectionCode() < 400)
       _statusCode = _nowLocation.getRedirectionCode();
-    else if (_indexList.size() > 0 && !_nowLocation.getAutoIndex()) //경로인 경우
+    else if (_indexList.size() > 0 && !_nowLocation.getAutoIndex())
     {
       _isFile = "";
       _found = 0;

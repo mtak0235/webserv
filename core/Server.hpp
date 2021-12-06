@@ -3,6 +3,8 @@
 
 #include "ngxKqueue.hpp"
 
+#define BUFF_SIZE 2048
+
 class Server : public ngxKqueue
 {
   public :
@@ -34,7 +36,7 @@ class Server : public ngxKqueue
     std::ifstream _ifs;
 
     char _c;
-    char _buf[2048];
+    char _buf[BUFF_SIZE];
     bool _isAllow;
     size_t _found;
     int _readDataSize;
@@ -46,11 +48,10 @@ class Server : public ngxKqueue
     void _setResponse(int k);
     std::string _setBody(std::string file);
     std::string _getBody(std::string file, int k);
-    std::string _getCgiFilePath(std::string fileName); // 사용유무 확인 필요
-    std::string _methodPost(std::string file); // 사용유무 확인 필요
     int _responseDatatoServer(int k);
     int _fileJudge(int k);
     void _isDirectory(int k);
+    bool _isRequestRemained(const std::string& cliReq) const;
 		void clear();
 };
 

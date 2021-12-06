@@ -4,7 +4,7 @@ Server::Server()
 {
   _clientReq = "";
   _body = "";
-  _lastRespnse = "";
+  _lastResponse = "";
   _requestMethod = "";
   _requestPath = "";
   _isFile = "";
@@ -21,7 +21,7 @@ void Server::clear()
 {
   _clientReq = "";
   _body = "";
-  _lastRespnse = "";
+  _lastResponse = "";
   _requestMethod = "";
   _requestPath = "";
   _isFile = "";
@@ -121,7 +121,7 @@ void Server::_setResponse(int k)
   if (300 <= _statusCode && _statusCode < 400)
     _response.setLocation("http://localhost:" + _serverConfigs[k].getServerPort() + _nowLocation.getRedirectionAddress());
   _body += "\n";
-  _lastRespnse = _response.makeResponse(_body);
+  _lastResponse = _response.makeResponse(_body);
 }
 
 std::string Server::_setBody(std::string file)
@@ -206,18 +206,19 @@ int Server::_responseDatatoServer(int k)
     _statusCode = 500;
     _setRequestInfo(k);
     _setResponse(k);
-    std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastRespnse << std::endl;
-    if ((_n = send(_currEvent->ident, _lastRespnse.c_str(), _lastRespnse.size(), MSG_DONTROUTE | MSG_DONTWAIT) == -1))
+    std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << std::endl;
+    if ((_n = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTROUTE | MSG_DONTWAIT) == -1))
     {
       std::cerr << "client write error!" << std::endl;
       disconnectClient(_currEvent->ident, _clients);
     }
     else {
-	  _clients[_currEvent->ident].clear();
-		// shutdown(_currEvent->ident, SHUT_WR);
-		// read(_currEvent->ident, _buf, 4000);
-		disconnectClient(_currEvent->ident, _clients);
-		}
+      _clients[_currEvent->ident].clear();
+      // shutdown(_currEvent->ident, SHUT_WR);
+      // read(_currEvent->ident, _buf, 2048);
+      memset(_buf, 0, sizeof(_buf));
+      disconnectClient(_currEvent->ident, _clients);
+    }
     return NGX_OK;
   }
   return NGX_FAIL;

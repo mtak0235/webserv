@@ -31,6 +31,7 @@ int Parser::parse(const std::string& confFile)
 		getline(_ifs, line);
 		file.push_back(line);
 	}
+	_ifs.close();
 	int serverBlock = 0;
 	int locationBlock = 0;
 	ServerConfig sc;

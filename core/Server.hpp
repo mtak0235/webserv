@@ -25,7 +25,7 @@ class Server : public ngxKqueue
 
     std::string _clientReq;
     std::string _body;
-    std::string _lastRespnse;
+    std::string _lastResponse;
     std::string _requestMethod;
     std::string _requestPath;
     std::string _isFile;

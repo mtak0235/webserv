@@ -11,13 +11,13 @@ int Connection::getSockFd(int i)
 
 int Connection::connection_init(std::string port, int i)
 {
-	_servSockFd[i] = socket(PF_INET, SOCK_STREAM, 0);
+	_servSockFd[i] = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_servSockFd[i] == CONNECTION_FAIL)
 	{
 		_log.debugLog("socket fd error");
 		return CONNECTION_FAIL;
 	}
-	memset(&_servAddr[i], 0, sizeof(_servAddr[i]));
+	// memset(&_servAddr[i], 0, sizeof(_servAddr[i]));
 	_servAddr[i].sin_family = AF_INET;
 	_servAddr[i].sin_addr.s_addr = htonl(INADDR_ANY);
 	_servAddr[i].sin_port = htons(stoi(port));
@@ -26,7 +26,7 @@ int Connection::connection_init(std::string port, int i)
 		_log.debugLog("bind error " + port);
 		return CONNECTION_FAIL;
 	}
-	if (listen(_servSockFd[i], 5))
+	if (listen(_servSockFd[i], 1024))
 	{
 		_log.debugLog("listen error " + port);
 		return CONNECTION_FAIL;

@@ -53,20 +53,47 @@ int Server::recvDataFromClient(int k)
 	clear();
 	// int cnt = 0;
 	_clients[_currEvent->ident] = "";
-  while ((_readDataSize = recv(_currEvent->ident, _buf, 1, MSG_DONTROUTE | MSG_DONTWAIT)) >= 0)
-  {
-    _buf[_readDataSize] = '\0';
-		// std::cout << cnt << std::endl;
-		// std::cout << std::flush << std::flush << std::flush;
-    if (_buf[0] == 0)
-      _clients[_currEvent->ident] += '\0';
-    else
-      _clients[_currEvent->ident] += _buf;
-    // memset(_buf, '\0', 2048);
-		_buf[0] = 0;
-		_buf[1] = 0;
-		// cnt++;
-  }
+	bool check = true;
+	while (check)
+	{
+		_readDataSize = recv(_currEvent->ident, _buf, 2048, MSG_DONTWAIT);
+		if (_readDataSize == -1)
+		{
+			if (errno == EINTR)
+				continue;
+			else if (errno == EAGAIN)
+				break;
+			else
+			{
+				disconnectClient(_currEvent->ident, _clients);
+				std::cout << "error\n";
+			}
+		}
+		else
+		{
+			_buf[_readDataSize] = '\0';
+			if (_buf[0] == 0)
+				_clients[_currEvent->ident] += '\0';
+			else
+				_clients[_currEvent->ident] += _buf;
+			memset(_buf, '\0', 2048);
+		}
+		
+	}
+  // while ((_readDataSize = recv(_currEvent->ident, _buf, 1, MSG_DONTROUTE | MSG_DONTWAIT)) >= 0)
+  // {
+  //   _buf[_readDataSize] = '\0';
+	// 	// std::cout << cnt << std::endl;
+	// 	// std::cout << std::flush << std::flush << std::flush;
+  //   if (_buf[0] == 0)
+  //     _clients[_currEvent->ident] += '\0';
+  //   else
+  //     _clients[_currEvent->ident] += _buf;
+  //   // memset(_buf, '\0', 2048);
+	// 	_buf[0] = 0;
+	// 	_buf[1] = 0;
+	// 	// cnt++;
+  // }
 	// std::cout << std::endl;
   if (_clients[_currEvent->ident] == "")
   {
@@ -200,14 +227,14 @@ std::string Server::_getBody(std::string file, int k)
 int Server::_responseDatatoServer(int k)
 {
   _clientReq = _clients[_currEvent->ident];
-  std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << _clientReq << std::endl;
+	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << _clientReq << std::endl;
   if (_clientReq != "")
   {
     _statusCode = 500;
     _setRequestInfo(k);
     _setResponse(k);
-    std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << std::endl;
-    if ((_n = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTROUTE | MSG_DONTWAIT) == -1))
+		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << std::endl;
+    if ((_n = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTWAIT) == -1))
     {
       std::cerr << "client write error!" << std::endl;
       disconnectClient(_currEvent->ident, _clients);
@@ -215,10 +242,11 @@ int Server::_responseDatatoServer(int k)
     else {
       _clients[_currEvent->ident].clear();
       // shutdown(_currEvent->ident, SHUT_WR);
-      // read(_currEvent->ident, _buf, 2048);
+      read(_currEvent->ident, _buf, 2048);
       memset(_buf, 0, sizeof(_buf));
-      disconnectClient(_currEvent->ident, _clients);
+      // disconnectClient(_currEvent->ident, _clients);
     }
+		disconnectClient(_currEvent->ident, _clients);
     return NGX_OK;
   }
   return NGX_FAIL;

@@ -10,7 +10,7 @@ class Server : public ngxKqueue
   public :
     /* constructor & destructor */
     Server();
-    virtual ~Server();
+    ~Server();
 
     /* public function */
     virtual void acceptNewClient(int servSock);

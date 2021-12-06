@@ -9,6 +9,16 @@ Parser::Parser(void) { }
 
 Parser::~Parser() { }
 
+const std::string Parser::getConfigFile(int argc, char* argv[])
+{
+	std::string configFile;
+	if (argc == 1)
+	  configFile = "./basic.conf";
+	else if (argc == 2)
+		configFile = argv[1];
+	return configFile;
+}
+
 int Parser::parse(const std::string& confFile)
 {
 	size_t found = confFile.find_last_of(".");

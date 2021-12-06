@@ -40,6 +40,9 @@ class Parser
     Parser();
     ~Parser();
 
+    /* public static function */
+    static const std::string getConfigFile(int argc, char* argv[]);
+
     /* public function */
     int parse(const std::string& confFile);
 

@@ -42,25 +42,31 @@ class Cluster
 
   private:
     int _makeConnection(void);
-    void _makeStatusMap(void);
     int _makeServerInfo(const std::string& configFIle);
     int _makeKqueue(void);
+    int _recvDataFromClient(int idxServer);
+    int _handleKqueueEvents(int cntServer, const std::vector<int>& servSock);
+    int _responseDatatoServer(int idxServer);
+    int _fileJudge(int idxServer);
+    int _monitorEvents(int cntServer);
+
+
+    void _makeStatusMap(void);
     void _changeEvents(std::vector<struct kevent>& changeList, uintptr_t ident,
                       int16_t filter, uint16_t flags, uint32_t fflags,
                       intptr_t data, void *udata);
+    void _makeServerSocketList(void);
 
 
-    int ngxKqueueProcessEvents(int x, std::vector<int> servSock);
-    void disconnectClient(int clientFd, std::map<int, std::string>& clients);
-    void acceptNewClient(int servSock);
-    int recvDataFromClient(int k);
-    void _setRequestInfo(int k);
-    void _setResponse(int k);
+
+    void _disconnectClient(int clientFd, std::map<int, std::string>& clientsMap);
+    void _acceptNewClient(int servSock);
+
+    void  _makeRequestInfo(int idxServer);
+    void _setResponse(int idxServer);
     std::string _setBody(std::string file);
-    std::string _getBody(std::string file, int k);
-    int _responseDatatoServer(int k);
-    int _fileJudge(int k);
-    void _isDirectory(int k);
+    std::string _getBody(std::string file, int idxServer);
+    void _isDirectory(int idxServer);
     bool _isRequestRemained(const std::string& cliReq) const;
 		void clear();
 
@@ -70,6 +76,7 @@ class Cluster
     std::string _configFile;
     std::ifstream _ifs;
 
+    size_t _cntServer;
     Parser _parser;
     std::vector<ServerConfig> _serverInfos;
     std::map<int, std::string> _statusMap;
@@ -79,13 +86,16 @@ class Cluster
     Response _response;
     LocationConfig _nowLocation;
 
+    std::vector<int> _ServerSocketList;
+
+
     struct kevent* _currEvent;
-    int _FdEventQueue;
-    int _newEvents[6];
+    int _fdEventQueue;
+    int _fdOccuredEnvent[6];
     struct kevent _eventList[1024];
     std::vector<struct kevent> _changeList;
+    std::map<int, std::string> _clientsMap;
 
-    std::map<int, std::string> _clients;
     std::string _clientReq;
     std::string _body;
     std::string _lastResponse;

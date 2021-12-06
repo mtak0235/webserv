@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "Cluster.hpp"
 
 int main(int argc, char *argv[])
 {

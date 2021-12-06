@@ -23,8 +23,8 @@ class Connector
     ~Connector();
 
     /* public function */
-    int makeConnection(const std::string& portNum, int idxServer);
-    void closeConnection(int idxServer);
+    int connect(const std::string& portNum, int idxServer);
+    void disconnect(int idxServer);
 
     /* getter & setter */
     int getSockFd(int idxServer);

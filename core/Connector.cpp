@@ -8,7 +8,7 @@ int Connector::getSockFd(int idxServer) {
 	return _servSockFd[idxServer];
 }
 
-int Connector::makeConnection(const std::string& portNum, int idxServer) {
+int Connector::connect(const std::string& portNum, int idxServer) {
 	_servSockFd[idxServer] = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (_servSockFd[idxServer] == CONNECTION_FAIL) {
 		Debug::log("socket fd error");
@@ -29,6 +29,6 @@ int Connector::makeConnection(const std::string& portNum, int idxServer) {
 	return CONNECTION_OK;
 }
 
-void Connector::closeConnection(int idxServer) {
+void Connector::disconnect(int idxServer) {
 	close(_servSockFd[idxServer]);
 }

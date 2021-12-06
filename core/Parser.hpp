@@ -58,7 +58,7 @@ class Parser
     /* private variable */
     std::ifstream _ifs;
     std::string _info;
-    std::vector<ServerConfig> _serverConfigs;
+    std::vector<ServerConfig> _serverInfos;
 
     /* private function */
     int _getLocationInfo(std::stringstream &ss, std::string msg);

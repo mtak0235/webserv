@@ -119,6 +119,11 @@ const std::string Response::generateAutoindexPage(std::string const &path) const
   return content;
 }
 
+int Response::getStatusCode(void) const
+{
+  return _statusCode;
+}
+
 void Response::setStatusCode(const int& n)
 {
   _statusCode = n;

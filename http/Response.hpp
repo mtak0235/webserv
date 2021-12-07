@@ -26,6 +26,7 @@ class Response
     const std::string	generateAutoindexPage(std::string const &path) const;
 
     /* getter & setter */
+    int getStatusCode(void) const;
     void setStatusCode(const int& n);
     void setStatusMsg(const std::string& str);
     void setServerName(const std::string& str);

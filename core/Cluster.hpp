@@ -56,7 +56,7 @@ class Cluster
     void _makeServerSocketList(void);
     void _disconnectClient(int clientFd, std::map<int, std::string>& clientsMap);
     void _acceptNewClient(int servSock);
-    void  _makeRequestInfo(int idxServer);
+    void  _makeRequestInfo(int idxServer, const std::string& cliReq);
     void _setResponse(int idxServer);
     std::string _setBody(std::string file);
     std::string _getBody(std::string file, int idxServer);
@@ -74,6 +74,7 @@ class Cluster
     Cgi _cgi;
     LocationConfig _nowLocation;
 
+    std::map<int, std::string> _clientsReqMap;
     std::map<int, std::string> _statusMap;
     std::vector<ServerConfig> _serverInfos;
     std::vector<int> _ServerSocketList;
@@ -83,16 +84,11 @@ class Cluster
     int _fdOccuredEnvent[6];
     struct kevent _eventList[1024];
     std::vector<struct kevent> _changeList;
-    std::map<int, std::string> _clientsMap;
 
     std::string _configFile;
-
-    std::string _clientReq;
     std::string _body;
     std::string _lastResponse;
     std::string _isFile;
-
-    int _statusCode;
 };
 
 #endif

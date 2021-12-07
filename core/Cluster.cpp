@@ -2,12 +2,10 @@
 
 Cluster::Cluster(const std::string& configFile) {
   _configFile = configFile;
-  _clientReq = "";
   _body = "";
   _lastResponse = "";
   _isFile = "";
-
-  _statusCode = 500;
+  _response.setStatusCode(500);
 }
 
 Cluster::~Cluster() { }
@@ -114,11 +112,11 @@ int Cluster::_handleKqueueEvents(int cntServer, const std::vector<int>& serverSo
           Debug::log("socket error");
           return FAIL;
         } else
-          _disconnectClient(_currEvent->ident, _clientsMap);
+          _disconnectClient(_currEvent->ident, _clientsReqMap);
       } else if (_currEvent->filter == EVFILT_READ) {
         if (_currEvent->ident == (uintptr_t)serverSocketList[idxServer])
           _acceptNewClient(serverSocketList[idxServer]);
-        else if (_clientsMap.find(_currEvent->ident)!= _clientsMap.end()) {
+        else if (_clientsReqMap.find(_currEvent->ident)!= _clientsReqMap.end()) {
           if (_recvDataFromClient(idxServer) == FAIL) {
             return FAIL;
           }
@@ -135,7 +133,7 @@ void Cluster::_acceptNewClient(int servSock) {
     Debug::log("accept Error");
   fcntl(cliSock, F_SETFL, O_NONBLOCK);
   _changeEvents(_changeList, cliSock, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-  _clientsMap[cliSock] = "";
+  _clientsReqMap[cliSock] = "";
 }
 
 bool Cluster::_isRequestRemained(const std::string& cliReq) const {
@@ -153,14 +151,14 @@ int Cluster::_recvDataFromClient(int idxServer)
   if (readDataBytes == -1)
     return SUCCESS;
   else if (readDataBytes >= 0) {
-    _clientsMap[_currEvent->ident] += buff;
+    _clientsReqMap[_currEvent->ident] += buff;
     memset(buff, '\0', BUFF_SIZE);
-    if (_isRequestRemained(_clientsMap[_currEvent->ident]))
+    if (_isRequestRemained(_clientsReqMap[_currEvent->ident]))
       return SUCCESS;
   }
-  if (_clientsMap[_currEvent->ident] == "") {
+  if (_clientsReqMap[_currEvent->ident] == "") {
     Debug::log("client read error");
-    _disconnectClient(_currEvent->ident, _clientsMap);
+    _disconnectClient(_currEvent->ident, _clientsReqMap);
   }
   if (_responseDatatoServer(idxServer, buff) == FAIL) {
     return FAIL;
@@ -169,23 +167,23 @@ int Cluster::_recvDataFromClient(int idxServer)
 }
 
 int Cluster::_responseDatatoServer(int idxServer, char* buff) {
-  _clientReq = _clientsMap[_currEvent->ident];
-	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << _clientReq << std::endl;
-  if (_clientReq != "") {
-    _statusCode = 500;
-    _makeRequestInfo(idxServer);
+  std::string cliReq = _clientsReqMap[_currEvent->ident];
+	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << cliReq << std::endl;
+  if (cliReq != "") {
+    _response.setStatusCode(500);
+    _makeRequestInfo(idxServer, cliReq);
     _setResponse(idxServer);
 		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << "\n";
     size_t sendBytes = 0;
     if ((sendBytes = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTWAIT) == -1)) {
       std::cerr << "client write error!" << std::endl;
-      _disconnectClient(_currEvent->ident, _clientsMap);
+      _disconnectClient(_currEvent->ident, _clientsReqMap);
     } else {
-      _clientsMap[_currEvent->ident].clear();
+      _clientsReqMap[_currEvent->ident].clear();
       read(_currEvent->ident, buff, BUFF_SIZE);
       memset(buff, 0, BUFF_SIZE);
     }
-		_disconnectClient(_currEvent->ident, _clientsMap);
+		_disconnectClient(_currEvent->ident, _clientsReqMap);
     return SUCCESS;
   }
   return FAIL;
@@ -228,7 +226,7 @@ int Cluster::_fileJudge(int idxServer)
   _nowLocation = _serverInfos[idxServer].getLocationsFind(getPath);
   if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
   {
-    _statusCode = 400;
+    _response.setStatusCode(400);
     return FAIL;
   }
   _body = "";
@@ -251,28 +249,28 @@ int Cluster::closeAllConnection(void) {
   return SUCCESS;
 }
 
-void Cluster::_makeRequestInfo(int idxServer) {
+void Cluster::_makeRequestInfo(int idxServer, const std::string& cliReq) {
   _request.clear();
-  _request.setRequest(_clientReq);
+  _request.setRequest(cliReq);
   if (!_request.getPath().compare("/favicon.ico"))
     _request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-  if (_fileJudge(idxServer) == SUCCESS && _statusCode == 200)
+  const int statusCode = _response.getStatusCode();
+  if (_fileJudge(idxServer) == SUCCESS && statusCode == 200)
     return;
   _isDirectory(idxServer);
-  if (_statusCode == 400 || _statusCode == 403 || _statusCode == 404 || _statusCode == 405)
+  if (statusCode == 400 || statusCode == 403 || statusCode == 404 || statusCode == 405)
   {
-    int temp = _statusCode;
+    int temp = statusCode;
     _body = _setBody("400.html");
-    _statusCode = temp;
+    _response.setStatusCode(temp);
   }
 }
 
 void Cluster::_setResponse(int idxServer)
 {
   _response.setServerName(_serverInfos[idxServer].getServerName());
-  _response.setStatusCode(_statusCode);
-  _response.setStatusMsg(_statusMap[_statusCode]);
-  if (300 <= _statusCode && _statusCode < 400)
+  _response.setStatusMsg(_statusMap[_response.getStatusCode()]);
+  if (300 <= _response.getStatusCode() && _response.getStatusCode() < 400)
     _response.setLocation("http://localhost:" + _serverInfos[idxServer].getServerPort() + _nowLocation.getRedirectionAddress());
   _body += "\n";
   _lastResponse = _response.makeResponse(_body);
@@ -285,12 +283,12 @@ std::string Cluster::_setBody(std::string file)
   ifs.open(file);
   if (!ifs) {
     Debug::log("file open error");
-    _statusCode = 404;
+    _response.setStatusCode(404);
   } else {
     char c;
     while (ifs.get(c))
       body += c;
-    _statusCode = 200;
+    _response.setStatusCode(200);
   }
   ifs.close();
   return body;
@@ -312,12 +310,12 @@ std::string Cluster::_getBody(std::string file, int idxServer)
       _cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
       _cgi.getCgiResponseHeader();
       body = _cgi.getCgiResponseBody();
-      _statusCode = _cgi.getStatusCode();
+      _response.setStatusCode(_cgi.getStatusCode());
     }
     else if (_isFile != "")
       body = _setBody(rootPulsFile);
     else
-      _statusCode = 403;
+      _response.setStatusCode(403);
   }
   else if (!_request.getMethod().compare("POST"))
   {
@@ -335,16 +333,16 @@ std::string Cluster::_getBody(std::string file, int idxServer)
       _cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
       _cgi.getCgiResponseHeader();
       body = _cgi.getCgiResponseBody();
-      _statusCode = _cgi.getStatusCode();
+      _response.setStatusCode(_cgi.getStatusCode());
     }
     else
-      _statusCode = 403;
+      _response.setStatusCode(403);
   }
   else if (!_request.getMethod().compare("DELETE"))
   {
     _serverInfos[idxServer].eraseLocation(_request.getPath());
     body = "{\"success\":\"true\"}";
-    _statusCode = 200;
+    _response.setStatusCode(200);
   }
   return body;
 }
@@ -359,7 +357,7 @@ void Cluster::_isDirectory(int idxServer)
   _nowLocation = _serverInfos[idxServer].getLocationsFind(_request.getPath());
   if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
   {
-    _statusCode = 400;
+    _response.setStatusCode(400);
     return;
   }
   std::vector<std::string> allowMethods = _nowLocation.getAllowMethod();
@@ -371,9 +369,9 @@ void Cluster::_isDirectory(int idxServer)
   }
   if (!isAllowMethod)
 	{
-		_statusCode = 405;
+		_response.setStatusCode(405);
 		if (!_request.getMethod().compare("GET"))
-			_statusCode = 404;
+			_response.setStatusCode(404);
 	}
   else
   {
@@ -383,12 +381,12 @@ void Cluster::_isDirectory(int idxServer)
       if (tmp != "")
       {
         _body = tmp;
-        _statusCode = 200;
+        _response.setStatusCode(200);
       }
     }
     std::vector<std::string> indexList = _nowLocation.getIndexList();
     if (_nowLocation.getRedirectionCode() >= 300 && _nowLocation.getRedirectionCode() < 400)
-      _statusCode = _nowLocation.getRedirectionCode();
+      _response.setStatusCode(_nowLocation.getRedirectionCode());
     else if (indexList.size() > 0 && !_nowLocation.getAutoIndex())
     {
       _isFile = "";
@@ -401,9 +399,7 @@ void Cluster::_isDirectory(int idxServer)
 
 void Cluster::_clear()
 {
-  _clientReq = "";
   _body = "";
   _lastResponse = "";
   _isFile = "";
-  _statusCode = 500;
 }

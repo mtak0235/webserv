@@ -1,0 +1,21 @@
+COMMAND   PID USER   FD     TYPE             DEVICE  SIZE/OFF                NODE NAME
+webserv 16864 mtak  cwd      DIR                1,9       748             2191957 /Users/mtak/Desktop/webserv
+webserv 16864 mtak  txt      REG                1,9   1790856             2200696 webserv
+webserv 16864 mtak  txt      REG                1,4   3157888             1070894 /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/lib/darwin/libclang_rt.asan_osx_dynamic.dylib
+webserv 16864 mtak  txt      REG                1,4   1572480 1152921500312662030 /usr/lib/dyld
+webserv 16864 mtak    0u     CHR               16,0 0x797f64f                 755 /dev/ttys000
+webserv 16864 mtak    1u     CHR               16,0 0x797f64f                 755 /dev/ttys000
+webserv 16864 mtak    2u     CHR               16,0 0x797f64f                 755 /dev/ttys000
+webserv 16864 mtak    3u    IPv4 0x20501281a6d2fecb       0t0                 TCP *:8003 (LISTEN)
+webserv 16864 mtak    4u  KQUEUE                                                  count=0, state=0xa
+webserv 16864 mtak    5u    unix 0x205012819d6506c3       0t0                     ->0x205012819d64e20b
+webserv 16864 mtak   11r     REG                1,4  10221472           146452071 /Applications/Visual Studio Code 2.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/icudtl.dat
+webserv 16864 mtak   12r     REG                1,4   1011280           146452130 /Applications/Visual Studio Code 2.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/v8_context_snapshot.bin
+webserv 16864 mtak   13r     REG                1,4    125011           146452094 /Applications/Visual Studio Code 2.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/natives_blob.bin
+webserv 16864 mtak   14r     REG                1,4    137389           146452032 /Applications/Visual Studio Code 2.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/chrome_100_percent.pak
+webserv 16864 mtak   15r     REG                1,4    209957           146452033 /Applications/Visual Studio Code 2.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/chrome_200_percent.pak
+webserv 16864 mtak   16r     REG                1,4     58911           146452044 /Applications/Visual Studio Code 2.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/en.lproj/locale.pak
+webserv 16864 mtak   17r     REG                1,4   8670871           146452105 /Applications/Visual Studio Code 2.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Resources/resources.pak
+webserv 16864 mtak   25u    unix 0x205012819d64e5f3       0t0                     ->0x205012819d64e2d3
+webserv 16864 mtak   26r     REG                1,4    287444           146453956 /Applications/Visual Studio Code 2.app/Contents/Resources/electron.asar
+webserv 16864 mtak   27r     REG                1,4  21842656           146453659 /Applications/Visual Studio Code 2.app/Contents/Resources/app/node_modules.asar

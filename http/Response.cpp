@@ -3,13 +3,12 @@
 const std::string Response::_httpVersion = "1.1";
 
 Response::Response()
-    : _statusCode(0), _statusMsg("") /*, _contentLength(0)*/
 {
+  _statusCode = 0;
+  _statusMsg = "";
 }
 
-Response::~Response()
-{
-}
+Response::~Response() { }
 
 std::string Response::makeResponse(const std::string& body)
 {

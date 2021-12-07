@@ -1,6 +1,7 @@
 #include "Cluster.hpp"
 
-Cluster::Cluster(const std::string& configFile) {
+Cluster::Cluster(const std::string& configFile)
+{
   _configFile = configFile;
   _body = "";
   _lastResponse = "";
@@ -9,6 +10,45 @@ Cluster::Cluster(const std::string& configFile) {
 }
 
 Cluster::~Cluster() { }
+
+int Cluster::init(void)
+{
+  _makeStatusMap();
+  if (_makeServerInfo(_configFile) == FAIL)
+    return FAIL;
+  if (_makeConnection() == FAIL)
+    return FAIL;
+  if (_makeKqueue() == FAIL)
+    return FAIL;
+  return SUCCESS;
+}
+
+int Cluster::run(void)
+{
+  _makeServerSocketList();
+  while (true) {
+    if (_handleKqueueEvents(_serverInfos.size(), _ServerSocketList) == FAIL)
+    {
+      closeAllConnection();
+      return FAIL;
+    }
+  }
+  return SUCCESS;
+}
+
+int Cluster::closeAllConnection(void)
+{
+  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++)
+    _connector.disconnect(idxServer);
+  return SUCCESS;
+}
+
+void Cluster::_clear()
+{
+  _body = "";
+  _lastResponse = "";
+  _isFile = "";
+}
 
 void Cluster::_makeStatusMap(void)
 {
@@ -22,8 +62,10 @@ void Cluster::_makeStatusMap(void)
   _statusMap[500] = "Internal Cluster Error";
 }
 
-int Cluster::_makeServerInfo(const std::string& configFile) {
-  if (_parser.parse(configFile) == FAIL) {
+int Cluster::_makeServerInfo(const std::string& configFile)
+{
+  if (_parser.parse(configFile) == FAIL)
+  {
     Debug::log("No correct config file");
     return FAIL;
   }
@@ -31,10 +73,48 @@ int Cluster::_makeServerInfo(const std::string& configFile) {
   return SUCCESS;
 }
 
+void Cluster::_makeServerSocketList(void)
+{
+  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++)
+    _ServerSocketList.push_back(_connector.getSockFd(idxServer));
+}
+
+int Cluster::_makeConnection(void)
+{
+  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++)
+  {
+    if (_connector.connect(_serverInfos[idxServer].getServerPort(), idxServer) == FAIL)
+    {
+      closeAllConnection();
+      return FAIL;
+    }
+  }
+  return SUCCESS;
+}
+
+void Cluster::_disconnectClient(int clientFd, std::map<int, std::string>& clientsMap)
+{
+  close(clientFd);
+  clientsMap.erase(clientFd);
+}
+
+void Cluster::_acceptNewClient(int servSock)
+{
+  int cliSock = 0;
+  if ((cliSock = accept(servSock, NULL, NULL)) == -1)
+    Debug::log("accept Error");
+
+  fcntl(cliSock, F_SETFL, O_NONBLOCK);
+  _changeEvents(_changeList, cliSock, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+  _clientsReqMap[cliSock] = "";
+}
+
+
 int Cluster::_makeKqueue(void)
 {
   _fdEventQueue = kqueue();
-  if (_fdEventQueue == -1) {
+  if (_fdEventQueue == -1)
+  {
     Debug::log("kqueue() error");
     closeAllConnection();
     return FAIL;
@@ -46,53 +126,20 @@ int Cluster::_makeKqueue(void)
 
 void Cluster::_changeEvents(std::vector<struct kevent>& changeList,
                              uintptr_t ident, int16_t filter, uint16_t flags,
-                             uint32_t fflags, intptr_t data, void *udata) {
+                             uint32_t fflags, intptr_t data, void *udata)
+{
   struct kevent tempEvent;
   EV_SET(&tempEvent, ident, filter, flags, fflags, data, udata);
   changeList.push_back(tempEvent);
 }
 
-int Cluster::_makeConnection(void) {
-  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++) {
-    if (_connector.connect(_serverInfos[idxServer].getServerPort(), idxServer) == FAIL) {
-      closeAllConnection();
-      return FAIL;
-    }
-  }
-  return SUCCESS;
-}
-
-int Cluster::init(void) {
-  _makeStatusMap();
-  if (_makeServerInfo(_configFile) == FAIL)
-    return FAIL;
-  if (_makeConnection() == FAIL)
-    return FAIL;
-  if (_makeKqueue() == FAIL)
-    return FAIL;
-  return SUCCESS;
-}
-
-void Cluster::_makeServerSocketList(void) {
-  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++)
-    _ServerSocketList.push_back(_connector.getSockFd(idxServer));
-}
-
-int Cluster::run(void) {
-  _makeServerSocketList();
-  while (true) {
-    if (_handleKqueueEvents(_serverInfos.size(), _ServerSocketList) == FAIL) {
-      closeAllConnection();
-      return FAIL;
-    }
-  }
-  return SUCCESS;
-}
-
-int Cluster::_monitorEvents(int cntServer) {
-  for (int idxServer = 0; idxServer < cntServer; idxServer++) {
+int Cluster::_monitorEvents(int cntServer)
+{
+  for (int idxServer = 0; idxServer < cntServer; idxServer++)
+  {
     _fdOccuredEnvent[idxServer] = kevent(_fdEventQueue, &_changeList[idxServer], _changeList.size(), _eventList, 1024, NULL);
-    if (_fdOccuredEnvent[idxServer] == -1) {
+    if (_fdOccuredEnvent[idxServer] == -1)
+    {
       Debug::log("kevent error");
       return FAIL;
     }
@@ -101,25 +148,32 @@ int Cluster::_monitorEvents(int cntServer) {
   return SUCCESS;
 }
 
-int Cluster::_handleKqueueEvents(int cntServer, const std::vector<int>& serverSocketList) {
+int Cluster::_handleKqueueEvents(int cntServer, const std::vector<int>& serverSocketList)
+{
   if (_monitorEvents(cntServer) == FAIL)
     return FAIL;
-  for (int idxServer = 0; idxServer < cntServer; idxServer++) {
-    for (int idxEvents = 0; idxEvents < _fdOccuredEnvent[idxServer]; ++idxEvents) {
+  for (int idxServer = 0; idxServer < cntServer; idxServer++)
+  {
+    for (int idxEvents = 0; idxEvents < _fdOccuredEnvent[idxServer]; ++idxEvents)
+    {
       _currEvent = &_eventList[idxEvents];
-      if (_currEvent->flags & EV_ERROR) {
-        if (_currEvent->ident == (uintptr_t)serverSocketList[idxServer]) {
+      if (_currEvent->flags & EV_ERROR)
+      {
+        if (_currEvent->ident == (uintptr_t)serverSocketList[idxServer])
+        {
           Debug::log("socket error");
           return FAIL;
         } else
           _disconnectClient(_currEvent->ident, _clientsReqMap);
-      } else if (_currEvent->filter == EVFILT_READ) {
+      }
+      else if (_currEvent->filter == EVFILT_READ)
+      {
         if (_currEvent->ident == (uintptr_t)serverSocketList[idxServer])
           _acceptNewClient(serverSocketList[idxServer]);
-        else if (_clientsReqMap.find(_currEvent->ident)!= _clientsReqMap.end()) {
-          if (_recvDataFromClient(idxServer) == FAIL) {
+        else if (_clientsReqMap.find(_currEvent->ident)!= _clientsReqMap.end())
+        {
+          if (_recvDataFromClient(idxServer) == FAIL)
             return FAIL;
-          }
         }
       }
     }
@@ -127,17 +181,8 @@ int Cluster::_handleKqueueEvents(int cntServer, const std::vector<int>& serverSo
   return SUCCESS;
 }
 
-void Cluster::_acceptNewClient(int servSock) {
-  int cliSock = 0;
-  if ((cliSock = accept(servSock, NULL, NULL)) == -1)
-    Debug::log("accept Error");
-  
-  fcntl(cliSock, F_SETFL, O_NONBLOCK);
-  _changeEvents(_changeList, cliSock, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-  _clientsReqMap[cliSock] = "";
-}
-
-bool Cluster::_isRequestRemained(const std::string& cliReq) const {
+bool Cluster::_isRequestRemained(const std::string& cliReq) const
+{
   size_t lenReq = cliReq.length();
   if (cliReq[lenReq - 2] != '\r' && cliReq[lenReq - 1] != '\n')
     return true;
@@ -149,7 +194,7 @@ int Cluster::_recvDataFromClient(int idxServer)
   char buff[BUFF_SIZE];
   memset(buff, '\0', BUFF_SIZE);
   ssize_t readDataBytes = recv(_currEvent->ident, buff, _currEvent->data, MSG_DONTWAIT);
-  
+
   if (readDataBytes == -1)
   {
     std::cout << strerror(errno) << "\n";
@@ -171,7 +216,8 @@ int Cluster::_recvDataFromClient(int idxServer)
   return SUCCESS;
 }
 
-int Cluster::_responseDatatoServer(int idxServer, char* buff) {
+int Cluster::_responseDatatoServer(int idxServer, char* buff)
+{
   std::string cliReq = _clientsReqMap[_currEvent->ident];
 	// std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << cliReq << std::endl;
   if (cliReq != "") {
@@ -215,16 +261,6 @@ int Cluster::_responseDatatoServer(int idxServer, char* buff) {
   return FAIL;
 }
 
-
-
-
-
-
-
-
-
-
-
 int Cluster::_fileJudge(int idxServer)
 {
   size_t idxLastDot = _request.getPath().find_last_of(".");
@@ -264,18 +300,8 @@ int Cluster::_fileJudge(int idxServer)
   return FAIL;
 }
 
-void Cluster::_disconnectClient(int clientFd, std::map<int, std::string>& clientsMap) {
-  close(clientFd);
-  clientsMap.erase(clientFd);
-}
-
-int Cluster::closeAllConnection(void) {
-  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++)
-    _connector.disconnect(idxServer);
-  return SUCCESS;
-}
-
-void Cluster::_makeRequestInfo(int idxServer, const std::string& cliReq) {
+void Cluster::_makeRequestInfo(int idxServer, const std::string& cliReq)
+{
   _request.clear();
   _request.setRequest(cliReq);
   if (!_request.getPath().compare("/favicon.ico"))
@@ -312,7 +338,7 @@ std::string Cluster::_setBody(std::string file)
     Debug::log("file open error");
     _response.setStatusCode(404);
   }
-  else 
+  else
   {
     char c;
     while (ifs.get(c))
@@ -426,11 +452,4 @@ void Cluster::_isDirectory(int idxServer)
     else if (indexList.size() == 0)
       _response.setStatusCode(404);
   }
-}
-
-void Cluster::_clear()
-{
-  _body = "";
-  _lastResponse = "";
-  _isFile = "";
 }

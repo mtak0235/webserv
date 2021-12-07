@@ -41,28 +41,35 @@ class Cluster
 
 
   private:
-    int _makeConnection(void);
-    int _makeServerInfo(const std::string& configFIle);
-    int _makeKqueue(void);
-    int _recvDataFromClient(int idxServer);
-    int _handleKqueueEvents(int cntServer, const std::vector<int>& servSock);
-    int _responseDatatoServer(int idxServer, char* buff);
-    int _fileJudge(int idxServer);
-    int _monitorEvents(int cntServer);
+		void _clear(void);
     void _makeStatusMap(void);
+
+    /* connection related */
+    int _makeServerInfo(const std::string& configFIle);
+    void _makeServerSocketList(void);
+    int _makeConnection(void);
+    void _disconnectClient(int clientFd, std::map<int, std::string>& clientsMap);
+    void _acceptNewClient(int servSock);
+
+    /* kqueue related */
+    int _makeKqueue(void);
+    int _handleKqueueEvents(int cntServer, const std::vector<int>& servSock);
+    int _monitorEvents(int cntServer);
     void _changeEvents(std::vector<struct kevent>& changeList, uintptr_t ident,
                       int16_t filter, uint16_t flags, uint32_t fflags,
                       intptr_t data, void *udata);
-    void _makeServerSocketList(void);
-    void _disconnectClient(int clientFd, std::map<int, std::string>& clientsMap);
-    void _acceptNewClient(int servSock);
+
+    /* recieve & response related */
+    int _recvDataFromClient(int idxServer);
+    int _responseDatatoServer(int idxServer, char* buff);
+    bool _isRequestRemained(const std::string& cliReq) const;
     void  _makeRequestInfo(int idxServer, const std::string& cliReq);
     void _setResponse(int idxServer);
+
     std::string _setBody(std::string file);
     std::string _getBody(std::string file, int idxServer);
+    int _fileJudge(int idxServer);
     void _isDirectory(int idxServer);
-    bool _isRequestRemained(const std::string& cliReq) const;
-		void _clear();
 
 
   private:

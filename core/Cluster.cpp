@@ -156,7 +156,8 @@ int Cluster::_recvDataFromClient(int idxServer)
     return SUCCESS;
   }
   else if (readDataBytes >= 0) {
-    _clientsReqMap[_currEvent->ident] += buff;
+    for (ssize_t i = 0; i < readDataBytes; i++)
+      _clientsReqMap[_currEvent->ident].push_back(buff[i]);
     memset(buff, '\0', BUFF_SIZE);
     if (_isRequestRemained(_clientsReqMap[_currEvent->ident]))
       return SUCCESS;
@@ -173,12 +174,12 @@ int Cluster::_recvDataFromClient(int idxServer)
 
 int Cluster::_responseDatatoServer(int idxServer, char* buff) {
   std::string cliReq = _clientsReqMap[_currEvent->ident];
-	// std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << cliReq << std::endl;
+	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << cliReq << std::endl;
   if (cliReq != "") {
     _response.setStatusCode(500);
     _makeRequestInfo(idxServer, cliReq);
     _setResponse(idxServer);
-		// std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << "\n";
+		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << "\n";
     // size_t sendBytes = 0;
     // sendBytes = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTWAIT);
     // if (sendBytes  < 0) {

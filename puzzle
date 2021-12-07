@@ -1,0 +1,91 @@
+int Server::_fileJudge(int k)
+{
+  _found = _requestPath.find_last_of(".");
+  if (_found == std::string::npos)
+    return NGX_FAIL;
+  _isFile = _requestPath.substr(_found + 1);
+  int slashCnt = 0;
+  for (unsigned long i = 0; i < _requestPath.size(); i++)
+  {
+    if (_requestPath[i] == '/')
+      slashCnt += 1;
+  }
+  int cnt = 0;
+  std::string getPath = "";
+  for (unsigned long i = 0; i < _requestPath.size(); i++)
+  {
+    getPath += _requestPath[i];
+    if (_requestPath[i] == '/')
+      cnt += 1;
+    if (cnt == slashCnt)
+      break;
+  }
+  if (getPath.size() != 1 && getPath[getPath.size() - 1] == '/')
+    getPath.pop_back();
+  _nowLocation = _serverConfigs[k].getLocationsFind(getPath);
+  if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
+  {
+    _statusCode = 400;
+    return NGX_FAIL;
+  }
+  _body = "";
+  if (_isFile != "")
+  {
+    _body = _getBody(_requestPath.substr(1), k);
+    return NGX_OK;
+  }
+  return NGX_FAIL;
+}
+
+std::string Server::_getBody(std::string file, int k)
+{
+  std::string body;
+  std::string root;
+  if (!_nowLocation.getRoot().compare(""))
+    root = "./YoupiBanane/";
+  else
+    root = _nowLocation.getRoot() + "/";
+  std::string rootPulsFile = root + file;
+  if (!_requestMethod.compare("GET"))
+  {
+    if (!_isFile.compare(_nowLocation.getCgiName()))
+    {
+      _cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
+      _cgi.getCgiResponseHeader();
+      body = _cgi.getCgiResponseBody();
+      _statusCode = _cgi.getStatusCode();
+    }
+    else if (_isFile != "")
+      body = _setBody(rootPulsFile);
+    else
+      _statusCode = 403;
+  }
+  else if (!_requestMethod.compare("POST"))
+  {
+    if (!_isFile.compare(_nowLocation.getCgiName()))
+    {
+      std::vector<FileInfo> v = _request.getFileInfo();
+      for (unsigned long i = 0; i < v.size(); i++)
+      {
+        std::ofstream ofs;
+        std::string filePath = _nowLocation.getUploadFolder() + v[i].fileName;
+        ofs.open(filePath);
+        ofs.write(v[0].data.c_str(), v[i].data.size());
+        ofs.close();
+      }
+      _cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
+      _cgi.getCgiResponseHeader();
+      body = _cgi.getCgiResponseBody();
+      _statusCode = _cgi.getStatusCode();
+    }
+    else
+      _statusCode = 403;
+  }
+  else if (!_requestMethod.compare("DELETE"))
+  {
+    _serverConfigs[k].eraseLocation(_requestPath);
+    body = "{\"success\":\"true\"}";
+    _statusCode = 200;
+  }
+  return body;
+}

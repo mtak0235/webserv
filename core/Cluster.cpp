@@ -254,10 +254,11 @@ void Cluster::_makeRequestInfo(int idxServer, const std::string& cliReq) {
   _request.setRequest(cliReq);
   if (!_request.getPath().compare("/favicon.ico"))
     _request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-  const int statusCode = _response.getStatusCode();
+  // const int statusCode = _response.getStatusCode();
   if (_fileJudge(idxServer) == SUCCESS && _response.getStatusCode() == 200)
     return;
   _isDirectory(idxServer);
+  int statusCode = _response.getStatusCode();
   if (statusCode == 400 || statusCode == 403 || statusCode == 404 || statusCode == 405)
   {
     int temp = statusCode;
@@ -284,7 +285,9 @@ std::string Cluster::_setBody(std::string file)
   if (!ifs) {
     Debug::log("file open error");
     _response.setStatusCode(404);
-  } else {
+  }
+  else 
+  {
     char c;
     while (ifs.get(c))
       body += c;

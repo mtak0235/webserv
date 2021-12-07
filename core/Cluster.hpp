@@ -46,22 +46,16 @@ class Cluster
     int _makeKqueue(void);
     int _recvDataFromClient(int idxServer);
     int _handleKqueueEvents(int cntServer, const std::vector<int>& servSock);
-    int _responseDatatoServer(int idxServer);
+    int _responseDatatoServer(int idxServer, char* buff);
     int _fileJudge(int idxServer);
     int _monitorEvents(int cntServer);
-
-
     void _makeStatusMap(void);
     void _changeEvents(std::vector<struct kevent>& changeList, uintptr_t ident,
                       int16_t filter, uint16_t flags, uint32_t fflags,
                       intptr_t data, void *udata);
     void _makeServerSocketList(void);
-
-
-
     void _disconnectClient(int clientFd, std::map<int, std::string>& clientsMap);
     void _acceptNewClient(int servSock);
-
     void  _makeRequestInfo(int idxServer);
     void _setResponse(int idxServer);
     std::string _setBody(std::string file);
@@ -79,9 +73,10 @@ class Cluster
     Response _response;
     Cgi _cgi;
     LocationConfig _nowLocation;
+
+    std::map<int, std::string> _statusMap;
     std::vector<ServerConfig> _serverInfos;
     std::vector<int> _ServerSocketList;
-    std::map<int, std::string> _statusMap;
 
     struct kevent* _currEvent;
     int _fdEventQueue;
@@ -99,15 +94,8 @@ class Cluster
     std::string _requestMethod;
     std::string _requestPath;
     std::string _isFile;
-    size_t _cntServer;
 
-    char _buf[BUFF_SIZE];
-    char _c;
-    bool _isAllow;
-    size_t _found;
-    int _readDataSize;
     int _statusCode;
-    int _n;
 };
 
 #endif

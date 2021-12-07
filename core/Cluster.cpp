@@ -2,7 +2,6 @@
 
 Cluster::Cluster(const std::string& configFile) {
   _makeStatusMap();
-  _cntServer = 0;
   _configFile = configFile;
   _clientReq = "";
   _body = "";
@@ -11,12 +10,7 @@ Cluster::Cluster(const std::string& configFile) {
   _requestPath = "";
   _isFile = "";
 
-  _c = 0;
-  _isAllow = false;
-  _found = 0;
-  _readDataSize = 0;
   _statusCode = 500;
-  _n = 0;
 }
 
 Cluster::~Cluster() { }
@@ -39,7 +33,6 @@ int Cluster::_makeServerInfo(const std::string& configFile) {
     return FAIL;
   }
   _serverInfos = _parser.getServerConfig();
-  _cntServer = _serverInfos.size();
   return SUCCESS;
 }
 
@@ -51,7 +44,7 @@ int Cluster::_makeKqueue(void)
     closeAllConnection();
     return FAIL;
   }
-  for (size_t idxServer = 0; idxServer < _cntServer; idxServer++)
+  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++)
     _changeEvents(_changeList, _connector.getSockFd(idxServer), EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
   return SUCCESS;
 }
@@ -65,7 +58,7 @@ void Cluster::_changeEvents(std::vector<struct kevent>& changeList,
 }
 
 int Cluster::_makeConnection(void) {
-  for (size_t idxServer = 0; idxServer < _cntServer; idxServer++) {
+  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++) {
     if (_connector.connect(_serverInfos[idxServer].getServerPort(), idxServer) == FAIL) {
       closeAllConnection();
       return FAIL;
@@ -86,14 +79,14 @@ int Cluster::init(void) {
 }
 
 void Cluster::_makeServerSocketList(void) {
-  for (size_t idxServer = 0; idxServer < _cntServer; idxServer++)
+  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++)
     _ServerSocketList.push_back(_connector.getSockFd(idxServer));
 }
 
 int Cluster::run(void) {
   _makeServerSocketList();
   while (true) {
-    if (_handleKqueueEvents(_cntServer, _ServerSocketList) == FAIL) {
+    if (_handleKqueueEvents(_serverInfos.size(), _ServerSocketList) == FAIL) {
       closeAllConnection();
       return FAIL;
     }
@@ -157,13 +150,14 @@ bool Cluster::_isRequestRemained(const std::string& cliReq) const {
 
 int Cluster::_recvDataFromClient(int idxServer)
 {
-  memset(_buf, '\0', BUFF_SIZE);
-  _readDataSize = recv(_currEvent->ident, _buf, _currEvent->data, MSG_DONTWAIT);
-  if (_readDataSize == -1)
+  char buff[BUFF_SIZE];
+  memset(buff, '\0', BUFF_SIZE);
+  ssize_t readDataBytes = recv(_currEvent->ident, buff, _currEvent->data, MSG_DONTWAIT);
+  if (readDataBytes == -1)
     return SUCCESS;
-  else if (_readDataSize >= 0) {
-    _clientsMap[_currEvent->ident] += _buf;
-    memset(_buf, '\0', BUFF_SIZE);
+  else if (readDataBytes >= 0) {
+    _clientsMap[_currEvent->ident] += buff;
+    memset(buff, '\0', BUFF_SIZE);
     if (_isRequestRemained(_clientsMap[_currEvent->ident]))
       return SUCCESS;
   }
@@ -171,13 +165,13 @@ int Cluster::_recvDataFromClient(int idxServer)
     Debug::log("client read error");
     _disconnectClient(_currEvent->ident, _clientsMap);
   }
-  if (_responseDatatoServer(idxServer) == FAIL) {
+  if (_responseDatatoServer(idxServer, buff) == FAIL) {
     return FAIL;
   }
   return SUCCESS;
 }
 
-int Cluster::_responseDatatoServer(int idxServer) {
+int Cluster::_responseDatatoServer(int idxServer, char* buff) {
   _clientReq = _clientsMap[_currEvent->ident];
 	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << _clientReq << std::endl;
   if (_clientReq != "") {
@@ -185,13 +179,14 @@ int Cluster::_responseDatatoServer(int idxServer) {
     _makeRequestInfo(idxServer);
     _setResponse(idxServer);
 		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << "\n";
-    if ((_n = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTWAIT) == -1)) {
+    size_t sendBytes = 0;
+    if ((sendBytes = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTWAIT) == -1)) {
       std::cerr << "client write error!" << std::endl;
       _disconnectClient(_currEvent->ident, _clientsMap);
     } else {
       _clientsMap[_currEvent->ident].clear();
-      read(_currEvent->ident, _buf, BUFF_SIZE);
-      memset(_buf, 0, sizeof(_buf));
+      read(_currEvent->ident, buff, BUFF_SIZE);
+      memset(buff, 0, BUFF_SIZE);
     }
 		_disconnectClient(_currEvent->ident, _clientsMap);
     return SUCCESS;
@@ -211,10 +206,10 @@ int Cluster::_responseDatatoServer(int idxServer) {
 
 int Cluster::_fileJudge(int idxServer)
 {
-  _found = _requestPath.find_last_of(".");
-  if (_found == std::string::npos)
+  size_t idxLastDot = _requestPath.find_last_of(".");
+  if (idxLastDot == std::string::npos)
     return FAIL;
-  _isFile = _requestPath.substr(_found + 1);
+  _isFile = _requestPath.substr(idxLastDot + 1);
   int slashCnt = 0;
   for (unsigned long i = 0; i < _requestPath.size(); i++)
   {
@@ -254,7 +249,7 @@ void Cluster::_disconnectClient(int clientFd, std::map<int, std::string>& client
 }
 
 int Cluster::closeAllConnection(void) {
-  for (size_t idxServer = 0; idxServer < _cntServer; idxServer++)
+  for (size_t idxServer = 0; idxServer < _serverInfos.size(); idxServer++)
     _connector.disconnect(idxServer);
   return SUCCESS;
 }
@@ -297,8 +292,9 @@ std::string Cluster::_setBody(std::string file)
     Debug::log("file open error");
     _statusCode = 404;
   } else {
-    while (ifs.get(_c))
-      body += _c;
+    char c;
+    while (ifs.get(c))
+      body += c;
     _statusCode = 200;
   }
   ifs.close();
@@ -369,13 +365,13 @@ void Cluster::_isDirectory(int idxServer)
     return;
   }
   _allowMethods = _nowLocation.getAllowMethod();
-  _isAllow = false;
+  bool isAllowMethod = false;
   for (unsigned long i = 0; i < _allowMethods.size(); i++)
   {
     if (!_allowMethods[i].compare(_requestMethod))
-      _isAllow = true;
+      isAllowMethod = true;
   }
-  if (!_isAllow)
+  if (!isAllowMethod)
 	{
 		_statusCode = 405;
 		if (!_requestMethod.compare("GET"))
@@ -398,9 +394,8 @@ void Cluster::_isDirectory(int idxServer)
     else if (_indexList.size() > 0 && !_nowLocation.getAutoIndex())
     {
       _isFile = "";
-      _found = 0;
-      _found = _indexList[0].find_last_of(".");
-      _isFile = _indexList[0].substr(_found + 1);
+       size_t idxLastDot = _indexList[0].find_last_of(".");
+      _isFile = _indexList[0].substr(idxLastDot + 1);
       _body = _getBody(_indexList[0], idxServer);
     }
   }
@@ -408,18 +403,11 @@ void Cluster::_isDirectory(int idxServer)
 
 void Cluster::_clear()
 {
-  _cntServer = 0;
   _clientReq = "";
   _body = "";
   _lastResponse = "";
   _requestMethod = "";
   _requestPath = "";
   _isFile = "";
-
-  _c = 0;
-  _isAllow = false;
-  _found = 0;
-  _readDataSize = 0;
   _statusCode = 500;
-  _n = 0;
 }

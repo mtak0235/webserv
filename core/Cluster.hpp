@@ -23,7 +23,7 @@
 #include "Response.hpp"
 #include "Request.hpp"
 
-#define BUFF_SIZE 2048
+#define BUFF_SIZE 1048577
 #define SUCCESS 0
 #define FAIL -1
 

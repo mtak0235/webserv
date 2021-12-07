@@ -18,7 +18,6 @@ SRCS = main.cpp \
 	Debug.cpp \
 	Request.cpp \
 	Response.cpp \
-	Formatter.cpp \
 
 
 all: $(DIR_OBJS) $(NAME)

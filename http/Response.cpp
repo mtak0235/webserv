@@ -158,10 +158,42 @@ std::string Response::_makeStatusLine(void)
   return ret;
 }
 
+std::string Response::_getDate(void)
+{
+  std::string ret = "";
+  time_t timer = time(NULL);
+  struct tm* t = localtime(&timer);
+  const std::string wday[7] = {"Sun", "Mon", "Tue", "Wed", "Thur",
+                               "Fri", "Sat"};
+  ret += wday[t->tm_wday] + ", ";
+  ret += _makeFormatedNum(t->tm_mday) + " ";
+  const std::string wmon[12] = {"Jan", "Feb", "Mar", "Apr", "May",
+                                "Jun", "Jul", "Aug", "Sep", "Oct",
+                                "Nov", "Dec"};
+  ret += (wmon[t->tm_mon] + " ");
+  ret += _makeFormatedNum(t->tm_year + 1900) + " ";
+  ret += _makeFormatedNum(t->tm_hour) + ":";
+  ret += _makeFormatedNum(t->tm_min) + ":";
+  ret += _makeFormatedNum(t->tm_sec) + " GMT\n";
+  return ret;
+}
+
+std::string Response::_makeFormatedNum(const int& num)
+{
+  std::string ret = "";
+  if (num < 10) ret += "0";
+  std::stringstream ss;
+  ss << num;
+  std::string str;
+  ss >> str;
+  ret += str;
+  return ret;
+}
+
 std::string Response::_makeHeader(void)
 {
   std::string ret;
-  ret += ("Date: " + Formatter::getDate());
+  ret += ("Date: " + _getDate());
   ret += _makeServerInfo();
   ret += _makeLocation();
   return ret;

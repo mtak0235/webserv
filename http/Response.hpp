@@ -12,8 +12,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "../core/Formatter.hpp"
-
 class Response
 {
   public:
@@ -44,11 +42,9 @@ class Response
     std::string _location;
     std::string _serverName;
 
-    /* private static function */
-    static std::string _getFormattedNum(const int& num);
-    static std::string _getDate(void);
-
     /* private functions */
+    std::string _makeFormatedNum(const int& num);
+    std::string _getDate(void);
     std::string _makeStatusLine(void);
     std::string _makeHeader(void);
     std::string _makeLocation(void);

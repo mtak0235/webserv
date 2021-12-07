@@ -10,8 +10,8 @@
 #include "Debug.hpp"
 #include "Config.hpp"
 
-# define PARSE_FAIL -1 // core.hpp 삭제하면서 ngx_OK 랑 중복 define 이라 이름 바꿈
-# define PARSE_OK 0  // core.hpp 파일은 내용이 ngx_ok 랑 ngx_fail 만 있었어서 지움
+# define PARSE_FAIL -1
+# define PARSE_OK 0
 
 class Parser
 {

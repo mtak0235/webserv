@@ -54,6 +54,7 @@ class Request
     void setRequest(const std::string& r);
     std::string getMethod(void) const;
     std::string getPath(void) const;
+    void setPath(const std::string& path);
     std::string getHttpVersion(void) const;
     std::string getHeaderInfo(const HEADER_INFO& i) const;
     std::string getBody(void) const;

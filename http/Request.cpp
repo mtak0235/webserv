@@ -43,6 +43,10 @@ std::string Request::getPath(void) const
   return _path;
 }
 
+void Request::setPath(const std::string& path) {
+  _path = path;
+}
+
 std::string Request::getHttpVersion(void) const
 {
   return _httpVersion;

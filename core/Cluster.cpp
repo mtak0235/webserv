@@ -1,13 +1,10 @@
 #include "Cluster.hpp"
 
 Cluster::Cluster(const std::string& configFile) {
-  _makeStatusMap();
   _configFile = configFile;
   _clientReq = "";
   _body = "";
   _lastResponse = "";
-  _requestMethod = "";
-  _requestPath = "";
   _isFile = "";
 
   _statusCode = 500;
@@ -206,22 +203,22 @@ int Cluster::_responseDatatoServer(int idxServer, char* buff) {
 
 int Cluster::_fileJudge(int idxServer)
 {
-  size_t idxLastDot = _requestPath.find_last_of(".");
+  size_t idxLastDot = _request.getPath().find_last_of(".");
   if (idxLastDot == std::string::npos)
     return FAIL;
-  _isFile = _requestPath.substr(idxLastDot + 1);
+  _isFile = _request.getPath().substr(idxLastDot + 1);
   int slashCnt = 0;
-  for (unsigned long i = 0; i < _requestPath.size(); i++)
+  for (unsigned long i = 0; i < _request.getPath().size(); i++)
   {
-    if (_requestPath[i] == '/')
+    if (_request.getPath()[i] == '/')
       slashCnt += 1;
   }
   int cnt = 0;
   std::string getPath = "";
-  for (unsigned long i = 0; i < _requestPath.size(); i++)
+  for (unsigned long i = 0; i < _request.getPath().size(); i++)
   {
-    getPath += _requestPath[i];
-    if (_requestPath[i] == '/')
+    getPath += _request.getPath()[i];
+    if (_request.getPath()[i] == '/')
       cnt += 1;
     if (cnt == slashCnt)
       break;
@@ -237,7 +234,7 @@ int Cluster::_fileJudge(int idxServer)
   _body = "";
   if (_isFile != "")
   {
-    _body = _getBody(_requestPath.substr(1), idxServer);
+    _body = _getBody(_request.getPath().substr(1), idxServer);
     return SUCCESS;
   }
   return FAIL;
@@ -259,8 +256,6 @@ void Cluster::_makeRequestInfo(int idxServer) {
   _request.setRequest(_clientReq);
   if (!_request.getPath().compare("/favicon.ico"))
     _request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-  _requestPath = _request.getPath();
-  _requestMethod = _request.getMethod();
   if (_fileJudge(idxServer) == SUCCESS && _statusCode == 200)
     return;
   _isDirectory(idxServer);
@@ -310,7 +305,7 @@ std::string Cluster::_getBody(std::string file, int idxServer)
   else
     root = _nowLocation.getRoot() + "/";
   std::string rootPulsFile = root + file;
-  if (!_requestMethod.compare("GET"))
+  if (!_request.getMethod().compare("GET"))
   {
     if (!_isFile.compare(_nowLocation.getCgiName()))
     {
@@ -324,7 +319,7 @@ std::string Cluster::_getBody(std::string file, int idxServer)
     else
       _statusCode = 403;
   }
-  else if (!_requestMethod.compare("POST"))
+  else if (!_request.getMethod().compare("POST"))
   {
     if (!_isFile.compare(_nowLocation.getCgiName()))
     {
@@ -345,9 +340,9 @@ std::string Cluster::_getBody(std::string file, int idxServer)
     else
       _statusCode = 403;
   }
-  else if (!_requestMethod.compare("DELETE"))
+  else if (!_request.getMethod().compare("DELETE"))
   {
-    _serverInfos[idxServer].eraseLocation(_requestPath);
+    _serverInfos[idxServer].eraseLocation(_request.getPath());
     body = "{\"success\":\"true\"}";
     _statusCode = 200;
   }
@@ -356,25 +351,28 @@ std::string Cluster::_getBody(std::string file, int idxServer)
 
 void Cluster::_isDirectory(int idxServer)
 {
-  if (_requestPath.size() != 1 && _requestPath.back() == '/')
-    _requestPath.pop_back();
-  _nowLocation = _serverInfos[idxServer].getLocationsFind(_requestPath);
+  if (_request.getPath().size() != 1 && _request.getPath().back() == '/') {
+    std::string temp = _request.getPath();
+    temp.pop_back();
+    _request.setPath(temp);
+  }
+  _nowLocation = _serverInfos[idxServer].getLocationsFind(_request.getPath());
   if ((int)_request.getBody().size() > _nowLocation.getCliBodySize())
   {
     _statusCode = 400;
     return;
   }
-  _allowMethods = _nowLocation.getAllowMethod();
+  std::vector<std::string> allowMethods = _nowLocation.getAllowMethod();
   bool isAllowMethod = false;
-  for (unsigned long i = 0; i < _allowMethods.size(); i++)
+  for (unsigned long i = 0; i < allowMethods.size(); i++)
   {
-    if (!_allowMethods[i].compare(_requestMethod))
+    if (!allowMethods[i].compare(_request.getMethod()))
       isAllowMethod = true;
   }
   if (!isAllowMethod)
 	{
 		_statusCode = 405;
-		if (!_requestMethod.compare("GET"))
+		if (!_request.getMethod().compare("GET"))
 			_statusCode = 404;
 	}
   else
@@ -388,15 +386,15 @@ void Cluster::_isDirectory(int idxServer)
         _statusCode = 200;
       }
     }
-    _indexList = _nowLocation.getIndexList();
+    std::vector<std::string> indexList = _nowLocation.getIndexList();
     if (_nowLocation.getRedirectionCode() >= 300 && _nowLocation.getRedirectionCode() < 400)
       _statusCode = _nowLocation.getRedirectionCode();
-    else if (_indexList.size() > 0 && !_nowLocation.getAutoIndex())
+    else if (indexList.size() > 0 && !_nowLocation.getAutoIndex())
     {
       _isFile = "";
-       size_t idxLastDot = _indexList[0].find_last_of(".");
-      _isFile = _indexList[0].substr(idxLastDot + 1);
-      _body = _getBody(_indexList[0], idxServer);
+       size_t idxLastDot = indexList[0].find_last_of(".");
+      _isFile = indexList[0].substr(idxLastDot + 1);
+      _body = _getBody(indexList[0], idxServer);
     }
   }
 }
@@ -406,8 +404,6 @@ void Cluster::_clear()
   _clientReq = "";
   _body = "";
   _lastResponse = "";
-  _requestMethod = "";
-  _requestPath = "";
   _isFile = "";
   _statusCode = 500;
 }

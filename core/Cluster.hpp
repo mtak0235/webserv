@@ -85,14 +85,11 @@ class Cluster
     std::vector<struct kevent> _changeList;
     std::map<int, std::string> _clientsMap;
 
-    std::vector<std::string> _allowMethods;
-    std::vector<std::string> _indexList;
     std::string _configFile;
+
     std::string _clientReq;
     std::string _body;
     std::string _lastResponse;
-    std::string _requestMethod;
-    std::string _requestPath;
     std::string _isFile;
 
     int _statusCode;

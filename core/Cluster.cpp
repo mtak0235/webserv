@@ -261,9 +261,9 @@ void Cluster::_makeRequestInfo(int idxServer, const std::string& cliReq) {
   int statusCode = _response.getStatusCode();
   if (statusCode == 400 || statusCode == 403 || statusCode == 404 || statusCode == 405)
   {
-    // int temp = statusCode;
+    int temp = statusCode;
     _body = _setBody("400.html");
-    // _response.setStatusCode(temp);
+    _response.setStatusCode(temp);
   }
 }
 

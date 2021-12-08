@@ -7,6 +7,7 @@ Cluster::Cluster(const std::string& configFile)
   _lastResponse = "";
   _isFile = "";
   _response.setStatusCode(500);
+	memset(_serverCheck, false, sizeof(_serverCheck));
 }
 
 Cluster::~Cluster() { }
@@ -174,8 +175,11 @@ int Cluster::_handleKqueueEvents(int cntServer, const std::vector<int>& serverSo
       else if (_currEvent->filter == EVFILT_READ)
       {
         if (_currEvent->ident == (uintptr_t)serverSocketList[idxServer])
+				{
           _acceptNewClient(serverSocketList[idxServer]);
-        else if (_clientsReqMap.find(_currEvent->ident)!= _clientsReqMap.end())
+					_serverCheck[idxServer] = true;
+				}
+        else if (_clientsReqMap.find(_currEvent->ident)!= _clientsReqMap.end() && _serverCheck[idxServer])
         {
           if (_recvDataFromClient(idxServer) == FAIL)
             return FAIL;
@@ -261,6 +265,7 @@ int Cluster::_responseDatatoServer(int idxServer, char* buff)
 			if (tarTime <= t->tm_min*60 + t->tm_sec) break;
 		}
 		_clientsReqMap[_currEvent->ident].clear();
+		_serverCheck[idxServer] = false;
 		_disconnectClient(_currEvent->ident, _clientsReqMap);
 		memset(buff, 0, BUFF_SIZE);
     return SUCCESS;

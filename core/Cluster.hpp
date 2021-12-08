@@ -49,7 +49,7 @@ class Cluster
     void _makeServerSocketList(void);
     int _makeConnection(void);
     void _disconnectClient(int clientFd, std::map<int, std::string>& clientsMap);
-    void _acceptNewClient(int servSock);
+    void _acceptNewClient(int servSock, int idxServ);
 
     /* kqueue related */
     int _makeKqueue(void);
@@ -81,7 +81,7 @@ class Cluster
     Cgi _cgi;
     LocationConfig _nowLocation;
 
-    std::map<int, std::string> _clientsReqMap;
+    std::map<int, std::string> _clientsReqMap[6];
     std::map<int, std::string> _statusMap;
     std::vector<ServerConfig> _serverInfos;
     std::vector<int> _ServerSocketList;

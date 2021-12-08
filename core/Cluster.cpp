@@ -99,14 +99,14 @@ void Cluster::_disconnectClient(int clientFd, std::map<int, std::string>& client
   clientsMap.erase(clientFd);
 }
 
-void Cluster::_acceptNewClient(int servSock)
+void Cluster::_acceptNewClient(int servSock, int idxServer)
 {
   int cliSock = 0;
   if ((cliSock = accept(servSock, NULL, NULL)) == -1)
     Debug::log("accept Error");
   fcntl(cliSock, F_SETFL, O_NONBLOCK);
   _changeEvents(_changeList, cliSock, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
-  _clientsReqMap[cliSock] = "";
+  _clientsReqMap[idxServer][cliSock] = "";
 }
 
 
@@ -170,16 +170,13 @@ int Cluster::_handleKqueueEvents(int cntServer, const std::vector<int>& serverSo
           Debug::log("socket error");
           return FAIL;
         } else
-          _disconnectClient(_currEvent->ident, _clientsReqMap);
+          _disconnectClient(_currEvent->ident, _clientsReqMap[idxServer]);
       }
       else if (_currEvent->filter == EVFILT_READ)
       {
         if (_currEvent->ident == (uintptr_t)serverSocketList[idxServer])
-				{
-          _acceptNewClient(serverSocketList[idxServer]);
-					_serverCheck[idxServer] = true;
-				}
-        else if (_clientsReqMap.find(_currEvent->ident)!= _clientsReqMap.end() && _serverCheck[idxServer])
+          _acceptNewClient(serverSocketList[idxServer], idxServer);
+        else if (_clientsReqMap[idxServer].find(_currEvent->ident)!= _clientsReqMap[idxServer].end())
         {
           if (_recvDataFromClient(idxServer) == FAIL)
             return FAIL;
@@ -208,15 +205,15 @@ int Cluster::_recvDataFromClient(int idxServer)
     return SUCCESS;
   }
   else if (readDataBytes >= 0) {
-    _clientsReqMap[_currEvent->ident] += buff;
+    _clientsReqMap[idxServer][_currEvent->ident] += buff;
     memset(buff, '\0', BUFF_SIZE);
-    if (_isRequestRemained(_clientsReqMap[_currEvent->ident]))
+    if (_isRequestRemained(_clientsReqMap[idxServer][_currEvent->ident]))
       return SUCCESS;
   }
 
-  if (_clientsReqMap[_currEvent->ident] == "") {
+  if (_clientsReqMap[idxServer][_currEvent->ident] == "") {
     Debug::log("client read error");
-    _disconnectClient(_currEvent->ident, _clientsReqMap);
+    _disconnectClient(_currEvent->ident, _clientsReqMap[idxServer]);
   }
   if (_responseDatatoServer(idxServer, buff) == FAIL) {
     return FAIL;
@@ -226,7 +223,7 @@ int Cluster::_recvDataFromClient(int idxServer)
 
 int Cluster::_responseDatatoServer(int idxServer, char* buff)
 {
-  std::string cliReq = _clientsReqMap[_currEvent->ident];
+  std::string cliReq = _clientsReqMap[idxServer][_currEvent->ident];
 	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << cliReq << std::endl;
   if (cliReq != "") {
     _response.setStatusCode(500);
@@ -264,9 +261,9 @@ int Cluster::_responseDatatoServer(int idxServer, char* buff)
 			// std::cout << "min [" << t->tm_min << "] sec [" << t->tm_sec <<"]\n"; 
 			if (tarTime <= t->tm_min*60 + t->tm_sec) break;
 		}
-		_clientsReqMap[_currEvent->ident].clear();
+		_clientsReqMap[idxServer][_currEvent->ident].clear();
 		_serverCheck[idxServer] = false;
-		_disconnectClient(_currEvent->ident, _clientsReqMap);
+		_disconnectClient(_currEvent->ident, _clientsReqMap[idxServer]);
 		memset(buff, 0, BUFF_SIZE);
     return SUCCESS;
   }

@@ -5,7 +5,9 @@ const std::string Request::_availMethods[AVAIL_M]
 const std::string Request::_availHeaderInfos[AVAIL_H]
     = {"Host:", "User-Agent:", "Accept:", "Accept-Language:",
        "Accept-Encoding:", "Accept-Charset:", "Keep-Alive:",
-       "Connection:", "Content-Type:", "Content-Length:"};
+       "Connection:", "Content-Type:", "Content-Length:",
+       "Content-Range", "Content-Disposition", "Content-Encoding",
+       "Transfer-Encoding", "Last-Modified", "Content-Language"};
 
 Request::Request() { }
 

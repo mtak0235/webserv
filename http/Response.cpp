@@ -6,6 +6,9 @@ Response::Response()
 {
   _statusCode = 0;
   _statusMsg = "";
+  _location = "";
+  _serverName = "";
+  _contentType = "";
 }
 
 Response::~Response() { }
@@ -138,14 +141,64 @@ void Response::setServerName(const std::string& str)
   _serverName = str;
 }
 
-void Response::setContentType(std::string type)
-{
-  _contentType = type;
-}
-
 void Response::setLocation(const std::string& str)
 {
   _location = str;
+}
+
+void Response::setContentType(std::string str)
+{
+  _contentType = str;
+}
+
+void Response::setConnection(std::string str)
+{
+ _connection = str; 
+}
+
+void Response::setContentLength(std::string str)
+{
+ _contentLength = str; 
+}
+
+void Response::setContentLanguage(std::string str)
+{
+  _contentLanguage = str;
+}
+
+void Response::setContentEncoding(std::string str)
+{
+  _contentEncoding = str;
+}
+
+void Response::setContentRange(std::string str)
+{
+  _contentRange = str;
+}
+
+void Response::setContentDisposition(std::string str)
+{
+  _contentDisposition = str;
+}
+
+void Response::setAcceptEncoding(std::string str)
+{
+  _acceptEncoding = str;
+}
+
+void Response::setAcceptLanguage(std::string str)
+{
+  _acceptLanguage = str;
+}
+
+void Response::setLastModified(std::string str)
+{
+  _lastModified = str;
+}
+
+void Response::setTransferEncoding(std::string str)
+{
+  _transferEncoding = str;
 }
 
 std::string Response::_makeStatusLine(void)
@@ -196,6 +249,28 @@ std::string Response::_makeHeader(void)
   ret += ("Date: " + _getDate());
   ret += _makeServerInfo();
   ret += _makeLocation();
+  if (_contentType != "")
+    ret += _makeContentType();
+  if (_connection != "")
+    ret += _makeConnection();
+  if (_contentLanguage != "")
+    ret += _makeContentLanguage();
+  if (_contentLength != "")
+    ret += _makeContentLength();
+  if (_contentEncoding != "")
+    ret += _makeContentEncoding();
+  if (_contentRange != "")
+    ret += _makeContentRange();
+  if (_contentDisposition != "")
+    ret += _makeContentDisposition();
+  if (_acceptEncoding != "")
+    ret += _makeAcceptEncoding();
+  if (_acceptLanguage != "")
+    ret += _makeAcceptLanguage();
+  if (_lastModified != "")
+    ret += _makeLastModified();
+  if (_transferEncoding != "")
+    ret += _makeTransferEncoding();
   return ret;
 }
 
@@ -210,5 +285,102 @@ std::string Response::_makeServerInfo(void)
 {
   std::string ret = "Server: ";
   ret += _serverName + "\n";
+  return ret;
+}
+
+std::string Response::_makeContentType(void)
+{
+  std::string ret = "ContentType: ";
+  ret += _contentType + "\n";
+  return ret;
+}
+
+std::string Response::_makeConnection(void)
+{
+  std::string ret = "Connection: ";
+  _connection.pop_back();
+  _connection.pop_back();
+  ret += _connection + "\n";
+  return ret;
+}
+
+std::string Response::_makeContentLanguage(void)
+{
+  std::string ret = "Content-Language: ";
+  _contentLanguage.pop_back();
+  _contentLanguage.pop_back();
+  ret += _contentLanguage + "\n";
+  return ret;
+}
+
+std::string Response::_makeContentLength(void)
+{
+  std::string ret = "Content-Length: ";
+  _contentLength.pop_back();
+  _contentLength.pop_back();
+  ret += _contentLength + "\n";
+  return ret;
+}
+
+std::string Response::_makeContentEncoding(void)
+{
+  std::string ret = "Content-Encoding: ";
+  _contentEncoding.pop_back();
+  _contentEncoding.pop_back();
+  ret += _contentEncoding + "\n";
+  return ret;
+}
+
+std::string Response::_makeContentRange(void)
+{
+  std::string ret = "Content-Range: ";
+  _contentRange.pop_back();
+  _contentRange.pop_back();
+  ret += _contentRange + "\n";
+  return ret;
+}
+
+std::string Response::_makeContentDisposition(void)
+{
+  std::string ret = "Content-Disposition: ";
+  _contentDisposition.pop_back();
+  _contentDisposition.pop_back();
+  ret += _contentDisposition + "\n";
+  return ret;
+}
+
+std::string Response::_makeAcceptEncoding(void)
+{
+  std::string ret = "Accept-Encoding: ";
+  _acceptEncoding.pop_back();
+  _acceptEncoding.pop_back();
+  ret += _acceptEncoding + "\n";
+  return ret;
+}
+
+std::string Response::_makeAcceptLanguage(void)
+{
+  std::string ret = "Accept-Language: ";
+  _acceptLanguage.pop_back();
+  _acceptLanguage.pop_back();
+  ret += _acceptLanguage + "\n";
+  return ret;
+}
+
+std::string Response::_makeLastModified(void)
+{
+  std::string ret = "Last-Modified: ";
+  _lastModified.pop_back();
+  _lastModified.pop_back();
+  ret += _lastModified + "\n";
+  return ret;
+}
+
+std::string Response::_makeTransferEncoding(void)
+{
+  std::string ret = "Transfer-Encoding: ";
+  _transferEncoding.pop_back();
+  _transferEncoding.pop_back();
+  ret += _transferEncoding + "\n";
   return ret;
 }

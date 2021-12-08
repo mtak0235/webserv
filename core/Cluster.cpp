@@ -331,6 +331,21 @@ void Cluster::_setResponse(int idxServer)
 {
   _response.setServerName(_serverInfos[idxServer].getServerName());
   _response.setStatusMsg(_statusMap[_response.getStatusCode()]);
+  _response.setConnection(_request.getHeaderInfo(Request::CONNECTION));
+  _response.setContentLanguage(_request.getHeaderInfo(Request::CONTENT_LANGUAGE));
+
+  // _response.setContentLength(std::to_string(_body.size()));
+  // _response.setContentEncoding(_request.getHeaderInfo(Request::CONTENT_ENCODING));
+
+  // _response.setContentRange(_request.getHeaderInfo(Request::CONTENT_RANGE));
+  // _response.setContentDisposition(_request.getHeaderInfo(Request::CONTENT_DISPOSITION));
+
+  // // _response.setAcceptEncoding(_request.getHeaderInfo(Request::ACCEPT_ENCODING));
+  // // _response.setAcceptLanguage(_request.getHeaderInfo(Request::ACCEPT_LANGUEAGE));
+
+  // _response.setLastModified(_request.getHeaderInfo(Request::LAST_MODIFIED));
+  // _response.setTransferEncoding(_request.getHeaderInfo(Request::TRANSFER_ENCODING));
+
   if (300 <= _response.getStatusCode() && _response.getStatusCode() < 400)
     _response.setLocation("http://localhost:" + _serverInfos[idxServer].getServerPort() + _nowLocation.getRedirectionAddress());
   _body += "\n";

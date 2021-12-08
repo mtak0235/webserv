@@ -28,8 +28,19 @@ class Response
     void setStatusCode(const int& n);
     void setStatusMsg(const std::string& str);
     void setServerName(const std::string& str);
-    void setContentType(std::string type);
     void setLocation(const std::string& str);
+    void setContentType(std::string str);
+
+    void setConnection(std::string str);
+    void setContentLanguage(std::string str);
+    void setContentLength(std::string str);
+    void setContentEncoding(std::string str);
+    void setContentRange(std::string str);
+    void setContentDisposition(std::string str);
+    void setAcceptEncoding(std::string str);
+    void setAcceptLanguage(std::string str);
+    void setLastModified(std::string str);
+    void setTransferEncoding(std::string str);
 
   private:
     /* private static variable */
@@ -38,9 +49,21 @@ class Response
     /* private variable */
     int _statusCode;
     std::string _statusMsg;
-		std::string _contentType;
     std::string _location;
     std::string _serverName;
+
+		std::string _contentType;
+    std::string _connection;
+    std::string _contentLanguage;
+    std::string _contentLength;
+    std::string _contentEncoding;
+    std::string _contentRange;
+    std::string _contentDisposition;
+    std::string _acceptEncoding;
+    std::string _acceptLanguage;
+    std::string _lastModified;
+    std::string _transferEncoding;
+
 
     /* private functions */
     std::string _makeFormatedNum(const int& num);
@@ -49,5 +72,17 @@ class Response
     std::string _makeHeader(void);
     std::string _makeLocation(void);
     std::string _makeServerInfo(void);
+
+    std::string _makeContentType(void);
+    std::string _makeConnection(void);
+    std::string _makeContentLanguage(void);
+    std::string _makeContentLength(void);
+    std::string _makeContentEncoding(void);
+    std::string _makeContentRange(void);
+    std::string _makeContentDisposition(void);
+    std::string _makeAcceptEncoding(void);
+    std::string _makeAcceptLanguage(void);
+    std::string _makeLastModified(void);
+    std::string _makeTransferEncoding(void);
 };
 #endif

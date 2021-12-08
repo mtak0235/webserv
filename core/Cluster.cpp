@@ -371,7 +371,8 @@ std::string Cluster::_getBody(std::string file, int idxServer)
   {
     if (!_isFile.compare(_nowLocation.getCgiName()))
     {
-      _cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
+      if (_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile) == FAIL)
+				_cgi.setStatusCode(500);
       _cgi.getCgiResponseHeader();
       body = _cgi.getCgiResponseBody();
       _response.setStatusCode(_cgi.getStatusCode());
@@ -394,7 +395,9 @@ std::string Cluster::_getBody(std::string file, int idxServer)
         ofs.write(v[0].data.c_str(), v[i].data.size());
         ofs.close();
       }
-      _cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile);
+			
+      if (_cgi.execute(this->_request, _nowLocation.getCgiPath(), rootPulsFile) == FAIL)
+				_cgi.setStatusCode(500);
       _cgi.getCgiResponseHeader();
       body = _cgi.getCgiResponseBody();
       _response.setStatusCode(_cgi.getStatusCode());

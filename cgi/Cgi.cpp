@@ -22,7 +22,7 @@ Cgi::~Cgi(void)
   // char** _environ 할당 해제 여기서 안해도 대는지 확인
 }
 
-void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
+int Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 {
   std::string result = "";
 	if (cgiFilePath.find("cgi_tester") == std::string::npos)
@@ -61,7 +61,7 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
     };
     wait(NULL);
     lseek(fdOut, 0, SEEK_SET);
-    size_t bytes = 0;
+    ssize_t bytes = 0;
     while ((bytes = read(fdOut, buff, 1024)) > 0)
     {
 			buff[bytes] = 0;
@@ -69,6 +69,8 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
       result += temp;
 			memset(buff, 0, sizeof(buff));
     }
+		if (bytes == -1)
+			return FAIL;
   }
 	std::vector<std::string> v;
   std::stringstream ss;
@@ -82,6 +84,7 @@ void Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 	_setCgiResponseHeader(v);
 	_setCgiResponseBody(v);
 	delete[] tmp;
+	return SUCCESS;
 }
 
 std::string Cgi::getCgiResponseBody()
@@ -137,6 +140,11 @@ std::string Cgi::_getInput(std::string file)
   }
   ifs.close();
   return body;
+}
+
+void Cgi::setStatusCode(int code)
+{
+	_statusCode = code;
 }
 
 void Cgi::_setEnviron(const Request &req, std::string file)

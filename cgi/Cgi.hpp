@@ -12,6 +12,8 @@
 
 #include "Request.hpp"
 
+#define SUCCESS 0
+#define FAIL -1
 
 class Cgi
 {
@@ -45,12 +47,13 @@ class Cgi
     ~Cgi();
 
     /* public function */
-    void execute(Request req, std::string cgiFilePath, std::string file);
+    int execute(Request req, std::string cgiFilePath, std::string file);
 
     /* getter & setter */
     std::string getCgiResponseHeader(void);
     std::string getCgiResponseBody(void);
     int getStatusCode(void);
+		void setStatusCode(int code);
 
   private:
     /* private static variable */

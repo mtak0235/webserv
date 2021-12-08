@@ -104,7 +104,6 @@ void Cluster::_acceptNewClient(int servSock)
   if ((cliSock = accept(servSock, NULL, NULL)) == -1)
     Debug::log("accept Error");
   fcntl(cliSock, F_SETFL, O_NONBLOCK);
-  
   _changeEvents(_changeList, cliSock, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
   _clientsReqMap[cliSock] = "";
 }
@@ -135,14 +134,20 @@ void Cluster::_changeEvents(std::vector<struct kevent>& changeList,
 
 int Cluster::_monitorEvents(int cntServer)
 {
+	struct timespec tt = {0, 10000000};
   for (int idxServer = 0; idxServer < cntServer; idxServer++)
   {
-    _fdOccuredEnvent[idxServer] = kevent(_fdEventQueue, &_changeList[idxServer], _changeList.size(), _eventList, 1024, NULL);
+    _fdOccuredEnvent[idxServer] = kevent(_fdEventQueue, &_changeList[idxServer], _changeList.size(), _eventList, 1024, &tt);
     if (_fdOccuredEnvent[idxServer] == -1)
     {
       Debug::log("kevent error");
       return FAIL;
     }
+		if (_currEvent && _currEvent->ident >= 4 && _fdOccuredEnvent[idxServer] == 0)
+		{
+			// std::cout << "time out\n";
+			continue;
+		}
   }
   _changeList.clear();
   return SUCCESS;
@@ -193,7 +198,7 @@ int Cluster::_recvDataFromClient(int idxServer)
 {
   char buff[BUFF_SIZE];
   memset(buff, '\0', BUFF_SIZE);
-  ssize_t readDataBytes = recv(_currEvent->ident, buff, _currEvent->data, MSG_DONTWAIT);
+  ssize_t readDataBytes = recv(_currEvent->ident, buff, BUFF_SIZE - 1, MSG_DONTWAIT);
 
   if (readDataBytes == -1)
   {
@@ -201,7 +206,8 @@ int Cluster::_recvDataFromClient(int idxServer)
     return SUCCESS;
   }
   else if (readDataBytes >= 0) {
-    _clientsReqMap[_currEvent->ident] += buff;
+		for (ssize_t i = 0; i < readDataBytes; i++)
+    	_clientsReqMap[_currEvent->ident].push_back(buff[i]);
     memset(buff, '\0', BUFF_SIZE);
     if (_isRequestRemained(_clientsReqMap[_currEvent->ident]))
       return SUCCESS;
@@ -219,43 +225,46 @@ int Cluster::_recvDataFromClient(int idxServer)
 int Cluster::_responseDatatoServer(int idxServer, char* buff)
 {
   std::string cliReq = _clientsReqMap[_currEvent->ident];
-	// std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << cliReq << std::endl;
+	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << cliReq << std::endl;
   if (cliReq != "") {
     _response.setStatusCode(500);
     _makeRequestInfo(idxServer, cliReq);
     _setResponse(idxServer);
-		// std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << "\n";
-    size_t sendBytes = 0;
-    sendBytes = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTWAIT);
-    if (sendBytes  < 0) {
-      std::cerr << "client write error!" << std::endl;
-      _disconnectClient(_currEvent->ident, _clientsReqMap);
-    } else {
-      _clientsReqMap[_currEvent->ident].clear();
-      read(_currEvent->ident, buff, BUFF_SIZE);
-      memset(buff, 0, BUFF_SIZE);
-      _disconnectClient(_currEvent->ident, _clientsReqMap);
+		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << "\n";
+    char *response = new char[_lastResponse.size() + 1];
+    for (size_t i = 0; i < _lastResponse.size(); i++)
+      response[i] = _lastResponse[i];
+    response[_lastResponse.size()] = '\0';
+    size_t len = _lastResponse.size();
+    while (len > 0)
+    {
+      ssize_t sendBytes = send(_currEvent->ident, response, len, 0);
+      if (sendBytes < 0)
+      {
+        Debug::log("error send");
+        continue;
+      }
+			int k = 1000;
+			while (k--)
+			{}
+      response += sendBytes;
+      len -= sendBytes;
     }
-    // char *response = new char[_lastResponse.size() + 1];
-    // for (size_t i = 0; i < _lastResponse.size(); i++)
-    //   response[i] = _lastResponse[i];
-    // response[_lastResponse.size()] = '\0';
-    // size_t len = _lastResponse.size();
-    // while (len > 0)
-    // {
-    //   ssize_t sendBytes = send(_currEvent->ident, response, len, 0);
-    //   if (sendBytes < 1)
-    //   {
-    //     Debug::log("error send");
-    //     continue;
-    //   }
-    //   response += sendBytes;
-    //   len -= sendBytes;
-    // }
-    // memset(buff, 0, BUFF_SIZE);
-    // _clientsReqMap[_currEvent->ident].clear();
-    // // usleep(100);
-    // _disconnectClient(_currEvent->ident, _clientsReqMap);
+    memset(buff, 0, BUFF_SIZE);
+		response -= _lastResponse.size();
+		delete[] response;
+		time_t timer = time(NULL);
+		struct tm* t = localtime(&timer);
+		int tarTime = t->tm_min*60 + t->tm_sec + 1;
+		while (recv(_currEvent->ident, buff, BUFF_SIZE, MSG_DONTWAIT) >= 0) {
+			timer = time(NULL);
+			t = localtime(&timer);
+			// std::cout << "min [" << t->tm_min << "] sec [" << t->tm_sec <<"]\n"; 
+			if (tarTime <= t->tm_min*60 + t->tm_sec) break;
+		}
+		_clientsReqMap[_currEvent->ident].clear();
+		_disconnectClient(_currEvent->ident, _clientsReqMap);
+		memset(buff, 0, BUFF_SIZE);
     return SUCCESS;
   }
   return FAIL;

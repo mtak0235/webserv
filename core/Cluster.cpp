@@ -204,7 +204,8 @@ int Cluster::_recvDataFromClient(int idxServer)
     return SUCCESS;
   }
   else if (readDataBytes >= 0) {
-    _clientsReqMap[idxServer][_currEvent->ident] += buff;
+    for (ssize_t i = 0; i < readDataBytes; i++)
+      _clientsReqMap[idxServer][_currEvent->ident].push_back(buff[i]);
     memset(buff, '\0', BUFF_SIZE);
     if (_isRequestRemained(_clientsReqMap[idxServer][_currEvent->ident]))
       return SUCCESS;

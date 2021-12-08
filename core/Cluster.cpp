@@ -459,7 +459,7 @@ void Cluster::_isDirectory(int idxServer)
       _isFile = indexList[0].substr(idxLastDot + 1);
       _body = _getBody(indexList[0], idxServer);
     }
-    else if (indexList.size() == 0)
+    else if (indexList.size() == 0 && !_nowLocation.getAutoIndex())
       _response.setStatusCode(404);
   }
 }

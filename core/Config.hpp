@@ -13,8 +13,6 @@ class LocationConfig
     LocationConfig();
     ~LocationConfig();
 
-    /* operator overloading */
-    LocationConfig operator=(LocationConfig &x);
 
     /* public functions */
     void clear(void);
@@ -68,8 +66,6 @@ class ServerConfig
     ServerConfig();
     ~ServerConfig();
 
-    /* operator overloading */
-    ServerConfig operator=(ServerConfig &x);
 
     /* public functions */
     void clear(void);

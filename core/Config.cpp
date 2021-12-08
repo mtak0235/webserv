@@ -21,21 +21,6 @@ LocationConfig::LocationConfig()
 
 LocationConfig::~LocationConfig() { }
 
-LocationConfig LocationConfig::operator=(LocationConfig &x)
-{
-	_locationName = x._locationName;
-	_allowMethods = x._allowMethods;
-	_root = x._root;
-	_indexList = x._indexList;
-	_cgiName = x._cgiName;
-	_cgiPath = x._cgiPath;
-	_uploadFolder = x._uploadFolder;
-	_autoindex = x._autoindex;
-	_redirectCode = x._redirectCode;
-	_redirectAddress = x._redirectAddress;
-	_cliBodySize = x._cliBodySize;
-	return *this;
-}
 
 void LocationConfig::clear(void)
 {
@@ -212,16 +197,6 @@ void ServerConfig::clear(void)
 void ServerConfig::eraseLocation(std::string locationName)
 {
 	_locationsFind.erase(locationName);
-}
-
-ServerConfig ServerConfig::operator=(ServerConfig &x)
-{
-	_serverName = x._serverName;
-	_serverPort = x._serverPort;
-	_locations = x._locations;
-	_locationsFind = x._locationsFind;
-	_errorPage = x._errorPage;
-	return *this;
 }
 
 void ServerConfig::setServerName(const std::string serverName)

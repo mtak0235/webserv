@@ -243,3 +243,5 @@ LocationConfig &ServerConfig::getLocationsFind(std::string locationName)
 {
 	return _locationsFind[locationName];
 }
+
+

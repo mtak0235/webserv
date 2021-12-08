@@ -223,12 +223,13 @@ int Cluster::_recvDataFromClient(int idxServer)
 int Cluster::_responseDatatoServer(int idxServer, char* buff)
 {
   std::string cliReq = _clientsReqMap[idxServer][_currEvent->ident];
-	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << cliReq << std::endl;
+	std::cout << Debug::getTime() << "\n";
+	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << ansiYellow << cliReq << ansiEnd <<std::endl;
   if (cliReq != "") {
     _response.setStatusCode(500);
     _makeRequestInfo(idxServer, cliReq);
     _setResponse(idxServer);
-		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << "\n";
+		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << ansiGreen << _lastResponse << ansiEnd << "\n";
     char *response = new char[_lastResponse.size() + 1];
     for (size_t i = 0; i < _lastResponse.size(); i++)
       response[i] = _lastResponse[i];

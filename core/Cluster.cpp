@@ -188,8 +188,7 @@ int Cluster::_handleKqueueEvents(int cntServer, const std::vector<int>& serverSo
 
 bool Cluster::_isRequestRemained(const std::string& cliReq) const
 {
-  size_t lenReq = cliReq.length();
-  if (cliReq[lenReq - 2] != '\r' && cliReq[lenReq - 1] != '\n')
+  if (cliReq.find("\r\n\r\n") == std::string::npos)
     return true;
   return false;
 }
@@ -199,19 +198,18 @@ int Cluster::_recvDataFromClient(int idxServer)
   char buff[BUFF_SIZE];
   memset(buff, '\0', BUFF_SIZE);
   ssize_t readDataBytes = recv(_currEvent->ident, buff, BUFF_SIZE - 1, MSG_DONTWAIT);
-
   if (readDataBytes == -1)
   {
     std::cout << strerror(errno) << "\n";
     return SUCCESS;
   }
   else if (readDataBytes >= 0) {
-		for (ssize_t i = 0; i < readDataBytes; i++)
-    	_clientsReqMap[_currEvent->ident].push_back(buff[i]);
+    _clientsReqMap[_currEvent->ident] += buff;
     memset(buff, '\0', BUFF_SIZE);
     if (_isRequestRemained(_clientsReqMap[_currEvent->ident]))
       return SUCCESS;
   }
+
   if (_clientsReqMap[_currEvent->ident] == "") {
     Debug::log("client read error");
     _disconnectClient(_currEvent->ident, _clientsReqMap);

@@ -7,7 +7,6 @@ Cluster::Cluster(const std::string& configFile)
   _lastResponse = "";
   _isFile = "";
   _response.setStatusCode(500);
-	memset(_serverCheck, false, sizeof(_serverCheck));
 }
 
 Cluster::~Cluster() { }
@@ -262,7 +261,6 @@ int Cluster::_responseDatatoServer(int idxServer, char* buff)
 			if (tarTime <= t->tm_min*60 + t->tm_sec) break;
 		}
 		_clientsReqMap[idxServer][_currEvent->ident].clear();
-		_serverCheck[idxServer] = false;
 		_disconnectClient(_currEvent->ident, _clientsReqMap[idxServer]);
 		memset(buff, 0, BUFF_SIZE);
     return SUCCESS;

@@ -87,7 +87,6 @@ class Cluster
     std::vector<int> _ServerSocketList;
 
     struct kevent* _currEvent;
-		bool _serverCheck[6];
     int _fdEventQueue;
     int _fdOccuredEnvent[6];
     struct kevent _eventList[1024];

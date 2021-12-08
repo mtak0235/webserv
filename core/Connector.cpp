@@ -20,6 +20,12 @@ int Connector::connect(const std::string& portNum, int idxServer)
 	_servAddr[idxServer].sin_family = AF_INET;
 	_servAddr[idxServer].sin_addr.s_addr = htonl(INADDR_ANY);
 	_servAddr[idxServer].sin_port = htons(stoi(portNum));
+	int	optval = 1;
+	if (-1 == setsockopt(_servSockFd[idxServer], SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(int))) // can rebind
+	{
+		close(_servSockFd[idxServer]);
+		return CONNECTION_FAIL;
+	}
 	if (bind(_servSockFd[idxServer], (struct sockaddr*) &_servAddr[idxServer],
 	         sizeof(_servAddr[idxServer])) == CONNECTION_FAIL)
 	{

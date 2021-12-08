@@ -103,8 +103,8 @@ void Cluster::_acceptNewClient(int servSock)
   int cliSock = 0;
   if ((cliSock = accept(servSock, NULL, NULL)) == -1)
     Debug::log("accept Error");
-
   fcntl(cliSock, F_SETFL, O_NONBLOCK);
+  
   _changeEvents(_changeList, cliSock, EVFILT_READ | EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
   _clientsReqMap[cliSock] = "";
 }
@@ -225,37 +225,37 @@ int Cluster::_responseDatatoServer(int idxServer, char* buff)
     _makeRequestInfo(idxServer, cliReq);
     _setResponse(idxServer);
 		// std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << _lastResponse << "\n";
-    // size_t sendBytes = 0;
-    // sendBytes = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTWAIT);
-    // if (sendBytes  < 0) {
-    //   std::cerr << "client write error!" << std::endl;
-    //   _disconnectClient(_currEvent->ident, _clientsReqMap);
-    // } else {
-    //   _clientsReqMap[_currEvent->ident].clear();
-    //   read(_currEvent->ident, buff, BUFF_SIZE);
-    //   memset(buff, 0, BUFF_SIZE);
-    //   _disconnectClient(_currEvent->ident, _clientsReqMap);
-    // }
-    char *response = new char[_lastResponse.size() + 1];
-    for (size_t i = 0; i < _lastResponse.size(); i++)
-      response[i] = _lastResponse[i];
-    response[_lastResponse.size()] = '\0';
-    size_t len = _lastResponse.size();
-    while (len > 0)
-    {
-      ssize_t sendBytes = send(_currEvent->ident, response, len, 0);
-      if (sendBytes < 1)
-      {
-        Debug::log("error send");
-        continue;
-      }
-      response += sendBytes;
-      len -= sendBytes;
+    size_t sendBytes = 0;
+    sendBytes = send(_currEvent->ident, _lastResponse.c_str(), _lastResponse.size(), MSG_DONTWAIT);
+    if (sendBytes  < 0) {
+      std::cerr << "client write error!" << std::endl;
+      _disconnectClient(_currEvent->ident, _clientsReqMap);
+    } else {
+      _clientsReqMap[_currEvent->ident].clear();
+      read(_currEvent->ident, buff, BUFF_SIZE);
+      memset(buff, 0, BUFF_SIZE);
+      _disconnectClient(_currEvent->ident, _clientsReqMap);
     }
-    memset(buff, 0, BUFF_SIZE);
-    _clientsReqMap[_currEvent->ident].clear();
-    // usleep(100);
-    _disconnectClient(_currEvent->ident, _clientsReqMap);
+    // char *response = new char[_lastResponse.size() + 1];
+    // for (size_t i = 0; i < _lastResponse.size(); i++)
+    //   response[i] = _lastResponse[i];
+    // response[_lastResponse.size()] = '\0';
+    // size_t len = _lastResponse.size();
+    // while (len > 0)
+    // {
+    //   ssize_t sendBytes = send(_currEvent->ident, response, len, 0);
+    //   if (sendBytes < 1)
+    //   {
+    //     Debug::log("error send");
+    //     continue;
+    //   }
+    //   response += sendBytes;
+    //   len -= sendBytes;
+    // }
+    // memset(buff, 0, BUFF_SIZE);
+    // _clientsReqMap[_currEvent->ident].clear();
+    // // usleep(100);
+    // _disconnectClient(_currEvent->ident, _clientsReqMap);
     return SUCCESS;
   }
   return FAIL;

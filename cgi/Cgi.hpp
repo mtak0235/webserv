@@ -73,9 +73,6 @@ class Cgi
     void _setEnviron(const Request& req, std::string file);
     void _setCgiResponseHeader(const std::vector<std::string>& str);
     void _setCgiResponseBody(const std::vector<std::string>& str);
-    const std::string _getCwd(void) const; // 안쓰는 함수 같음
-
-
 };
 
 #endif

@@ -50,6 +50,7 @@ void Cluster::_clear()
   _isFile = "";
 }
 
+
 void Cluster::_makeStatusMap(void)
 {
   _statusMap[200] = "OK";
@@ -137,17 +138,14 @@ int Cluster::_monitorEvents(int cntServer)
 	struct timespec tt = {0, 10000000};
   for (int idxServer = 0; idxServer < cntServer; idxServer++)
   {
-    _fdOccuredEnvent[idxServer] = kevent(_fdEventQueue, &_changeList[idxServer], _changeList.size(), _eventList, 1024, &tt);
+    _fdOccuredEnvent[idxServer] = kevent(_fdEventQueue, &_changeList[0], _changeList.size(), _eventList, 1024, &tt);
     if (_fdOccuredEnvent[idxServer] == -1)
     {
       Debug::log("kevent error");
       return FAIL;
     }
 		if (_fdOccuredEnvent[idxServer] == 0)
-		{
-			// std::cout << "time out\n";
-			continue;
-		}
+			continue ;
   }
   _changeList.clear();
   return SUCCESS;
@@ -159,8 +157,9 @@ int Cluster::_handleKqueueEvents(int cntServer, const std::vector<int>& serverSo
     return FAIL;
   for (int idxServer = 0; idxServer < cntServer; idxServer++)
   {
-    for (int idxEvents = 0; idxEvents < _fdOccuredEnvent[idxServer]; ++idxEvents)
+    for (int idxEvents = 0; idxEvents < _fdOccuredEnvent[idxServer]; idxEvents++)
     {
+      
       _currEvent = &_eventList[idxEvents];
       if (_currEvent->flags & EV_ERROR)
       {
@@ -168,8 +167,9 @@ int Cluster::_handleKqueueEvents(int cntServer, const std::vector<int>& serverSo
         {
           Debug::log("socket error");
           return FAIL;
-        } else
+        } else {
           _disconnectClient(_currEvent->ident, _clientsReqMap[idxServer]);
+        }
       }
       else if (_currEvent->filter == EVFILT_READ)
       {
@@ -223,12 +223,15 @@ int Cluster::_recvDataFromClient(int idxServer)
 int Cluster::_responseDatatoServer(int idxServer, char* buff)
 {
   std::string cliReq = _clientsReqMap[idxServer][_currEvent->ident];
-	std::cout << Debug::getTime() << "\n";
+  std::cout << ansiPurple;
+	std::cout << Debug::getTime() << ansiEnd;
 	std::cout << "\033[36m[RECEIVED DATA FROM " << _currEvent->ident << "]\033[37m\n" << ansiYellow << cliReq << ansiEnd <<std::endl;
   if (cliReq != "") {
     _response.setStatusCode(500);
     _makeRequestInfo(idxServer, cliReq);
     _setResponse(idxServer);
+    std::cout << ansiPurple;
+	  std::cout << Debug::getTime() << ansiEnd;
 		std::cout << "\033[36m[RESPOND DATA" << "]\033[37m\n" << ansiGreen << _lastResponse << ansiEnd << "\n";
     char *response = new char[_lastResponse.size() + 1];
     for (size_t i = 0; i < _lastResponse.size(); i++)
@@ -254,11 +257,10 @@ int Cluster::_responseDatatoServer(int idxServer, char* buff)
 		delete[] response;
 		time_t timer = time(NULL);
 		struct tm* t = localtime(&timer);
-		int tarTime = t->tm_min*60 + t->tm_sec + 1;
+		int tarTime = t->tm_min * 60 + t->tm_sec + 1;
 		while (recv(_currEvent->ident, buff, BUFF_SIZE, MSG_DONTWAIT) >= 0) {
 			timer = time(NULL);
 			t = localtime(&timer);
-			// std::cout << "min [" << t->tm_min << "] sec [" << t->tm_sec <<"]\n"; 
 			if (tarTime <= t->tm_min*60 + t->tm_sec) break;
 		}
 		_clientsReqMap[idxServer][_currEvent->ident].clear();
@@ -314,7 +316,6 @@ void Cluster::_makeRequestInfo(int idxServer, const std::string& cliReq)
   _request.setRequest(cliReq);
   if (!_request.getPath().compare("/favicon.ico"))
     _request.setRequest(_request.getMethod() + " / " + _request.getHttpVersion());
-  // const int statusCode = _response.getStatusCode();
   if (_fileJudge(idxServer) == SUCCESS && _response.getStatusCode() == 200)
     return;
   _isDirectory(idxServer);
@@ -322,7 +323,7 @@ void Cluster::_makeRequestInfo(int idxServer, const std::string& cliReq)
   if (statusCode == 400 || statusCode == 403 || statusCode == 404 || statusCode == 405)
   {
     int temp = statusCode;
-    _body = _setBody("400.html");
+    _body = _setBody(_serverInfos[idxServer].getErrorPage());
     _response.setStatusCode(temp);
   }
 }

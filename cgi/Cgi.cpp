@@ -9,18 +9,10 @@ const std::string Cgi::_environList[NON_OF_ALL] =
 
 Cgi::Cgi()
 {
-  //  _environ 초기화 빠짐
-  //  _allocSize 초기화 빠짐
-  //  _cgiResponseHeader 초기화 빠짐
-  //  _cgiResponseBody 초기화 빠짐
-  //  _cgiInput 초기화 빠짐
   _statusCode = 400;
 }
 
-Cgi::~Cgi(void)
-{
-  // char** _environ 할당 해제 여기서 안해도 대는지 확인
-}
+Cgi::~Cgi(void) { }
 
 int Cgi::execute(Request req, std::string cgiFilePath, std::string file)
 {
@@ -185,13 +177,4 @@ void Cgi::_setCgiResponseBody(const std::vector<std::string>& v)
 		if (i != v.size() - 1) temp += '\n';
 	}
 	_cgiResponseBody = temp;
-}
-
-const std::string Cgi::_getCwd(void) const
-{
-  const int buffSize = 512;
-  char buff[buffSize];
-  getcwd(buff, buffSize);
-  std::string ret = buff;
-  return ret;
 }

@@ -52,8 +52,8 @@ class Parser
   private:
     /* private static variable */
     static const std::string _keyInit;
-    static const std::string _keyServer[3]; // 하드코딩 3 빼기
-    static const std::string _keyLocation[9]; // 하드코딩 9 빼기
+    static const std::string _keyServer[3];
+    static const std::string _keyLocation[9];
 
     /* private variable */
     std::ifstream _ifs;

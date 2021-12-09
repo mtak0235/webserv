@@ -13,13 +13,13 @@ const std::string Debug::getTime(void)
 {
 	time_t timer = time(NULL);
 	struct tm* t = localtime(&timer);
-	std::string ret = "time ";
+	std::string ret = "Log time [";
 	ret += FormatNum(t->tm_hour);
 	ret += " : ";
 	ret += FormatNum(t->tm_min);
 	ret += " : ";
 	ret += FormatNum(t->tm_sec);
-	ret += " : \n";
+	ret += "]\n";
 	return ret;
 }
 

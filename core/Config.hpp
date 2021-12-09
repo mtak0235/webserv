@@ -77,6 +77,7 @@ class ServerConfig
     void setLocations(LocationConfig location);
     void setLocationsFind(std::string locationName, LocationConfig config);
     void setErrorPage(std::string errorPage);
+    std::string getErrorPage(void);
     std::string getServerName(void);
     std::string getServerPort(void);
     std::vector<LocationConfig> getLocations(void);

@@ -7,9 +7,7 @@
 LocationConfig::LocationConfig()
 {
 	_locationName = "";
-	// _allowMethods 초기화 빠짐
 	_root = "";
-	// _indexList 초기화 빠짐
 	_cgiName = "";
 	_cgiPath = "";
 	_uploadFolder = "";
@@ -222,6 +220,11 @@ void ServerConfig::setLocationsFind(std::string locationName, LocationConfig con
 void ServerConfig::setErrorPage(std::string errorPage)
 {
 	_errorPage = errorPage;
+
+}
+std::string ServerConfig::getErrorPage(void)
+{
+	return _errorPage;
 }
 
 std::string ServerConfig::getServerName(void)

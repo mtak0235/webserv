@@ -83,6 +83,9 @@ int Cgi::execute(Request req, std::string cgiFilePath, std::string file)
   }
 	_setCgiResponseHeader(v);
 	_setCgiResponseBody(v);
+	for (size_t i = 0; i < _allocSize; i++)
+		delete[] _environ[i];
+	delete[] _environ;
 	delete[] tmp;
 	return SUCCESS;
 }

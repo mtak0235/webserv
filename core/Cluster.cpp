@@ -143,7 +143,7 @@ int Cluster::_monitorEvents(int cntServer)
       Debug::log("kevent error");
       return FAIL;
     }
-		if (_currEvent && _currEvent->ident >= 4 && _fdOccuredEnvent[idxServer] == 0)
+		if (_fdOccuredEnvent[idxServer] == 0)
 		{
 			// std::cout << "time out\n";
 			continue;

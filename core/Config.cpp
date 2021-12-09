@@ -176,9 +176,6 @@ ServerConfig::ServerConfig()
 {
 	_serverName = "webserv";
 	_serverPort = "";
-	// _locations 초기화 빠짐
-	// _locationsFind 초기화 빠짐
-	// _errorPage 초기화 빠짐
 }
 
 ServerConfig::~ServerConfig() { }
@@ -189,7 +186,6 @@ void ServerConfig::clear(void)
 	_serverPort = "";
 	_locations.clear();
 	_locationsFind.clear();
-	// _errorPage 클리어 빠짐
 }
 
 void ServerConfig::eraseLocation(std::string locationName)

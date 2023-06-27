@@ -1,9 +1,5 @@
 # webserv
 
-# 0. Subject
-
-* [Subject](https://github.com/bigpel66/42-cursus/blob/main/circle-05/circle05%20-%20webserv.pdf)
-
 # 1. What is Webserv?
 
 This is the Web Server implemented by C++ just like Nginx. It takes the configuration file to run the server. When the server runs based on the configuration file, the server is able to serve the response as client requested. GET, HEAD, POST, PUT, DELETE methods are acceptable. When it is configured to use cgi, any cgi can be used. The purpose of this project is to understand not only the http/1.1, but also fundamentals of i/o multiplexing.
